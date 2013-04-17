@@ -41,7 +41,8 @@ class AdminFieldFormatter(object):
                 self.short_description).capitalize()
             
             #TODO: Allow markup in short_description? Not practical due to
-            #hardcoded escape() in django.contrib.admin.helpers.AdminReadonlyField
+            #hardcoded escape() in
+            #django.contrib.admin.helpers.AdminReadonlyField
 #            if self.title_align:
 #                title_template = '<span style="text-align:%s">%s</span>'
 #                self.short_description = title_template \
@@ -138,7 +139,8 @@ class BooleanFormat(AdminFieldFormatter):
     def format(self, v):
         v = bool(v)
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        template = '<span style="'+style+'"><img src="%s" alt="%s" title="%s" /></span>'
+        template = '<span style="'+style+'"><img src="%s" alt="%s" ' + \
+            'title="%s" /></span>'
         if v:
             url = self.yes_path
         else:
@@ -146,9 +148,40 @@ class BooleanFormat(AdminFieldFormatter):
         url = url % (settings.MEDIA_URL,)
         v = template % (url, v, v)
         return v
+
+class ForeignKeyLink(AdminFieldFormatter):
+    """
+    Renders a foreign key value as a link to that object's admin change page.
+    """
     
-class AdminOneToManyLink(AdminFieldFormatter):
-    #TODO
+    target = '_blank'
+    
+    template_type = 'raw' # button|raw
+    
+    label_template = '{name}'
+    
+    null = True
+    
+    def format(self, v):
+        try:
+            assert self.template_type in ('button', 'raw'), \
+                'Invalid template type: %s' % (self.template_type)
+            url = utils.get_admin_change_url(v)
+            label = self.label_template.format(name=str(v))
+            if self.template_type == 'button':
+                return ('<a href="%s" target="%s"><input type="button" ' + \
+                    'value="%s" /></a>') % (url, self.target, label)
+            else:
+                return '<a href="%s" target="%s">%s</a>' \
+                    % (url, self.target, label)
+        except Exception, e:
+            return str(e)
+
+class OneToManyLink(AdminFieldFormatter):
+    """
+    Renders a related objects manager as a link to those object's admin change
+    list page.
+    """
     
     object_level = True
     
@@ -160,10 +193,8 @@ class AdminOneToManyLink(AdminFieldFormatter):
     
     def format(self, obj):
         try:
-            
             url = urlresolvers.reverse(self.url_param)
             url = '{0}?{1}={2}'.format(url, self.id_param, obj.id)
-            
             q = count = getattr(obj, self.name)
             if hasattr(q, 'count'):
                 q = q.all()
@@ -174,6 +205,7 @@ class AdminOneToManyLink(AdminFieldFormatter):
                     url = utils.get_admin_change_url(link_obj)
             if count is None or count == 0:
                 return count
-            return '<a href="%s" target="%s"><input type="button" value="View %d" /></a>' % (url, self.target, count)
+            return ('<a href="%s" target="%s"><input type="button" ' + \
+                'value="View %d" /></a>') % (url, self.target, count)
         except Exception, e:
             return str(e)

@@ -80,6 +80,31 @@ class FormatterModelAdmin(admin.ModelAdmin):
                     readonly_fields.append(name)
         return readonly_fields
 
+class FormatterTabularInline(admin.TabularInline):
+        
+    base_readonly_fields = ()
+    
+    @utils.classproperty
+    def readonly_fields(cls):
+        # Inserts our formatter instances into the readonly_field list.
+        # We need to do this because admin/validation.py line ~243 uses
+        # cls.readonly_fields instead of calling get_readonly_fields.
+        readonly_fields = list(cls.base_readonly_fields)
+        for name in cls.fields:
+            if callable(name):
+                readonly_fields.append(name)
+        return readonly_fields
+
+    def get_readonly_fields(self, request, obj=None):
+        # Inserts our formatter instances into the readonly_field list.
+        readonly_fields = list(self.readonly_fields)
+        fieldsets = self.get_fieldsets(request, obj)
+        for title, data in fieldsets:
+            for name in data['fields']:
+                if callable(name):
+                    readonly_fields.append(name)
+        return readonly_fields
+    
 class ReadonlyModelAdmin(admin.ModelAdmin):
     """
     Disables all delete or editing functionality in an admin view.
