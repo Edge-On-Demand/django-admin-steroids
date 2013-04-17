@@ -1,5 +1,5 @@
 =============================================================================
-Django Admin Steroids - Tweaks and tools simplify Django admin configuration.
+Django Admin Steroids - Tweaks and tools to simplify Django admin
 =============================================================================
 
 Overview
@@ -13,16 +13,16 @@ that improve the usability and maintainability of Django's admin.
 Features
 --------
 
-Modeladmin mixins:
+ModelAdmin mixins:
 
-BetterRawIdFieldsAdmin - Adapted from a `Django Snippet
+BetterRawIdFieldsModelAdmin - Adapted from a `Django Snippet
 <http://djangosnippets.org/snippets/2217/>`_,
 this formats all raw id fields with a convenient link to that record's
 corresponding admin change page.
 
-ReadonlyAdmin - Removes all editability from the modeladmin.
+ReadonlyModelAdmin - Removes all editability from the modeladmin.
 
-CSVAdmin - Adds a changelist action to export the selected records as a CSV.
+CSVModelAdmin - Adds a changelist action to export the selected records as a CSV.
 
 FormatterModelAdmin - Allows the use of admin field formatters.
 
@@ -59,7 +59,7 @@ Formatters are used by wrapping them around field names in a modeladmin.::
         fields = (
             'id',
             'name',
-            DollarFormat('income'),
+            DollarFormat('income', decimals=2),
         )
 
 Installation
