@@ -24,6 +24,8 @@ ReadonlyAdmin - Removes all editability from the modeladmin.
 
 CSVAdmin - Adds a changelist action to export the selected records as a CSV.
 
+FormatterModelAdmin - Allows the use of admin field formatters.
+
 Field formatters:
 
 If you want to format a monetary dollar value with a dollar sign
