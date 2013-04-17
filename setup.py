@@ -4,7 +4,7 @@ import urllib
 
 from setuptools import setup, find_packages, Command
 
-import admin_steroids
+from admin_steroids.constants import __version__
 
 def get_reqs(reqs=["Django>=1.4.0"]):
     # optparse is included with Python <= 2.7, but has been deprecated in favor
@@ -18,7 +18,7 @@ def get_reqs(reqs=["Django>=1.4.0"]):
 
 setup(
     name = "django-admin-steroids",
-    version = admin_steroids.__version__,
+    version = __version__,
     packages = find_packages(),
     author = "Chris Spencer",
     author_email = "chrisspen@gmail.com",
