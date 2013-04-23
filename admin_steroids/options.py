@@ -64,8 +64,13 @@ class FormatterModelAdmin(admin.ModelAdmin):
         # We need to do this because admin/validation.py line ~243 uses
         # cls.readonly_fields instead of calling get_readonly_fields.
         readonly_fields = list(cls.base_readonly_fields)
-        for title, data in cls.fieldsets:
-            for name in data['fields']:
+        if cls.fieldsets:
+            for title, data in cls.fieldsets:
+                for name in data['fields']:
+                    if callable(name):
+                        readonly_fields.append(name)
+        else:
+            for name in cls.fields:
                 if callable(name):
                     readonly_fields.append(name)
         return readonly_fields
@@ -93,7 +98,7 @@ class FormatterTabularInline(admin.TabularInline):
         for name in cls.fields:
             if callable(name):
                 readonly_fields.append(name)
-        return readonly_fields
+        return readonly_fields+['id']
 
     def get_readonly_fields(self, request, obj=None):
         # Inserts our formatter instances into the readonly_field list.
@@ -104,6 +109,9 @@ class FormatterTabularInline(admin.TabularInline):
                 if callable(name):
                     readonly_fields.append(name)
         return readonly_fields
+    
+    def id(self, request, obj=None):
+        return obj.id
     
 class ReadonlyModelAdmin(admin.ModelAdmin):
     """
@@ -190,4 +198,4 @@ class CSVModelAdmin(admin.ModelAdmin):
             writer.writerow(data)
         return response
     csv_export.short_description = \
-        'Exported selected %(verbose_name_plural)s as CSV'
+        'Export selected %(verbose_name_plural)s as CSV'

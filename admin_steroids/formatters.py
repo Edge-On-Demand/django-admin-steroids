@@ -53,10 +53,20 @@ class AdminFieldFormatter(object):
         if self.object_level:
             v = obj
         else:
-            v = getattr(obj, self.name)
+            if '__' in self.name:
+                # Follow Django's double-underscore dereferencing notation.
+                parts = self.name.split('__')
+                v = obj
+                for part in parts:
+                    v = getattr(v, part)
+            else:
+                v = getattr(obj, self.name)
         if v is None and self.null:
             return NONE_STR
         return self.format(v)
+    
+    def format(self, v):
+        return v
 
 class DollarFormat(AdminFieldFormatter):
     """
@@ -94,6 +104,10 @@ class PercentFormat(AdminFieldFormatter):
     align = 'right'
     
     def format(self, v):
+        if v is None:
+            style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+            template = '<span style="'+style+'">'+NONE_STR+'</span>'
+            return template
         v *= 100
         template = self.template
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
@@ -113,6 +127,16 @@ class CenterFormat(AdminFieldFormatter):
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
         template = '<span style="'+style+'">%s</span>'
         return template % v
+
+class ReadonlyFormat(AdminFieldFormatter):
+    """
+    Formats a the field as a readonly attribute.
+    """
+    
+#    def format(self, v):
+#        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+#        template = '<span style="'+style+'">%s</span>'
+#        return template % v
 
 class NbspFormat(AdminFieldFormatter):
     """
@@ -193,8 +217,12 @@ class OneToManyLink(AdminFieldFormatter):
     
     def format(self, obj):
         try:
-            url = urlresolvers.reverse(self.url_param)
-            url = '{0}?{1}={2}'.format(url, self.id_param, obj.id)
+            url = None
+            try:
+                url = urlresolvers.reverse(self.url_param)
+                url = '{0}?{1}={2}'.format(url, self.id_param, obj.id)
+            except Exception:
+                pass
             q = count = getattr(obj, self.name)
             if hasattr(q, 'count'):
                 q = q.all()
@@ -203,6 +231,9 @@ class OneToManyLink(AdminFieldFormatter):
                     # Link directly to the record if only one result.
                     link_obj = q[0]
                     url = utils.get_admin_change_url(link_obj)
+                elif count > 1:
+                    url = utils.get_admin_changelist_url(q[0])
+                    url += '?{1}={2}'.format(url, self.id_param, obj.id)
             if count is None or count == 0:
                 return count
             return ('<a href="%s" target="%s"><input type="button" ' + \
