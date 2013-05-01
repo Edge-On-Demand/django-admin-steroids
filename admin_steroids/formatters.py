@@ -82,6 +82,8 @@ class DollarFormat(AdminFieldFormatter):
     commas = True
     
     def format(self, v):
+        if v is None:
+            return NONE_STR
         template = '$%.' + str(self.decimals) + 'f'
         if v < 0:
             v *= -1
@@ -103,12 +105,15 @@ class PercentFormat(AdminFieldFormatter):
     
     align = 'right'
     
+    rounder = round
+    
     def format(self, v):
         if v is None:
             style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
             template = '<span style="'+style+'">'+NONE_STR+'</span>'
             return template
         v *= 100
+        v = self.rounder(v)
         template = self.template
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
         template = '<span style="'+style+'">'+template+'</span>'

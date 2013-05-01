@@ -8,8 +8,28 @@ from django.template.defaultfilters import slugify
 import widgets as w
 import utils
 
+class BaseModelAdmin(admin.ModelAdmin):
+    
+    # Cleanup the breadcrumbs on the change page.
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['app_label'] = self.model._meta.app_label.title()
+        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+    # Cleanup the breadcrumbs on the changelist page.
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['app_label'] = self.model._meta.app_label.title()
+        return super(BaseModelAdmin, self).changelist_view(request, extra_context)
+    
+    # Cleanup the breadcrumbs on the delete page.
+    def delete_view(self, request, object_id, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['app_label'] = self.model._meta.app_label.title()
+        return super(BaseModelAdmin, self).delete_view(request, object_id, extra_context)
+
 # Based on http://djangosnippets.org/snippets/2217/.
-class BetterRawIdFieldsModelAdmin(admin.ModelAdmin):
+class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
     """
     Displays all raw id fields in a modeladmin as a link going to that record's
     associated admin change page.
@@ -19,7 +39,7 @@ class BetterRawIdFieldsModelAdmin(admin.ModelAdmin):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             type = db_field.rel.__class__.__name__
-            if type == "ManyToOneRel":
+            if type == "ManyToOneRel" or type == "OneToOneRel":
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site)
             elif type == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site)
@@ -37,7 +57,7 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             type = db_field.rel.__class__.__name__
-            if type == "ManyToOneRel":
+            if type == "ManyToOneRel" or type == "OneToOneRel":
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site)
             elif type == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site)
@@ -46,7 +66,7 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
 
 ImproveRawIdFieldsFormTabularInline = BetterRawIdFieldsTabularInline
 
-class FormatterModelAdmin(admin.ModelAdmin):
+class FormatterModelAdmin(BaseModelAdmin):
     """
     Allows the use of per-field formatters.
     
@@ -69,21 +89,40 @@ class FormatterModelAdmin(admin.ModelAdmin):
                 for name in data['fields']:
                     if callable(name):
                         readonly_fields.append(name)
-        else:
+        elif cls.fields:
             for name in cls.fields:
                 if callable(name):
                     readonly_fields.append(name)
         return readonly_fields
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request, obj=None, check_fieldsets=True):
         # Inserts our formatter instances into the readonly_field list.
         readonly_fields = list(self.readonly_fields)
-        fieldsets = self.get_fieldsets(request, obj)
-        for title, data in fieldsets:
-            for name in data['fields']:
-                if callable(name):
-                    readonly_fields.append(name)
+        #fieldsets = self.get_fieldsets(request, obj)
+        fieldsets = self.declared_fieldsets
+#        print '!'*80
+#        print 'fieldsets:',fieldsets
+        if fieldsets:
+            for title, data in fieldsets:
+                for name in data['fields']:
+                    if callable(name):
+                        readonly_fields.append(name)
+        print '!'*80
+        print 'readonly_fields:',readonly_fields
         return readonly_fields
+
+#    def get_fieldsets(self, request, obj=None):
+#        "Hook for specifying fieldsets for the add form."
+#        if self.declared_fieldsets:
+#            return self.declared_fieldsets
+#        
+#        form = self.get_form(request, obj)
+#        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
+#        return [(None, {'fields': fields})]
+#    
+#        form = self.get_formset(request, obj).form
+#        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
+#        return [(None, {'fields': fields})]
 
 class FormatterTabularInline(admin.TabularInline):
         
@@ -113,7 +152,7 @@ class FormatterTabularInline(admin.TabularInline):
     def id(self, request, obj=None):
         return obj.id
     
-class ReadonlyModelAdmin(admin.ModelAdmin):
+class ReadonlyModelAdmin(BaseModelAdmin):
     """
     Disables all delete or editing functionality in an admin view.
     """
@@ -137,7 +176,7 @@ class ReadonlyModelAdmin(admin.ModelAdmin):
         readonly_fields = list(self.readonly_fields)
         return readonly_fields + [f.name for f in self.model._meta.fields]
     
-class CSVModelAdmin(admin.ModelAdmin):
+class CSVModelAdmin(BaseModelAdmin):
     """
     Adds a CSV export action to an admin view.
     """
