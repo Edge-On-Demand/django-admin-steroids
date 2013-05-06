@@ -61,6 +61,8 @@ class AdminFieldFormatter(object):
                     v = getattr(v, part)
             else:
                 v = getattr(obj, self.name)
+        if callable(v):
+            v = v()
         if v is None and self.null:
             return NONE_STR
         return self.format(v)

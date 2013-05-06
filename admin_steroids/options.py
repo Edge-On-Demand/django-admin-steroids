@@ -100,15 +100,11 @@ class FormatterModelAdmin(BaseModelAdmin):
         readonly_fields = list(self.readonly_fields)
         #fieldsets = self.get_fieldsets(request, obj)
         fieldsets = self.declared_fieldsets
-#        print '!'*80
-#        print 'fieldsets:',fieldsets
         if fieldsets:
             for title, data in fieldsets:
                 for name in data['fields']:
                     if callable(name):
                         readonly_fields.append(name)
-        print '!'*80
-        print 'readonly_fields:',readonly_fields
         return readonly_fields
 
 #    def get_fieldsets(self, request, obj=None):
