@@ -49,7 +49,7 @@ class AdminFieldFormatter(object):
 #                    % (self.title_align, self.short_description)
 #                self.short_description = mark_safe(self.short_description)
         
-    def __call__(self, obj):
+    def __call__(self, obj, plaintext=False):
         if self.object_level:
             v = obj
         else:
@@ -65,10 +65,19 @@ class AdminFieldFormatter(object):
             v = v()
         if v is None and self.null:
             return NONE_STR
+        if plaintext:
+            return self.plaintext(v)
         return self.format(v)
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         return v
+    
+    def plaintext(self, *args, **kwargs):
+        """
+        Called when no HTML is desired.
+        """
+        kwargs['plaintext'] = True
+        return self.format(*args, **kwargs)
 
 class DollarFormat(AdminFieldFormatter):
     """
@@ -83,7 +92,7 @@ class DollarFormat(AdminFieldFormatter):
     
     commas = True
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         if v is None:
             return NONE_STR
         template = '$%.' + str(self.decimals) + 'f'
@@ -95,7 +104,8 @@ class DollarFormat(AdminFieldFormatter):
         else:
             template = template % v
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        template = '<span style="'+style+'">'+template+'</span>'
+        if not plaintext:
+            template = '<span style="'+style+'">'+template+'</span>'
         return template
 
 class PercentFormat(AdminFieldFormatter):
@@ -109,16 +119,18 @@ class PercentFormat(AdminFieldFormatter):
     
     rounder = round
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         if v is None:
             style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-            template = '<span style="'+style+'">'+NONE_STR+'</span>'
+            if not plaintext:
+                template = '<span style="'+style+'">'+NONE_STR+'</span>'
             return template
         v *= 100
         v = self.rounder(v)
         template = self.template
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        template = '<span style="'+style+'">'+template+'</span>'
+        if not plaintext:
+            template = '<span style="'+style+'">'+template+'</span>'
         return template % v
     
 class CenterFormat(AdminFieldFormatter):
@@ -130,9 +142,10 @@ class CenterFormat(AdminFieldFormatter):
     
     align = 'center'
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        template = '<span style="'+style+'">%s</span>'
+        if not plaintext:
+            template = '<span style="'+style+'">%s</span>'
         return template % v
 
 class ReadonlyFormat(AdminFieldFormatter):
@@ -150,8 +163,10 @@ class NbspFormat(AdminFieldFormatter):
     Replaces all spaces with a non-breaking space.
     """
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         v = str(v)
+        if plaintext:
+            return v
         v = v.replace(' ', '&nbsp;')
         return v
 
@@ -167,8 +182,10 @@ class BooleanFormat(AdminFieldFormatter):
     
     no_path = '%sadmin/img/icon-no.gif'
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         v = bool(v)
+        if plaintext:
+            return v
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
         template = '<span style="'+style+'"><img src="%s" alt="%s" ' + \
             'title="%s" /></span>'
@@ -193,7 +210,7 @@ class ForeignKeyLink(AdminFieldFormatter):
     
     null = True
     
-    def format(self, v):
+    def format(self, v, plaintext=False):
         try:
             assert self.template_type in ('button', 'raw'), \
                 'Invalid template type: %s' % (self.template_type)
@@ -207,6 +224,11 @@ class ForeignKeyLink(AdminFieldFormatter):
                     % (url, self.target, label)
         except Exception, e:
             return str(e)
+        
+    def plaintext(self, v):
+        if v is None:
+            return ''
+        return v.id
 
 class OneToManyLink(AdminFieldFormatter):
     """
@@ -247,3 +269,7 @@ class OneToManyLink(AdminFieldFormatter):
                 'value="View %d" /></a>') % (url, self.target, count)
         except Exception, e:
             return str(e)
+
+    def plaintext(self, v):
+        return '' #TODO?
+    

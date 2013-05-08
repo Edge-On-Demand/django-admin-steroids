@@ -4,7 +4,7 @@ import urllib
 
 from setuptools import setup, find_packages, Command
 
-VERSION = (0, 1, 4)
+VERSION = (0, 1, 5)
 __version__ = '.'.join(map(str, VERSION))
 
 def get_reqs(reqs=["Django>=1.4.0"]):
