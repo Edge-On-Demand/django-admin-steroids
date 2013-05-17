@@ -58,7 +58,8 @@ class AdminFieldFormatter(object):
                 parts = self.name.split('__')
                 v = obj
                 for part in parts:
-                    v = getattr(v, part)
+                    if v is not None:
+                        v = getattr(v, part)
             else:
                 v = getattr(obj, self.name)
         if callable(v):
@@ -132,6 +133,32 @@ class PercentFormat(AdminFieldFormatter):
         if not plaintext:
             template = '<span style="'+style+'">'+template+'</span>'
         return template % v
+
+class FloatFormat(AdminFieldFormatter):
+    """
+    Formats a number as a float.
+    """
+    
+    decimals = 2
+    
+    template = '%.02f'
+    
+    align = 'left'
+    
+    rounder = round
+    
+    def format(self, v, plaintext=False):
+        if v is None:
+            style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+            if not plaintext:
+                template = '<span style="'+style+'">'+NONE_STR+'</span>'
+            return template
+        v = self.rounder(v, self.decimals)
+        template = self.template
+        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+        if not plaintext:
+            template = '<span style="'+style+'">'+template+'</span>'
+        return template % v
     
 class CenterFormat(AdminFieldFormatter):
     """
@@ -143,9 +170,10 @@ class CenterFormat(AdminFieldFormatter):
     align = 'center'
     
     def format(self, v, plaintext=False):
+        if plaintext:
+            return str(v)
         style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        if not plaintext:
-            template = '<span style="'+style+'">%s</span>'
+        template = '<span style="'+style+'">%s</span>'
         return template % v
 
 class ReadonlyFormat(AdminFieldFormatter):
