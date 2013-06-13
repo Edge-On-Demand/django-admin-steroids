@@ -221,7 +221,7 @@ class BooleanFormat(AdminFieldFormatter):
             url = self.yes_path
         else:
             url = self.no_path
-        url = url % (settings.MEDIA_URL,)
+        url = url % (settings.STATIC_URL,)
         v = template % (url, v, v)
         return v
 
