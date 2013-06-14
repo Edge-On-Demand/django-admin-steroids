@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_static staticfiles %}
+{#{% load compressed %}#}
+
+{% block title %}{{ title }} | {% if settings.ADMIN_TITLE %}{{ settings.ADMIN_TITLE }}{% else %}Administration{% endif %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="/admin">{% if settings.ADMIN_TITLE %}{{ settings.ADMIN_TITLE }}{% else %}Administration{% endif %}</a></h1>
+{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+    {#{% compressed_js 'all-admin' %}#}
+    <script language="javascript" src="{% static 'js/jquery-1.8.3.js' %}"></script>
+    <script language="javascript" src="{% static 'js/jquery-ui-1.9.2.custom.js' %}"></script>
+    <script language="javascript" src="{% static 'js/jquery.floatheader.js' %}"></script>
+    <script language="javascript" src="{% static 'js/jquery.inview.js' %}"></script>
+    <script language="javascript" src="{% static 'js/jquery.cookie.js' %}"></script>
+    <script language="javascript" src="{% static 'js/custom.js' %}"></script>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
