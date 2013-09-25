@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
 from django.core.urlresolvers import reverse, NoReverseMatch
+from django.conf import settings
 from django.forms.widgets import Select, TextInput, flatatt
 from django.template import Context, Template
 from django.template.context import Context
@@ -57,10 +58,11 @@ class ForeignKeyTextInput(TextInput):
             final_attrs['value'] = force_unicode(self._format_value(value))
         final_attrs['size'] = 10
         t = Template(u"""
+{% load staticfiles %}
 <input{{ attrs|safe }} />
 {% if instance %}
     <a href="{{ changelist_url|safe }}?t=id" class="related-lookup" id="lookup_{{ id|safe }}" onclick="return showRelatedObjectLookupPopup(this);">
-        <img src="/media/admin/img/admin/selector-search.gif" width="16" height="16" alt="Lookup" />
+        <img src="{% static 'admin/img/selector-search.gif' %}" width="16" height="16" alt="Lookup" />
     </a>
     <strong><a href="{{ url|safe }}" target="_blank">{{ instance|safe }}</a></strong>
 {% endif %}
@@ -71,7 +73,8 @@ class ForeignKeyTextInput(TextInput):
             raw_value=self._raw_value,
             url=utils.get_admin_change_url(self._instance),
             changelist_url=utils.get_admin_changelist_url(self._model_class),
-            instance=self._instance))
+            instance=self._instance,
+        ))
         return  mark_safe(t.render(c))
 
 #http://djangosnippets.org/snippets/2217/

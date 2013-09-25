@@ -4,7 +4,7 @@ import urllib
 
 from setuptools import setup, find_packages, Command
 
-VERSION = (0, 1, 8)
+VERSION = (0, 1, 9)
 __version__ = '.'.join(map(str, VERSION))
 
 def get_reqs(reqs=["Django>=1.4.0"]):
@@ -21,6 +21,16 @@ setup(
     name = "django-admin-steroids",
     version = __version__,
     packages = find_packages(),
+    package_data = {
+        'admin_steroids': [
+            'templates/*.*',
+            'templates/*/*.*',
+            'templates/*/*/*.*',
+            'static/*.*',
+            'static/*/*.*',
+            'static/*/*/*.*',
+        ],
+    },
     author = "Chris Spencer",
     author_email = "chrisspen@gmail.com",
     description = "",
