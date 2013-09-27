@@ -186,10 +186,12 @@ class CSVModelAdmin(BaseModelAdmin):
     extra_csv_fields = ()
     
     def get_actions(self, request):
-        actions = self.actions if hasattr(self, 'actions') else []
-        actions.append('csv_export')
-        actions = super(CSVModelAdmin, self).get_actions(request)
-        return actions
+        #actions = []
+        if hasattr(self, 'actions') and isinstance(self.actions, list):
+            #actions = self.actions = list(self.actions)
+            #actions = list(self.actions if hasattr(self, 'actions') else [])
+            self.actions.append('csv_export')
+        return super(CSVModelAdmin, self).get_actions(request)
     
     def get_extra_csv_fields(self, request):
         return self.extra_csv_fields
@@ -200,37 +202,66 @@ class CSVModelAdmin(BaseModelAdmin):
             % slugify(self.model.__name__)
         raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
         
+        def get_attr(obj, name, as_name=False):
+            """
+            Dereferences "__" delimited variable names.
+            """
+            parts = name.split('__')
+            cursor = obj
+            for part in parts:
+                name = part
+                cursor = getattr(cursor, part, None)
+                if callable(cursor):
+                    cursor = cursor()
+            if cursor == obj:
+                return
+            if as_name:
+                return name
+            return cursor
+        
         # Write header.
         header_data = {}
         fieldnames = []
-        for name in raw_headers:
-            if callable(name):
-                # This is likely a Formatter instance.
-                name_key = name.name
-                header_data[name_key] = name.short_description
-            elif isinstance(name, basestring) and hasattr(self, name):
-                # This is likely a ModelAdmin method name.
-                name_key = name
-                header_data[name_key] = getattr(self, name).short_description
-            elif hasattr(name, 'short_description'):
-                name_key = name
-                header_data[name_key] = getattr(
-                    name, 'short_description')
-            else:
-                name_key = name
-                field = self.model._meta.get_field_by_name(name)
-                if field and field[0].verbose_name:
-                    header_data[name_key] = field[0].verbose_name
-                else:
-                    header_data[name_key] = name
-            header_data[name_key] = header_data[name_key].title()
-            fieldnames.append(name_key)
-        
-        writer = csv.DictWriter(response, fieldnames=fieldnames)
-        writer.writerow(header_data)
         
         # Write records.
+        first = True
         for r in qs[:self.csv_record_limit]:
+            
+            if first:
+                first = False
+                for name in raw_headers:
+                    if callable(name):
+                        # This is likely a Formatter instance.
+                        name_key = name.name
+                        header_data[name_key] = name.short_description
+                    elif isinstance(name, basestring) and hasattr(self, name):
+                        # This is likely a ModelAdmin method name.
+                        name_key = name
+                        header_data[name_key] = getattr(self, name).short_description
+                    elif hasattr(name, 'short_description'):
+                        name_key = name
+                        header_data[name_key] = getattr(
+                            name, 'short_description')
+                    elif hasattr(self.model, name):
+                        name_key = name
+                        if hasattr(getattr(self.model, name), 'short_description'):
+                            header_data[name_key] = getattr(getattr(self.model, name), 'short_description')
+                        else:
+                            header_data[name_key] = name
+                    else:
+                        name_key = name
+                        header_data[name_key] = get_attr(r, name, as_name=True)
+#                        field = self.model._meta.get_field_by_name(name)
+#                        if field and field[0].verbose_name:
+#                            header_data[name_key] = field[0].verbose_name
+#                        else:
+#                            header_data[name_key] = name
+                    header_data[name_key] = header_data[name_key].title()
+                    fieldnames.append(name_key)
+                
+                writer = csv.DictWriter(response, fieldnames=fieldnames)
+                writer.writerow(header_data)
+            #print 'fieldnames:',fieldnames
             data = {}
             for name in raw_headers:
                 if callable(name):
@@ -248,10 +279,13 @@ class CSVModelAdmin(BaseModelAdmin):
                     name_key = name
                     data[name_key] = getattr(r, name)
                 else:
-                    raise Exception, 'Unknown field: %s' % (name,)
+                    name_key = name
+                    data[name_key] = get_attr(r, name)
+                    #raise Exception, 'Unknown field: %s' % (name,)
                     
                 if callable(data[name_key]):
                     data[name_key] = data[name_key]()
+            #print 'data:',data
             writer.writerow(data)
         return response
     csv_export.short_description = \
