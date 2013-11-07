@@ -133,4 +133,28 @@ class classproperty(object):
         self.getter= getter
     def __get__(self, instance, owner):
         return self.getter(owner)
-    
+
+def absolutize_all_urls(
+    text,
+    domain=None,
+    overwrite_domain=False,
+    protocol='http',
+    overwrite_protocol=True,
+    url_pattern='(?:href|src)=[\'"](/+.*?)[\'"]'):
+    """
+    Inserts a domain and protocol into all href and src URLs missing them.
+    """
+    import re
+    from urlparse import urlparse
+    if not domain:
+        from django.conf import settings
+        domain = urlparse(settings.BASE_URL).netloc
+    matches = re.findall(url_pattern, text)
+    for old_url in matches:
+        result = urlparse(old_url)
+        result = result._replace(
+            scheme=(not overwrite_protocol and netloc.scheme) or protocol,
+            netloc=(not overwrite_domain and result.netloc) or domain)
+        new_url = result.geturl()
+        text = text.replace(old_url, new_url)
+    return text
