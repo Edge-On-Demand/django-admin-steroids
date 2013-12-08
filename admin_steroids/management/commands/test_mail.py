@@ -20,7 +20,7 @@ class Command(BaseCommand):
         if recipient_list:
             recipient_list = [_ for _ in recipient_list.split(',') if _.strip()]
         else:
-            recipient_list = [email for _, email in ADMINS]
+            recipient_list = [email for _, email in settings.ADMINS]
             
         print 'Attempting to send email to %s from %s...' % (' ,'.join(recipient_list), from_email)
         send_mail(
