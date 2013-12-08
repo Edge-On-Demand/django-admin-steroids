@@ -16,7 +16,7 @@ class Command(BaseCommand):
         from django.core.mail import send_mail
         from_email = settings.SERVER_EMAIL
         
-        recipient_list = options.get('recipient_list', '').strip()
+        recipient_list = (options.get('recipient_list') or '').strip()
         if recipient_list:
             recipient_list = [_ for _ in recipient_list.split(',') if _.strip()]
         else:
