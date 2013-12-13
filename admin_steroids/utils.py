@@ -158,3 +158,17 @@ def absolutize_all_urls(
         new_url = result.geturl()
         text = text.replace(old_url, new_url)
     return text
+
+def view_link(url, obj=None, target='_blank', prefix=''):
+    """
+    Returns the HTML for a simple link referring to a page of items,
+    usually showing a count.
+    """
+    if isinstance(obj, (int, float)):
+        view_str = 'View %s' % (obj,)
+    elif obj:
+        view_str = prefix + str(obj)
+    else:
+        view_str = 'View'
+    return '<a href=\"{url}\" target=\"{tgt}\" class="button">{view}</a>'\
+        .format(url=url, view=view_str, tgt=target)
