@@ -172,3 +172,24 @@ def view_link(url, obj=None, target='_blank', prefix=''):
         view_str = 'View'
     return '<a href=\"{url}\" target=\"{tgt}\" class="button">{view}</a>'\
         .format(url=url, view=view_str, tgt=target)
+
+def view_related_link(obj, field_name, reverse_field=None):
+    """
+    Returns the HTML for rendering a link to a related model's
+    admin changelist page. 
+    """
+    related = getattr(obj, field_name)
+    model = related.model
+    q = related.all()
+    
+    #TODO:is there a more efficient way to do this?
+    if not reverse_field:
+        reverse_fields = [
+            _.name for _ in model._meta.fields
+            if _.rel and _.rel.to == type(obj)
+        ]
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field.'
+        reverse_field = reverse_fields[0]
+
+    url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
+    return view_link(url, q.count())
