@@ -8,11 +8,21 @@ from django.conf import settings
 from django.forms.widgets import Select, TextInput, flatatt
 from django.template import Context, Template
 from django.template.context import Context
-from django.utils.encoding import StrAndUnicode, force_unicode, smart_unicode
+from django.utils.encoding import force_unicode, smart_unicode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 import utils
+
+try:
+    from django.utils.encoding import StrAndUnicode
+except ImportError:
+    from django.utils.encoding import python_2_unicode_compatible
+
+    @python_2_unicode_compatible
+    class StrAndUnicode:
+        def __str__(self):
+            return self.code
 
 class LinkedSelect(Select):
     def render(self, name, value, attrs=None, *args, **kwargs):
