@@ -1,5 +1,7 @@
 import re
 
+from django.db import models
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 
@@ -164,14 +166,20 @@ def view_link(url, obj=None, target='_blank', prefix=''):
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
     """
-    if isinstance(obj, (int, float)):
+    class_str = 'button'
+    if isinstance(url, models.Model):
+        obj = url
+        view_str = str(obj)
+        class_str = ''
+        url = get_admin_change_url(obj)
+    elif isinstance(obj, (int, float)):
         view_str = 'View %s' % (obj,)
     elif obj:
         view_str = prefix + str(obj)
     else:
         view_str = 'View'
-    return '<a href=\"{url}\" target=\"{tgt}\" class="button">{view}</a>'\
-        .format(url=url, view=view_str, tgt=target)
+    return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
+        .format(url=url, view=view_str, tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None):
     """
