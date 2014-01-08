@@ -172,7 +172,7 @@ class ReadonlyModelAdmin(BaseModelAdmin):
         readonly_fields = list(self.readonly_fields)
         return readonly_fields + [f.name for f in self.model._meta.fields]
     
-class CSVModelAdmin(BaseModelAdmin):
+class CSVModelAdminMixin(object):
     """
     Adds a CSV export action to an admin view.
     """
@@ -186,12 +186,11 @@ class CSVModelAdmin(BaseModelAdmin):
     extra_csv_fields = ()
     
     def get_actions(self, request):
-        #actions = []
+        from inspect import isclass
         if hasattr(self, 'actions') and isinstance(self.actions, list):
-            #actions = self.actions = list(self.actions)
-            #actions = list(self.actions if hasattr(self, 'actions') else [])
             self.actions.append('csv_export')
-        return super(CSVModelAdmin, self).get_actions(request)
+        if isinstance(self, type) or (isclass(self) and issubclass(self, type)):
+            return super(CSVModelAdmin, self).get_actions(request)
     
     def get_extra_csv_fields(self, request):
         return self.extra_csv_fields
@@ -234,6 +233,9 @@ class CSVModelAdmin(BaseModelAdmin):
                         # This is likely a Formatter instance.
                         name_key = name.name
                         header_data[name_key] = name.short_description
+                    elif isinstance(name, (tuple, list)) and len(name) == 2:
+                        name_key, name_key_verbose = name
+                        header_data[name_key] = name_key_verbose
                     elif isinstance(name, basestring) and hasattr(self, name):
                         # This is likely a ModelAdmin method name.
                         name_key = name
@@ -250,7 +252,7 @@ class CSVModelAdmin(BaseModelAdmin):
                             header_data[name_key] = name
                     else:
                         name_key = name
-                        header_data[name_key] = get_attr(r, name, as_name=True)
+                        header_data[name_key] = name_key#get_attr(r, name, as_name=True)
 #                        field = self.model._meta.get_field_by_name(name)
 #                        if field and field[0].verbose_name:
 #                            header_data[name_key] = field[0].verbose_name
@@ -290,3 +292,10 @@ class CSVModelAdmin(BaseModelAdmin):
         return response
     csv_export.short_description = \
         'Export selected %(verbose_name_plural)s as CSV'
+
+class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
+    
+    def get_actions(self, request):
+        #TODO:is there a better way to do this? super() ignores the mixin's get_actions()...
+        CSVModelAdminMixin.get_actions(self, request)
+        return super(CSVModelAdmin, self).get_actions(request)
