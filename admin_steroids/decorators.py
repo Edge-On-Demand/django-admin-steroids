@@ -24,11 +24,11 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
 
     if delay <= 0:
         raise ValueError("delay is %s but must be greater than 0" % (delay,))
-
+    
     def deco_retry(f):
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay # make mutable
-            for retry in xrange(mtries):
+            for retry in xrange(int(mtries)):
                 try:
                     rv = f(*args, **kwargs)
                     if commit:
