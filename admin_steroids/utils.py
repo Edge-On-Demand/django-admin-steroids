@@ -201,3 +201,20 @@ def view_related_link(obj, field_name, reverse_field=None):
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
     return view_link(url, q.count())
+
+def dereference_value(obj, name, as_name=False):
+    """
+    Given a Django model instance and an underscore-separated name,
+    looks up the associated value.
+    """
+    parts = name.split('__')
+    cursor = obj
+    for part in parts:
+        cursor = getattr(cursor, part, None)
+        if callable(cursor):
+            cursor = cursor()
+    if cursor == obj:
+        return
+    if as_name:
+        return name
+    return cursor
