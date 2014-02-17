@@ -161,12 +161,13 @@ def absolutize_all_urls(
         text = text.replace(old_url, new_url)
     return text
 
-def view_link(url, obj=None, target='_blank', prefix=''):
+def view_link(url, obj=None, target='_blank', prefix='', template=''):
     """
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
     """
     class_str = 'button'
+    count = 0
     if isinstance(url, models.Model):
         obj = url
         view_str = str(obj)
@@ -174,14 +175,19 @@ def view_link(url, obj=None, target='_blank', prefix=''):
         url = get_admin_change_url(obj)
     elif isinstance(obj, (int, float)):
         view_str = 'View %s' % (obj,)
+        count = obj
     elif obj:
         view_str = prefix + str(obj)
     else:
         view_str = 'View'
+        
+    if template:
+        view_str = template.format(count=count)
+        
     return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
         .format(url=url, view=view_str, tgt=target, class_str=class_str)
 
-def view_related_link(obj, field_name, reverse_field=None, extra=''):
+def view_related_link(obj, field_name, reverse_field=None, extra='', template=''):
     """
     Returns the HTML for rendering a link to a related model's
     admin changelist page. 
@@ -206,7 +212,7 @@ def view_related_link(obj, field_name, reverse_field=None, extra=''):
             extra = '&'+extra
         url = url + extra
     
-    return view_link(url, q.count())
+    return view_link(url, q.count(), template=template)
 
 def dereference_value(obj, name, as_name=False):
     """
