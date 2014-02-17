@@ -181,7 +181,7 @@ def view_link(url, obj=None, target='_blank', prefix=''):
     return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
         .format(url=url, view=view_str, tgt=target, class_str=class_str)
 
-def view_related_link(obj, field_name, reverse_field=None):
+def view_related_link(obj, field_name, reverse_field=None, extra=''):
     """
     Returns the HTML for rendering a link to a related model's
     admin changelist page. 
@@ -200,6 +200,12 @@ def view_related_link(obj, field_name, reverse_field=None):
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
+    
+    if extra:
+        if not extra.startswith('&'):
+            extra = '&'+extra
+        url = url + extra
+    
     return view_link(url, q.count())
 
 def dereference_value(obj, name, as_name=False):
