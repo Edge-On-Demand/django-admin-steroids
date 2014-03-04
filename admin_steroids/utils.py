@@ -161,7 +161,7 @@ def absolutize_all_urls(
         text = text.replace(old_url, new_url)
     return text
 
-def view_link(url, obj=None, target='_blank', prefix='', template=''):
+def view_link(url, obj=None, target='_blank', prefix='', template='', view_str=''):
     """
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
@@ -170,22 +170,22 @@ def view_link(url, obj=None, target='_blank', prefix='', template=''):
     count = 0
     if isinstance(url, models.Model):
         obj = url
-        view_str = str(obj)
-        class_str = ''
+        view_str = view_str or str(obj)
+        class_str = 'button'
         url = get_admin_change_url(obj)
     elif isinstance(obj, (int, float)):
-        view_str = 'View %s' % (obj,)
+        view_str = view_str or ('View %s' % (obj,))
         count = obj
     elif obj:
-        view_str = prefix + str(obj)
+        view_str = view_str or (prefix + str(obj))
     else:
-        view_str = 'View'
+        view_str = view_str or 'View'
         
     if template:
         view_str = template.format(count=count)
         
     return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
-        .format(url=url, view=view_str, tgt=target, class_str=class_str)
+        .format(url=url, view=view_str.replace(' ', '&nbsp;'), tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None, extra='', template=''):
     """
@@ -202,7 +202,10 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
             _.name for _ in model._meta.fields
             if _.rel and _.rel.to == type(obj)
         ]
-        assert len(reverse_fields) == 1, 'Ambiguous reverse_field.'
+#        print 'related model:',model
+#        print 'fields:',[_.name for _ in model._meta.fields]
+#        print 'reverse_fields:',reverse_fields
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field: %s' % (reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
