@@ -26,7 +26,8 @@ class ApproxCountQuerySet(QuerySet):
     def count(self):
         # Code from django/db/models/query.py
 
-        if self._result_cache is not None and not self._iter:
+        #if self._result_cache is not None and not self._iter:# ._iter removed in Django 1.6? 
+        if self._result_cache is not None:
             return len(self._result_cache)
 
         db_backend_name = connections[self.db].client.executable_name.lower()
