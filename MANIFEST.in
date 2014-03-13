@@ -1,2 +1,2 @@
-include admin_steroids/static/*
-include admin_steroids/templates/*
+recursive-include admin_steroids/static *
+recursive-include admin_steroids/templates *
