@@ -165,6 +165,8 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     """
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
+    
+    Meant to be applied to ForeignKey fields on the given object.
     """
     class_str = 'button'
     count = 0
@@ -190,7 +192,10 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
 def view_related_link(obj, field_name, reverse_field=None, extra='', template=''):
     """
     Returns the HTML for rendering a link to a related model's
-    admin changelist page. 
+    admin changelist page.
+    
+    Meant to be applied to ForeignKey fields on a related object where field_name
+    is the related_name associated with the ForiegnKey pointing to the given object.
     """
     related = getattr(obj, field_name)
     model = related.model

@@ -123,3 +123,51 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
             except self.rel.to.DoesNotExist:
                 str_values += [u'???']
         return u', '.join(str_values)
+
+class PlainTextWidget(forms.Widget):
+    """
+    Renders the value as plain text.
+    """
+    def render(self, _name, value, attrs=None):
+        value = value or ''
+        return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
+
+class PreTextWidget(forms.Widget):
+    """
+    Renders the value as plain text formatted with the "pre" style.
+    """
+    def render(self, _name, value, attrs=None):
+        value = value or ''
+        return mark_safe('<div style="padding-top:3px; white-space:pre;">'+value+'</div>')
+
+class NBSPTextWidget(forms.Widget):
+    """
+    Renders the value as plain text with all spaces replaced by "&nbsp;".
+    """
+    def render(self, _name, value, attrs=None):
+        value = value or ''
+        value = value.replace(' ', '&nbsp;').replace('\n', '<br/>')
+        return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
+
+class BRTextWidget(forms.Widget):
+    """
+    Renders the value as plain text with all newlines replaced by "<br/>".
+    """
+    def render(self, _name, value, attrs=None):
+        value = value or ''
+        value = value.replace('\n', '<br/>')
+        _attrs = self.attrs.copy()
+        _attrs.update(attrs or {})
+        style = _attrs.get('style', '')
+        return mark_safe('<div style="'+style+'">'+value+'</div>')
+
+class ReadOnlyText(forms.TextInput):
+    """
+    Renders the value as plain text.
+    """
+    input_type = 'text'
+
+    def render(self, name, value, attrs=None):
+        if value is None: 
+            value = ''
+        return value
