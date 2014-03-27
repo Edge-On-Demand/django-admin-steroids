@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
@@ -238,3 +239,29 @@ def dereference_value(obj, name, as_name=False):
     if as_name:
         return name
     return cursor
+
+class DictCursor(object):
+    def __init__(self, database_name='default'):
+        from django.db import connections
+        self.cursor = connections[database_name].cursor()
+        self._results = None
+    def execute(self, *args, **kwargs):
+        self.cursor.execute(*args, **kwargs)
+        self.desc = self.cursor.description
+    @property
+    def field_order(self):
+        return [_[0] for _ in self.desc]
+    def __getitem__(self, i):
+        lst = []
+        j = 0
+        for r in self:
+            j += 1
+            if j > i:
+                break
+            lst.append(r)
+        return lst
+    def __iter__(self):
+        desc = self.cursor.description
+        for row in self.cursor.fetchall():
+            yield dict(zip([col[0] for col in desc], row))
+            

@@ -183,6 +183,9 @@ class CSVModelAdminMixin(object):
     # not in an admin request.
     csv_record_limit = 1000
     
+    # If true, all fields from the queryset will be added to the results.
+    csv_headers_all = False
+    
     extra_csv_fields = ()
     
     def get_actions(self, request):
@@ -195,11 +198,18 @@ class CSVModelAdminMixin(object):
     def get_extra_csv_fields(self, request):
         return self.extra_csv_fields
     
+    def get_csv_queryset(self, request, qs):
+        return qs
+    
     def csv_export(self, request, qs=None):
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename=%s.csv' \
             % slugify(self.model.__name__)
-        raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
+        
+        if self.csv_headers_all:
+            raw_headers = []
+        else:
+            raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
         
         def get_attr(obj, name, as_name=False):
             """
@@ -224,10 +234,19 @@ class CSVModelAdminMixin(object):
         
         # Write records.
         first = True
+        qs = self.get_csv_queryset(request, qs)
         for r in qs[:self.csv_record_limit]:
             
             if first:
                 first = False
+                if not raw_headers:
+                    if self.csv_headers_all and isinstance(r, dict):
+                        if isinstance(qs, utils.DictCursor):
+                            raw_headers = qs.field_order
+                        else:
+                            raw_headers = r.keys()
+                    else:
+                        raise Exception, 'No headers specified.'
                 for name in raw_headers:
                     if callable(name):
                         # This is likely a Formatter instance.
@@ -266,6 +285,10 @@ class CSVModelAdminMixin(object):
             #print 'fieldnames:',fieldnames
             data = {}
             for name in raw_headers:
+                if isinstance(r, dict) and name in r:
+                    data[name] = r[name]
+                    continue
+                
                 if callable(name):
                     # This is likely a Formatter instance.
                     name_key = name.name
