@@ -165,7 +165,8 @@ class ReadonlyModelAdmin(BaseModelAdmin):
     
     def get_actions(self, request):
         actions = super(ReadonlyModelAdmin, self).get_actions(request)
-        del actions['delete_selected']
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
         return actions
 
     def get_readonly_fields(self, request, obj=None):
@@ -314,7 +315,7 @@ class CSVModelAdminMixin(object):
             writer.writerow(data)
         return response
     csv_export.short_description = \
-        'Export selected %(verbose_name_plural)s as CSV'
+        'Export selected %(verbose_name_plural)s as a CSV file'
 
 class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
     
