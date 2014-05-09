@@ -80,7 +80,13 @@
                                     new_parts = existing_matches[1] + ',' + new_parts;
                                 }
                                 var remove_pat = new RegExp("&?"+lookup_kwarg+"=[^&]+");
-                                var new_url = window.location.href.replace(remove_pat, '') + '&' + lookup_kwarg + '=' + new_parts;
+                                var new_url = window.location.href.replace(remove_pat, '')
+                                if(new_url.indexOf('?') >= 0){
+                                    new_url = new_url + '&';
+                                }else{
+                                    new_url = new_url + '?';
+                                }
+                                new_url = new_url + lookup_kwarg + '=' + new_parts;
                                 window.location.href = new_url;
                                 return false;
                             });
