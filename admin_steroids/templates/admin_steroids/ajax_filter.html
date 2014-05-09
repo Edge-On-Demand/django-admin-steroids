@@ -21,12 +21,28 @@
         $('#{{ spec.uuid }} .das-search').keyup(function(){
             var el = $(this);
             var parent = $("#{{ spec.uuid }}");
+            
+            // Don't bother searching for keypresses that haven't changed
+            // the search string.
+            var last_val = el.data('last-val');
+            if(last_val == el.val()){
+                return;
+            }
+            el.data('last-val', el.val());
+            
             if(timer){
                 clearTimeout(timer);
             }
+            
             timer = setTimeout(function(){
                 el.attr('disabled', 'disabled');
-                $('<li/>').addClass('status').text('Searching...').appendTo(parent);
+
+                $("li:not(:first-child)", parent).remove();
+                
+                var progress_message = $('<li/>').addClass('status').text('Searching...').appendTo(parent);
+                var progress = setInterval(function(){
+                    progress_message.append('.');
+                }, 1000);
                 
                 $.ajax({
                     url: el.attr('ajax-url'),
@@ -36,9 +52,11 @@
                     success: function(data, textStatus, jqXHR){
                         el.removeAttr('disabled');
                         $("li:not(:first-child)", parent).remove();
+                        clearInterval(progress);
                         if(data.length){
                             $.each(data, function(i){
                                 var li = $('<li/>')
+                                    .css('display', 'none')
                                     .appendTo(parent);
                                 var label = $('<label />').appendTo(li);
                                 $('<input type="checkbox" />')
@@ -49,6 +67,7 @@
                                     .appendTo(label);
                             });
                             var li = $('<li/>')
+                                .css('display', 'none')
                                 .appendTo(parent);
                             $('<input type="submit" value="update results" />').appendTo(li).click(function(){
                                 var new_parts = $('input:checkbox:checked', parent).map(function(){
@@ -65,6 +84,7 @@
                                 window.location.href = new_url;
                                 return false;
                             });
+                            $('li', parent).fadeIn();
                         }else{
                             $('<li/>').addClass('status').text('No results').appendTo(parent);
                         }
@@ -73,6 +93,7 @@
                     error: function(jqXHR, textStatus, errorThrown){
                         // Something bad happened.
                         el.removeAttr('disabled');
+                        clearInterval(progress);
                         var parent = $("#{{ spec.uuid }}");
                         $("li:not(:first-child)", parent).remove();
                         $('<li/>')

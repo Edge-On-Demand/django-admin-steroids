@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.admin import FieldListFilter
 from django.core.urlresolvers import reverse
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -118,6 +119,7 @@ class AjaxFieldFilter(FieldListFilter):
     #TODO:specify one-only or multiple
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.field_name = field.name
+        self.field = field
         
         self.lookup_kwarg = '%s__in' % field_path
         self.lookup_val = [_ for _ in request.GET.get(self.lookup_kwarg, '').split(',') if _.strip()]
@@ -176,6 +178,12 @@ class AjaxFieldFilter(FieldListFilter):
                     new_params={},
                     remove=[self.lookup_kwarg],
                 )
+            
+            # Lookup the "pretty" display value for IDs of related models.
+            if isinstance(self.field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
+                rel_model = self.field.rel.to
+                #TODO:handle non-numeric IDs?
+                value = str(rel_model.objects.get(id=int(value)))
             
             yield {
                 'selected': True,
