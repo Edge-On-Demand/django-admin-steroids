@@ -160,6 +160,7 @@ class AjaxFieldFilter(FieldListFilter):
             ),
             'display': _('Any'),
             'remove_icon': False,
+            'alt': 'Remove All',
         }
         for value in self.values:
             lst_without = list(self.lookup_val)
@@ -181,4 +182,5 @@ class AjaxFieldFilter(FieldListFilter):
                 'query_string': url,
                 'display': value,
                 'remove_icon': True,
+                'alt': 'Remove',
             }

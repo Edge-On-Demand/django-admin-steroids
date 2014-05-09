@@ -5,9 +5,10 @@
 </ul>
 <ul class="das-ajaxlistfilter-remove">
 {% for choice in choices %}
-    <li{% if choice.selected %} class="selected"{% endif %}>{% if choice.query_string %}
-        <a href="{{ choice.query_string|iriencode }}" class="inline-deletelink">{{ choice.display }}{% if choice.remove_icon %}
-            <span class="inline-deletelink-icon"></span>{% endif %}</a>
+    <li{% if choice.selected %} class="selected"{% endif %}>
+    {% if choice.query_string %}
+        <a href="{{ choice.query_string|iriencode }}" class="inline-deletelink" alt="{{ choice.alt }}" title="{{ choice.alt }}">{{ choice.display }}{% if choice.remove_icon %}
+            <span class="inline-deletelink-icon" alt="{{ choice.alt }}" title="{{ choice.alt }}"></span>{% endif %}</a>
     {% else %}
         {{ choice.display }}
     {% endif %}</li>
@@ -19,17 +20,21 @@
         var timer;
         $('#{{ spec.uuid }} .das-search').keyup(function(){
             var el = $(this);
+            var parent = $("#{{ spec.uuid }}");
             if(timer){
                 clearTimeout(timer);
             }
             timer = setTimeout(function(){
+                el.attr('disabled', 'disabled');
+                $('<li/>').addClass('status').text('Searching...').appendTo(parent);
+                
                 $.ajax({
                     url: el.attr('ajax-url'),
                     data: {q: el.val()},
                     type: 'GET',
                     dataType: 'json',
                     success: function(data, textStatus, jqXHR){
-                        var parent = $("#{{ spec.uuid }}");
+                        el.removeAttr('disabled');
                         $("li:not(:first-child)", parent).remove();
                         if(data.length){
                             $.each(data, function(i){
@@ -45,7 +50,7 @@
                             });
                             var li = $('<li/>')
                                 .appendTo(parent);
-                            $('<input type="submit" value="submit" />').appendTo(li).click(function(){
+                            $('<input type="submit" value="update results" />').appendTo(li).click(function(){
                                 var new_parts = $('input:checkbox:checked', parent).map(function(){
                                     return $(this).val();
                                 }).get().join(',');
@@ -61,22 +66,23 @@
                                 return false;
                             });
                         }else{
-                            $('<li/>').text('No results').appendTo(parent);
+                            $('<li/>').addClass('status').text('No results').appendTo(parent);
                         }
+                        el.focus();
                     },
                     error: function(jqXHR, textStatus, errorThrown){
-                    	var parent = $("#{{ spec.uuid }}");
+                        // Something bad happened.
+                        el.removeAttr('disabled');
+                        var parent = $("#{{ spec.uuid }}");
                         $("li:not(:first-child)", parent).remove();
-                        $('<li/>').text('An error occurred. Please try again later.').appendTo(parent);
-                        /*/something bad happened
-                        console.log('error')
-                        console.log(jqXHR)
-                        console.log(textStatus)
-                        console.log(errorThrown)
-                        */
+                        $('<li/>')
+                            .addClass('status')
+                            .text('An error occurred. Please try again later.')
+                            .appendTo(parent);
+                        el.focus();
                     }
                 });
-            }, 250);
+            }, 500);
         });
     });
 })(jQuery);

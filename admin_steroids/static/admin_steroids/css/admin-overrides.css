@@ -2,8 +2,8 @@ a.button{
     color: #333;
 }
 
-.das-ajaxlistfilter-remove .inline-deletelink .inline-deletelink-icon{
-	display: inline-block;
+#content #changelist-filter .das-ajaxlistfilter-remove .inline-deletelink .inline-deletelink-icon{
+    display: inline-block;
     background: transparent url(../../admin/img/inline-delete.png) no-repeat;
     width: 15px;
     height: 15px;
@@ -12,15 +12,26 @@ a.button{
     vertical-align: text-bottom;
 }
 
-.das-ajaxlistfilter-remove .inline-deletelink:hover .inline-deletelink-icon{
+#content #changelist-filter .das-ajaxlistfilter-remove .inline-deletelink:hover .inline-deletelink-icon{
     background-position: -15px 0;
     cursor: pointer;
 }
 
-.das-ajaxlistfilter-search input[type=checkbox]{
+#content #changelist-filter .das-ajaxlistfilter-search input[type=checkbox]{
     margin-right: 5px;
 }
 
-#changelist-filter ul.das-ajaxlistfilter-remove{
+#content #changelist-filter .das-ajaxlistfilter-search .status{
+    color: #888;
+}
+
+#content #changelist-filter ul.das-ajaxlistfilter-remove{
     margin-bottom: 15px;
+}
+
+/* Make the right-hand filter list panel a little easier to see. */
+#content #changelist-filter {
+    -webkit-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
+    box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
 }
