@@ -1,0 +1,83 @@
+{% load i18n staticfiles %}
+<h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+<ul id="{{ spec.uuid }}" class="das-ajaxlistfilter-search">
+    <li><input class="das-search" type="text" field-name="{{ spec.field_name }}" url-kwarg="{{ spec.lookup_kwarg }}" ajax-url="{{ spec.ajax_url }}" placeholder="{{ title }}" /></li>
+</ul>
+<ul class="das-ajaxlistfilter-remove">
+{% for choice in choices %}
+    <li{% if choice.selected %} class="selected"{% endif %}>{% if choice.query_string %}
+        <a href="{{ choice.query_string|iriencode }}" class="inline-deletelink">{{ choice.display }}{% if choice.remove_icon %}
+            <span class="inline-deletelink-icon"></span>{% endif %}</a>
+    {% else %}
+        {{ choice.display }}
+    {% endif %}</li>
+{% endfor %}
+</ul>
+<script type="text/javascript">
+(function($){
+    $(document).ready(function(){
+        var timer;
+        $('#{{ spec.uuid }} .das-search').keyup(function(){
+            var el = $(this);
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(function(){
+                $.ajax({
+                    url: el.attr('ajax-url'),
+                    data: {q: el.val()},
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data, textStatus, jqXHR){
+                        var parent = $("#{{ spec.uuid }}");
+                        $("li:not(:first-child)", parent).remove();
+                        if(data.length){
+                            $.each(data, function(i){
+                                var li = $('<li/>')
+                                    .appendTo(parent);
+                                var label = $('<label />').appendTo(li);
+                                $('<input type="checkbox" />')
+                                    .attr('value', data[i].key)
+                                    .appendTo(label);
+                                $('<span />')
+                                    .text(data[i].value)
+                                    .appendTo(label);
+                            });
+                            var li = $('<li/>')
+                                .appendTo(parent);
+                            $('<input type="submit" value="submit" />').appendTo(li).click(function(){
+                                var new_parts = $('input:checkbox:checked', parent).map(function(){
+                                    return $(this).val();
+                                }).get().join(',');
+                                var lookup_kwarg = el.attr('url-kwarg');
+                                var retrieve_pat = new RegExp("&?"+lookup_kwarg+"=([^&]+)");
+                                var existing_matches = retrieve_pat.exec(window.location.href);
+                                if(existing_matches){
+                                    new_parts = existing_matches[1] + ',' + new_parts;
+                                }
+                                var remove_pat = new RegExp("&?"+lookup_kwarg+"=[^&]+");
+                                var new_url = window.location.href.replace(remove_pat, '') + '&' + lookup_kwarg + '=' + new_parts;
+                                window.location.href = new_url;
+                                return false;
+                            });
+                        }else{
+                            $('<li/>').text('No results').appendTo(parent);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                    	var parent = $("#{{ spec.uuid }}");
+                        $("li:not(:first-child)", parent).remove();
+                        $('<li/>').text('An error occurred. Please try again later.').appendTo(parent);
+                        /*/something bad happened
+                        console.log('error')
+                        console.log(jqXHR)
+                        console.log(textStatus)
+                        console.log(errorThrown)
+                        */
+                    }
+                });
+            }, 250);
+        });
+    });
+})(jQuery);
+</script>

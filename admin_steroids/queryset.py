@@ -1,4 +1,6 @@
+import hashlib
 
+from django.core.cache import cache
 from django.db import connections
 from django.db.models.query import QuerySet
 
@@ -65,4 +67,21 @@ class ApproxCountQuerySet(QuerySet):
                 raise NotImplementedError
         else:
             return self.query.get_count(using=self.db)
-        
+
+class CachedCountQuerySet(ApproxCountQuerySet):
+    """
+    Wraps a caching layer over ApproxCountQuerySet, since it only gives global
+    table counts and reverts to a direct query if any filters are applied.
+    """
+    
+    cache_seconds = 3600 # 1-hour
+    
+    def count(self):
+        sql = str(self.query)
+        cache_key = hashlib.sha512(sql).hexdigest()
+        count = cache.get(cache_key)
+        if count is None:
+            count = super(CachedCountQuerySet, self).count()
+            cache.set(cache_key, count, self.cache_seconds)
+        return count
+    

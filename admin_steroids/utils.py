@@ -6,6 +6,15 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 
+def obj_to_hash(o):
+    """
+    Returns the 128-character SHA-512 hash of the given object's Pickle
+    representation.
+    """
+    import hashlib
+    import cPickle as pickle
+    return hashlib.sha512(pickle.dumps(o)).hexdigest()
+
 def get_admin_change_url(obj):
     if obj is None:
         return

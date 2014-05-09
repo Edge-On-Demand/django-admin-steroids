@@ -1,3 +1,26 @@
 a.button{
     color: #333;
 }
+
+.das-ajaxlistfilter-remove .inline-deletelink .inline-deletelink-icon{
+	display: inline-block;
+    background: transparent url(../../admin/img/inline-delete.png) no-repeat;
+    width: 15px;
+    height: 15px;
+    border: 0px none;
+    outline: 0; /* Remove dotted border around link */
+    vertical-align: text-bottom;
+}
+
+.das-ajaxlistfilter-remove .inline-deletelink:hover .inline-deletelink-icon{
+    background-position: -15px 0;
+    cursor: pointer;
+}
+
+.das-ajaxlistfilter-search input[type=checkbox]{
+    margin-right: 5px;
+}
+
+#changelist-filter ul.das-ajaxlistfilter-remove{
+    margin-bottom: 15px;
+}
