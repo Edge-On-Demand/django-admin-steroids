@@ -87,7 +87,7 @@ class CachedFieldFilter(FieldListFilter):
             'query_string': cl.get_query_string({
                     self.lookup_kwarg2: '',
                 }, [self.lookup_kwarg]),
-            'display': _('Any'),
+            'display': _('All'),
         }
         
         for value in values:
@@ -160,7 +160,7 @@ class AjaxFieldFilter(FieldListFilter):
                 new_params={},
                 remove=[self.lookup_kwarg],
             ),
-            'display': _('Any'),
+            'display': _('All'),
             'remove_icon': False,
             'alt': 'Remove All',
         }
