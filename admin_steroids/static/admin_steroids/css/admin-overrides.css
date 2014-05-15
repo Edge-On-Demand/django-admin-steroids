@@ -2,6 +2,13 @@ a.button{
     color: #333;
 }
 
+#content #changelist-filter .das-search{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    boz-sizing: border-box;
+    width: 100%;
+}
+
 #content #changelist-filter .das-ajaxlistfilter-remove .inline-deletelink .inline-deletelink-icon{
     display: inline-block;
     background: transparent url(../../admin/img/inline-delete.png) no-repeat;

@@ -10,11 +10,11 @@ import utils
 
 class BaseModelAdmin(admin.ModelAdmin):
     
-    # Cleanup the breadcrumbs on the change page.
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['app_label'] = self.model._meta.app_label.title()
-        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
+#    # Cleanup the breadcrumbs on the change page.
+#    def change_view(self, request, object_id, form_url='', extra_context=None):
+#        extra_context = extra_context or {}
+#        extra_context['app_label'] = self.model._meta.app_label.title()
+#        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
 
     # Cleanup the breadcrumbs on the changelist page.
     def changelist_view(self, request, extra_context=None):
