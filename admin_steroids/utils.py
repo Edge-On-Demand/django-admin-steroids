@@ -250,6 +250,10 @@ def dereference_value(obj, name, as_name=False):
     return cursor
 
 class DictCursor(object):
+    """
+    A database cursor that returns records as dictionaries,
+    using the field names as keys.
+    """
     def __init__(self, database_name='default'):
         from django.db import connections
         self.cursor = connections[database_name].cursor()
@@ -269,6 +273,8 @@ class DictCursor(object):
                 break
             lst.append(r)
         return lst
+    def fetchall(self):
+        return list(self)
     def __iter__(self):
         desc = self.cursor.description
         for row in self.cursor.fetchall():

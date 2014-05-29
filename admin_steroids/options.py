@@ -1,5 +1,5 @@
 import csv
-        
+
 from django.contrib import admin
 from django.contrib.admin.sites import site
 from django.http import HttpResponse
