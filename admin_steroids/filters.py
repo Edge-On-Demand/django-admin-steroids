@@ -2,13 +2,15 @@ import uuid
 
 from django.conf import settings
 from django.contrib.admin import FieldListFilter
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_unicode, smart_text, force_text
+from django.contrib.admin.options import IncorrectLookupParameters
 
 class NullListFilter(FieldListFilter):
     
@@ -44,6 +46,68 @@ class NullListFilter(FieldListFilter):
             }
             yield d
 
+class NotInListFilter(FieldListFilter):
+    """
+    Allows the use of exclude(field=value) via the URL.
+    The inverse of Django's default "__in=" URL syntax.
+    """
+    
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.field_path = field_path
+        self.lookup_kwarg = '%s__notin' % field_path
+        self.lookup_vals = None
+        try:
+            self.lookup_vals = request.GET.get(self.lookup_kwarg, None)
+            if self.lookup_vals is not None:
+                self.lookup_vals = self.lookup_vals.split(',')
+        except:
+            pass
+        
+        self.lookup_choices = field.get_choices(include_blank=False)
+        super(NotInListFilter, self).__init__(field,
+            request, params, model, model_admin, field_path)
+        
+        self.title = getattr(field, 'verbose_name', field_path) + ' is not'
+
+    def expected_parameters(self):
+        return [self.lookup_kwarg]
+    
+    def queryset(self, request, queryset):
+        try:
+            # Convert the __notin to a Django ORM .exclude(...)
+            if self.lookup_kwarg in self.used_parameters and self.lookup_vals:
+                queryset = queryset.exclude(**{self.field_path+'__in': self.lookup_vals})
+            return queryset
+        except ValidationError as e:
+            raise IncorrectLookupParameters(e)
+
+    def choices(self, cl):
+        from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE
+        yield {
+            'selected': self.lookup_vals is None,# and not self.lookup_val_isnull,
+            'query_string': cl.get_query_string({},
+                [self.lookup_kwarg]),
+            'display': _('None'),
+        }
+        for pk_val, val in self.lookup_choices:
+            yield {
+                'selected': (smart_text(pk_val) in self.lookup_vals) if self.lookup_vals else False,
+                'query_string': cl.get_query_string({
+                    self.lookup_kwarg: pk_val,
+                }, []),
+                'display': val,
+            }
+#        if (isinstance(self.field, models.related.RelatedObject)
+#                and self.field.field.null or hasattr(self.field, 'rel')
+#                    and self.field.null):
+#            yield {
+#                'selected': bool(self.lookup_val_isnull),
+#                'query_string': cl.get_query_string({
+#                    self.lookup_kwarg_isnull: 'True',
+#                }, [self.lookup_kwarg]),
+#                'display': EMPTY_CHANGELIST_VALUE,
+#            }
+
 class CachedFieldFilter(FieldListFilter):
     """
     Caches the choices query from the model, ignoring any other filtering
@@ -65,7 +129,7 @@ class CachedFieldFilter(FieldListFilter):
     
     def expected_parameters(self):
         return [self.lookup_kwarg, self.lookup_kwarg2]
-    
+        
     def choices(self, cl):
         # Query cached choices.
         # Note, this purposefully gets a distinct set from the global
