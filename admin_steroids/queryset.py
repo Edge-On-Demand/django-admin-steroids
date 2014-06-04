@@ -3,6 +3,7 @@ import hashlib
 from django.core.cache import cache
 from django.db import connections
 from django.db.models.query import QuerySet
+from django.db.models.sql import EmptyResultSet
 
 class ApproxCountQuerySet(QuerySet):
     """
@@ -77,11 +78,14 @@ class CachedCountQuerySet(ApproxCountQuerySet):
     cache_seconds = 3600 # 1-hour
     
     def count(self):
-        sql = str(self.query)
-        cache_key = hashlib.sha512(sql).hexdigest()
-        count = cache.get(cache_key)
-        if count is None:
+        try:
+            sql = str(self.query)
+            cache_key = hashlib.sha512(sql).hexdigest()
+            count = cache.get(cache_key)
+            if count is None:
+                count = super(CachedCountQuerySet, self).count()
+                cache.set(cache_key, count, self.cache_seconds)
+        except EmptyResultSet:
             count = super(CachedCountQuerySet, self).count()
-            cache.set(cache_key, count, self.cache_seconds)
         return count
     
