@@ -217,16 +217,23 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
             _.name for _ in model._meta.fields
             if _.rel and _.rel.to == type(obj) and _.rel.related_name == field_name
         ]
+#        print 'field_name:',field_name
 #        for _ in model._meta.fields:
 #            if 'foreignkey' in str(_).lower():
 #                print _.rel.related_name
+        
+        if not reverse_fields:
+            reverse_fields = [
+                _.name for _ in model._meta.fields
+                if _.rel and _.rel.to == type(obj)
+            ]
         
 #        print 'related model:',model
 #        print 'fields:',[_.name for _ in model._meta.fields]
 #        print 'obj:',obj
 #        print 'field_name:',field_name
 #        print 'reverse_fields:',reverse_fields
-        assert len(reverse_fields) == 1, 'Ambiguous reverse_field: %s' % (reverse_fields,)
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
