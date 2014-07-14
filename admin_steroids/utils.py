@@ -171,19 +171,18 @@ def absolutize_all_urls(
         text = text.replace(old_url, new_url)
     return text
 
-def view_link(url, obj=None, target='_blank', prefix='', template='', view_str=''):
+def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='', class_str=''):
     """
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
     
     Meant to be applied to ForeignKey fields on the given object.
     """
-    class_str = 'button'
+    class_str = class_str or 'button'
     count = 0
     if isinstance(url, models.Model):
         obj = url
         view_str = view_str or str(obj)
-        class_str = 'button'
         url = get_admin_change_url(obj)
     elif isinstance(obj, (int, float)):
         view_str = view_str or ('View %s' % (obj,))
