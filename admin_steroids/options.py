@@ -189,6 +189,8 @@ class CSVModelAdminMixin(object):
     
     extra_csv_fields = ()
     
+    csv_header_names = {}
+    
     def get_actions(self, request):
         from inspect import isclass
         if hasattr(self, 'actions') and isinstance(self.actions, list):
@@ -198,6 +200,9 @@ class CSVModelAdminMixin(object):
     
     def get_extra_csv_fields(self, request):
         return self.extra_csv_fields
+    
+    def get_csv_header_names(self, request):
+        return self.csv_header_names
     
     def get_csv_queryset(self, request, qs):
         return qs
@@ -211,7 +216,7 @@ class CSVModelAdminMixin(object):
             raw_headers = []
         else:
             raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
-        
+            
         def get_attr(obj, name, as_name=False):
             """
             Dereferences "__" delimited variable names.
@@ -232,6 +237,7 @@ class CSVModelAdminMixin(object):
         # Write header.
         header_data = {}
         fieldnames = []
+        header_names = self.get_csv_header_names(request)
         
         # Write records.
         first = True
@@ -249,7 +255,10 @@ class CSVModelAdminMixin(object):
                     else:
                         raise Exception, 'No headers specified.'
                 for name in raw_headers:
-                    if callable(name):
+                    if name in header_names:
+                        name_key = name
+                        header_data[name] = header_names.get(name_key)
+                    elif callable(name):
                         # This is likely a Formatter instance.
                         name_key = name.name
                         header_data[name_key] = name.short_description
@@ -297,6 +306,12 @@ class CSVModelAdminMixin(object):
                         data[name_key] = name(r, plaintext=True)
                     else:
                         data[name_key] = name(r)
+                elif isinstance(name, (tuple, list)) and len(name) == 2:
+                    name_key, name_key_verbose = name
+                    if hasattr(self, name_key):
+                        data[name_key] = getattr(self, name_key)
+                    else:
+                        data[name_key] = getattr(r, name_key)
                 elif isinstance(name, basestring) and hasattr(self, name):
                     # This is likely a ModelAdmin method name.
                     name_key = name
