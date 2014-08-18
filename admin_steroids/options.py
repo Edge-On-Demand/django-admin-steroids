@@ -172,6 +172,11 @@ class ReadonlyModelAdmin(BaseModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = list(self.readonly_fields)
         return readonly_fields + [f.name for f in self.model._meta.fields]
+
+def to_ascii(s):
+    if not isinstance(s, basestring):
+        return s
+    return s.encode('ascii', errors='replace')
     
 class CSVModelAdminMixin(object):
     """
@@ -303,29 +308,29 @@ class CSVModelAdminMixin(object):
                     # This is likely a Formatter instance.
                     name_key = name.name
                     if hasattr(name, 'plaintext'):
-                        data[name_key] = name(r, plaintext=True)
+                        data[name_key] = to_ascii(name(r, plaintext=True))
                     else:
-                        data[name_key] = name(r)
+                        data[name_key] = to_ascii(name(r))
                 elif isinstance(name, (tuple, list)) and len(name) == 2:
                     name_key, name_key_verbose = name
                     if hasattr(self, name_key):
-                        data[name_key] = getattr(self, name_key)
+                        data[name_key] = to_ascii(getattr(self, name_key))
                     else:
-                        data[name_key] = getattr(r, name_key)
+                        data[name_key] = to_ascii(getattr(r, name_key))
                 elif isinstance(name, basestring) and hasattr(self, name):
                     # This is likely a ModelAdmin method name.
                     name_key = name
-                    data[name_key] = getattr(self, name)(r)
+                    data[name_key] = to_ascii(getattr(self, name)(r))
                 elif isinstance(name, basestring) and hasattr(r, name):
                     name_key = name
-                    data[name_key] = getattr(r, name)
+                    data[name_key] = to_ascii(getattr(r, name))
                 else:
                     name_key = name
-                    data[name_key] = get_attr(r, name)
+                    data[name_key] = to_ascii(get_attr(r, name))
                     #raise Exception, 'Unknown field: %s' % (name,)
                     
                 if callable(data[name_key]):
-                    data[name_key] = data[name_key]()
+                    data[name_key] = to_ascii(data[name_key]())
             #print 'data:',data
             writer.writerow(data)
         return response
