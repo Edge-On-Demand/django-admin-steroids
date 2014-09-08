@@ -212,12 +212,14 @@ class CSVModelAdminMixin(object):
     def get_csv_queryset(self, request, qs):
         return qs
     
-    def csv_export(self, request, qs=None):
+    def csv_export(self, request, qs=None, raw_headers=None):
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename=%s.csv' \
             % slugify(self.model.__name__)
         
-        if self.csv_headers_all:
+        if raw_headers:
+            pass
+        elif self.csv_headers_all:
             raw_headers = []
         else:
             raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
@@ -300,10 +302,18 @@ class CSVModelAdminMixin(object):
             #print 'fieldnames:',fieldnames
             data = {}
             for name in raw_headers:
-                if isinstance(r, dict) and name in r:
-                    data[name] = r[name]
-                    continue
+                obj = None
+                if isinstance(r, dict):
+                    if name in r:
+                        data[name] = r[name]
+    #                    print 'skipping:',name
+                        continue
+#                    elif 'id' in r:
+#                        obj = self.model.objects.get(id=r['id'])
                 
+#                print 'model:',self.model
+#                print 'r:',r
+#                print 'name:',name,isinstance(name, basestring) and hasattr(r, name)
                 if callable(name):
                     # This is likely a Formatter instance.
                     name_key = name.name
@@ -331,6 +341,7 @@ class CSVModelAdminMixin(object):
                     
                 if callable(data[name_key]):
                     data[name_key] = to_ascii(data[name_key]())
+                    
             #print 'data:',data
             writer.writerow(data)
         return response

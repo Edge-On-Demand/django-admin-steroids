@@ -12,6 +12,7 @@ from django.db import models
 from django.db.models import Q
 
 import utils
+from models import get_modelsearcher
 
 class ModelFieldSearchView(TemplateView):
     """
@@ -66,9 +67,9 @@ class ModelFieldSearchView(TemplateView):
                 raise PermissionDenied
 
         cache_key = self.cache_key
-        response = cache.get(cache_key)
-        if response:#TODO:enable
-            return response
+#        response = cache.get(cache_key)
+#        if response:#TODO:enable
+#            return response
 
         model = self.model
         q = self.q
@@ -77,30 +78,73 @@ class ModelFieldSearchView(TemplateView):
         results = []
         if q:
             field = model._meta.get_field(field_name)
+#            print 'field:',field
             field_type = type(field)
-            if isinstance(field, (models.CharField, models.EmailField, models.SlugField, models.TextField, models.URLField)):
+            
+            cb = get_modelsearcher(
+                app_label=self.kwargs['app_name'],
+                model_name=self.kwargs['model_name'],
+                field_name=field_name,
+            )
+            if cb:
+                # Lookup field values using a custom callback if provided.
+                qs = cb(
+                    app_label=self.kwargs['app_name'],
+                    model_name=self.kwargs['model_name'],
+                    field_name=field_name,
+                    q=q,
+                ) or []
+                qs = qs[:n]
+                results = [
+                    dict(
+                        key=_.id if hasattr(_, 'id') else _,
+                        value=str(_),
+                        field_name=field_name)
+                    for _ in qs]
+            elif isinstance(field, (models.CharField, models.EmailField, models.SlugField, models.TextField, models.URLField)):
                 # Build query for a simple string-based field.
                 qs = model.objects.filter(**{field_name+'__icontains': q})\
                     .values_list(field_name, flat=True)\
                     .order_by(field_name)\
                     .distinct()
                 qs = qs[:n]
-                results = [dict(key=_, value=_) for _ in qs]
+                results = [dict(key=_, value=_, field_name=field_name) for _ in qs]
+#            elif isinstance(field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
+#                # Build query for a related model.
+#                search_fields = settings.DAS_AJAX_SEARCH_PATH_FIELDS.get(path)
+#                if search_fields:
+#                    qs_args = []
+#                    for search_field in search_fields:
+#                        qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
+#                    qs = model.objects.filter(reduce(operator.or_, qs_args))\
+#                        .values_list(field_name, flat=True)\
+#                        .order_by(field_name)\
+#                        .distinct()
+#                    qs = qs[:n]
+#                    print 'views.rel:',field.rel.to
+#                    print 'views.query:',qs.query
+#                    rel_model = field.rel.to
+#                    results = [
+#                        dict(key=_, value=str(rel_model.objects.get(id=_)))
+#                        for _ in qs
+#                    ]
+
             elif isinstance(field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
                 # Build query for a related model.
                 search_fields = settings.DAS_AJAX_SEARCH_PATH_FIELDS.get(path)
                 if search_fields:
                     qs_args = []
                     for search_field in search_fields:
-                        qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
-                    qs = model.objects.filter(reduce(operator.or_, qs_args))\
-                        .values_list(field_name, flat=True)\
-                        .order_by(field_name)\
-                        .distinct()
-                    qs = qs[:n]
+                        #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
+                        qs_args.append(Q(**{search_field+'__icontains': q}))
+#                    print 'qs_args:',qs_args
                     rel_model = field.rel.to
+#                    print 'rel_model:',rel_model
+                    qs = rel_model.objects.filter(reduce(operator.or_, qs_args))
+                    qs = qs[:n]
+#                    print 'views.query:',qs.query
                     results = [
-                        dict(key=_, value=str(rel_model.objects.get(id=_)))
+                        dict(key=_.id, value=str(_), field_name=field_name)
                         for _ in qs
                     ]
 
