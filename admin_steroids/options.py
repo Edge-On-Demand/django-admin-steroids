@@ -196,6 +196,8 @@ class CSVModelAdminMixin(object):
     
     csv_header_names = {}
     
+    csv_quoting = csv.QUOTE_MINIMAL
+    
     def get_actions(self, request):
         from inspect import isclass
         if hasattr(self, 'actions') and isinstance(self.actions, list):
@@ -297,7 +299,10 @@ class CSVModelAdminMixin(object):
                     header_data[name_key] = header_data[name_key].title()
                     fieldnames.append(name_key)
                 
-                writer = csv.DictWriter(response, fieldnames=fieldnames)
+                writer = csv.DictWriter(
+                    response,
+                    fieldnames=fieldnames,
+                    quoting=self.csv_quoting)
                 writer.writerow(header_data)
             #print 'fieldnames:',fieldnames
             data = {}
