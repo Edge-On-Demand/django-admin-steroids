@@ -170,8 +170,12 @@ class ReadonlyModelAdmin(BaseModelAdmin):
         return actions
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = list(self.readonly_fields)
-        return readonly_fields + [f.name for f in self.model._meta.fields]
+        readonly_fields = list(self.readonly_fields or [])
+        exclude = list(self.exclude or [])
+        for f in exclude:
+            if f in readonly_fields:
+                readonly_fields.remove(f)
+        return readonly_fields + [f.name for f in self.model._meta.fields if f.name not in exclude]
 
 def to_ascii(s):
     if not isinstance(s, basestring):
