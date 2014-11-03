@@ -226,9 +226,11 @@ class CSVModelAdminMixin(object):
         if raw_headers:
             pass
         elif self.csv_headers_all:
-            raw_headers = []
+            raw_headers = self.model._meta.get_all_field_names() \
+                + list(self.get_extra_csv_fields(request))
         else:
-            raw_headers = list(self.list_display) + list(self.get_extra_csv_fields(request))
+            raw_headers = list(self.list_display) \
+                + list(self.get_extra_csv_fields(request))
             
         def get_attr(obj, name, as_name=False):
             """
