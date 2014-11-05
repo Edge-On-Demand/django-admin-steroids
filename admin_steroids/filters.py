@@ -1,7 +1,7 @@
 import uuid
 
 from django.conf import settings
-from django.contrib.admin import FieldListFilter
+from django.contrib.admin import FieldListFilter, SimpleListFilter
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
@@ -256,3 +256,20 @@ class AjaxFieldFilter(FieldListFilter):
                 'remove_icon': True,
                 'alt': 'Remove',
             }
+
+class LogEntryAdminUserFilter(SimpleListFilter):
+    title = _('user')
+    parameter_name = 'user'
+
+    def lookups(self, request, model_admin):
+        from django.contrib.auth.models import User
+        from django.db.models import Q
+        qs = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True))
+        qs = qs.order_by('username')
+        return [(user.pk, _(str(user))) for user in qs]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(user__pk=self.value())
+
+        return queryset

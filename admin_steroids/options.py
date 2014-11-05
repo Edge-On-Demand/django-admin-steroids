@@ -4,9 +4,12 @@ from django.contrib import admin
 from django.contrib.admin.sites import site
 from django.http import HttpResponse
 from django.template.defaultfilters import slugify
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 import widgets as w
 import utils
+import filters
 
 class BaseModelAdmin(admin.ModelAdmin):
     
@@ -365,3 +368,40 @@ class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
         #TODO:is there a better way to do this? super() ignores the mixin's get_actions()...
         CSVModelAdminMixin.get_actions(self, request)
         return super(CSVModelAdmin, self).get_actions(request)
+
+#https://djangosnippets.org/snippets/2484/
+class LogEntryAdmin(ReadonlyModelAdmin):
+    list_display = (
+        'user',
+        'action_time',
+        'action',
+        'admin_url',
+    )
+    list_filter = (
+        filters.LogEntryAdminUserFilter,
+    )
+
+    def admin_url(self, obj=None):
+        from utils import get_admin_change_url
+        if not obj or not obj.id:
+            return ''
+        obj = obj.get_edited_object()
+        if hasattr(obj, 'get_admin_url'):
+            url = obj.get_admin_url()
+        else:
+            url = get_admin_change_url(obj)
+        return mark_safe(
+            '<a href="%s">%s</a>' % (url, url),
+        )
+
+    def action(self, obj):
+        return str(obj)
+        
+    @classmethod
+    def register(cls, admin_site=None):
+        from django.contrib import admin
+        admin_site = admin_site or admin.site
+        admin_site.register(admin.models.LogEntry, LogEntryAdmin)
+
+
+#admin.site.register(models.LogEntry, LogEntryAdmin)
