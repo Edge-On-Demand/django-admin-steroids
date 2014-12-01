@@ -33,5 +33,5 @@ class Command(BaseCommand):
             auth_password=settings.EMAIL_HOST_PASSWORD,
             #connection=None
         )
-        print 'Sent email to %s.' % (' ,'.join(recipient_list),)
+        print 'Sent email to %s.' % (', '.join(recipient_list),)
         
