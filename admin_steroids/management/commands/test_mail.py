@@ -22,7 +22,7 @@ class Command(BaseCommand):
         else:
             recipient_list = [email for _, email in settings.ADMINS]
             
-        print 'Attempting to send email to %s from %s...' % (' ,'.join(recipient_list), from_email)
+        print 'Attempting to send email to %s from %s...' % (', '.join(recipient_list), from_email)
         send_mail(
             subject=options['subject'],
             message=' '.join(args),

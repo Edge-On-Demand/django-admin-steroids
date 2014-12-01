@@ -40,6 +40,10 @@ class DevelopmentEmailBackend(EmailBackend):
             recipients = []
             if allow_any_on_domain:
                 for recip in email_message.recipients():
+                    # Don't redirect any of our BCC recipients.
+                    if recip in bcc_recipients:
+                        recipients.append(recip)
+                        continue
                     try:
                         domain = recip.split('@')[1].strip()
                         if domain == default_domain:
