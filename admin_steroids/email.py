@@ -53,6 +53,8 @@ class DevelopmentEmailBackend(EmailBackend):
                         pass
             if not recipients:
                  recipients = [default_redirect_to]
+                 if bcc_recipients:
+                     recipients.extend(bcc_recipients)
                 
             # Append hostname
             message = email_message.message().as_string()
