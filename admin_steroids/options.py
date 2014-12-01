@@ -401,7 +401,8 @@ class LogEntryAdmin(ReadonlyModelAdmin):
     def register(cls, admin_site=None):
         from django.contrib import admin
         admin_site = admin_site or admin.site
-        admin_site.register(admin.models.LogEntry, LogEntryAdmin)
+        if hasattr(admin, 'models'):
+            admin_site.register(admin.models.LogEntry, LogEntryAdmin)
 
 
 #admin.site.register(models.LogEntry, LogEntryAdmin)
