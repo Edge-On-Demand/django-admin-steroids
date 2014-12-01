@@ -23,7 +23,7 @@ class DevelopmentEmailBackend(EmailBackend):
         # Auto-bcc ourselves. This is useful when using some hosted email
         # services that don't include any "sent mail" folder by default.
         bcc_recipients = getattr(settings, 'EMAIL_BCC_RECIPIENTS', [])
-        if bcc_recipients and '@' in settings.EMAIL_HOST_USER:
+        if bcc_recipients:
             email_message.bcc.extend(bcc_recipients)
         
         if not email_message.recipients():
@@ -72,7 +72,7 @@ class BCCEmailBackend(EmailBackend):
         # Auto-bcc ourselves. This is useful when using some hosted email
         # services that don't include any "sent mail" folder by default.
         bcc_recipients = getattr(settings, 'EMAIL_BCC_RECIPIENTS', [])
-        if bcc_recipients and '@' in settings.EMAIL_HOST_USER:
+        if bcc_recipients:
             email_message.bcc.extend(bcc_recipients)
 
         super(BCCEmailBackend, self)._send(email_message)
