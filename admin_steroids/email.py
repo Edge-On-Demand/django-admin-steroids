@@ -19,6 +19,13 @@ class DevelopmentEmailBackend(EmailBackend):
         """
         A helper method that does the actual sending.
         """
+        
+        # Auto-bcc ourselves. This is useful when using some hosted email
+        # services that don't include any "sent mail" folder by default.
+        bcc_self = getattr(settings, 'EMAIL_BCC_SELF', False)
+        if bcc_self and '@' in settings.EMAIL_HOST_USER:
+            email_message.bcc.append(settings.EMAIL_HOST_USER)
+        
         if not email_message.recipients():
             return False
         try:
@@ -48,9 +55,10 @@ class DevelopmentEmailBackend(EmailBackend):
             if getattr(settings, 'DEV_EMAIL_APPEND_HOSTNAME', False):
                 message += '\n(Sent from %s)' % settings.BASE_URL
                 
-            self.connection.sendmail(email_message.from_email,
-                    recipients,
-                    message)
+            self.connection.sendmail(
+                from_addr=email_message.from_email,
+                to_addrs=recipients,
+                msg=message)
         except:
             if not self.fail_silently:
                 raise
