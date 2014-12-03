@@ -381,11 +381,18 @@ class LogEntryAdmin(ReadonlyModelAdmin):
         filters.LogEntryAdminUserFilter,
     )
 
+    def get_edited_object(self, obj):
+        "Returns the edited object represented by this log entry"
+        model_class = obj.content_type.model_class()
+        obj = model_class.objects.get(id=obj.object_id)
+        return obj
+
     def admin_url(self, obj=None):
         from utils import get_admin_change_url
         if not obj or not obj.id:
             return ''
-        obj = obj.get_edited_object()
+        #obj = obj.get_edited_object()#This doesn't support multiple databases.
+        obj = self.get_edited_object(obj)
         if hasattr(obj, 'get_admin_url'):
             url = obj.get_admin_url()
         else:
