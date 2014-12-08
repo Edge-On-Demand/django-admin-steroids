@@ -380,6 +380,10 @@ class LogEntryAdmin(ReadonlyModelAdmin):
     list_filter = (
         filters.LogEntryAdminUserFilter,
     )
+    
+    class Meta:
+        verbose_name = _('log entry')
+        verbose_name_plural = _('log entries')
 
     def get_edited_object(self, obj):
         "Returns the edited object represented by this log entry"
