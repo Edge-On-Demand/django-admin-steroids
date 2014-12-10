@@ -71,6 +71,7 @@ class Command(BaseCommand):
             # Otherwise, the password reset form will ignore it.
             if not user.has_usable_password():
                 user.set_password(str(uuid4()))
+                user.save()
                 
             form = password_reset_form(dict(email=email))
             assert form.is_valid(), 'Invalid email: %s' % email
