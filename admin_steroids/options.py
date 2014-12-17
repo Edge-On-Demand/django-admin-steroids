@@ -38,16 +38,25 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
     associated admin change page.
     """
     
+    raw_id_fields_new_tab = True
+    
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             type = db_field.rel.__class__.__name__
             if type == "ManyToOneRel" or type == "OneToOneRel":
-                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site)
+                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(
+                    db_field.rel,
+                    site,
+                    raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif type == "ManyToManyRel":
-                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site)
+                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(
+                    db_field.rel,
+                    site,
+                    raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
-        return super(BetterRawIdFieldsModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(BetterRawIdFieldsModelAdmin, self)\
+            .formfield_for_dbfield(db_field, **kwargs)
 
 ImproveRawIdFieldsForm = BetterRawIdFieldsModelAdmin
 
@@ -56,16 +65,26 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
     Displays all raw id fields in a tabular inline as a link going to that
     record's associated admin change page.
     """
+    
+    raw_id_fields_new_tab = True
+    
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             type = db_field.rel.__class__.__name__
             if type == "ManyToOneRel" or type == "OneToOneRel":
-                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site)
+                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(
+                    db_field.rel,
+                    site,
+                    raw_id_fields_new_tab=raw_id_fields_new_tab)
             elif type == "ManyToManyRel":
-                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site)
+                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(
+                    db_field.rel,
+                    site,
+                    raw_id_fields_new_tab=raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
-        return super(BetterRawIdFieldsTabularInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(BetterRawIdFieldsTabularInline, self)\
+            .formfield_for_dbfield(db_field, **kwargs)
 
 ImproveRawIdFieldsFormTabularInline = BetterRawIdFieldsTabularInline
 

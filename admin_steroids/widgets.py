@@ -90,34 +90,70 @@ class ForeignKeyTextInput(TextInput):
 #http://djangosnippets.org/snippets/2217/
 
 class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
+    
+    def __init__(self, *args, **kwargs):
+        raw_id_fields_new_tab = True
+        if 'raw_id_fields_new_tab' in kwargs:
+            raw_id_fields_new_tab = kwargs['raw_id_fields_new_tab']
+            del kwargs['raw_id_fields_new_tab']
+        super(VerboseForeignKeyRawIdWidget, self).__init__(*args, **kwargs)
+        self.raw_id_fields_new_tab = raw_id_fields_new_tab
+    
+    @property
+    def target(self):
+        if self.raw_id_fields_new_tab:
+            return '_blank'
+        return '_self'
+    
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
         try:
-            obj = self.rel.to._default_manager.using(self.db).get(**{key: value})
+            obj = self.rel.to._default_manager\
+                .using(self.db).get(**{key: value})
             change_url = reverse(
-                "admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()),
+                "admin:%s_%s_change" \
+                    % (obj._meta.app_label, obj._meta.object_name.lower()),
                 args=(obj.pk,)
             )
-            return '&nbsp;<strong><a href="%s" target="_blank">%s</a></strong>' % (change_url, escape(obj))
+            return '&nbsp;<strong><a href="%s" target="%s">%s</a></strong>' \
+                % (change_url, self.target, escape(obj))
         except NoReverseMatch:
             return '&nbsp;<strong>%s</strong>' % (escape(obj),)
         except (ValueError, self.rel.to.DoesNotExist):
             return ''
 
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
+    
+    def __init__(self, *args, **kwargs):
+        raw_id_fields_new_tab = True
+        if 'raw_id_fields_new_tab' in kwargs:
+            raw_id_fields_new_tab = kwargs['raw_id_fields_new_tab']
+            del kwargs['raw_id_fields_new_tab']
+        super(VerboseManyToManyRawIdWidget, self).__init__(*args, **kwargs)
+        self.raw_id_fields_new_tab = raw_id_fields_new_tab
+    
+    @property
+    def target(self):
+        if self.raw_id_fields_new_tab:
+            return '_blank'
+        return '_self'
+            
     def label_for_value(self, value):
         values = value.split(',')
         str_values = []
         key = self.rel.get_related_field().name
         for v in values:
-            obj = self.rel.to._default_manager.using(self.db).get(**{key: v})
+            obj = self.rel.to._default_manager\
+                .using(self.db).get(**{key: v})
             x = smart_unicode(obj)
             try:
                 change_url = reverse(
-                    "admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()),
+                    "admin:%s_%s_change" \
+                        % (obj._meta.app_label, obj._meta.object_name.lower()),
                     args=(obj.pk,)
                 )
-                str_values += ['<strong><a href="%s" target="_blank">%s</a></strong>' % (change_url, escape(x))]
+                str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' \
+                    % (change_url, self.target, escape(x))]
             except NoReverseMatch:
                 str_values += ['<strong>%s</strong>' % (escape(x),)]
             except self.rel.to.DoesNotExist:
