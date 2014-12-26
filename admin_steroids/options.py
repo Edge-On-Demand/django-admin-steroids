@@ -220,6 +220,7 @@ class CSVModelAdminMixin(object):
     
     extra_csv_fields = ()
     
+    # Specifies the header labels, of the form {data_field:header_label}.
     csv_header_names = {}
     
     csv_quoting = csv.QUOTE_MINIMAL
@@ -237,6 +238,14 @@ class CSVModelAdminMixin(object):
     def get_csv_header_names(self, request):
         return self.csv_header_names
     
+    def get_csv_raw_headers(self, request):
+        if self.csv_headers_all:
+            return self.model._meta.get_all_field_names() \
+                + list(self.get_extra_csv_fields(request))
+        else:
+            return list(self.list_display) \
+                + list(self.get_extra_csv_fields(request))
+    
     def get_csv_queryset(self, request, qs):
         return qs
     
@@ -245,14 +254,7 @@ class CSVModelAdminMixin(object):
         response['Content-Disposition'] = 'attachment; filename=%s.csv' \
             % slugify(self.model.__name__)
         
-        if raw_headers:
-            pass
-        elif self.csv_headers_all:
-            raw_headers = self.model._meta.get_all_field_names() \
-                + list(self.get_extra_csv_fields(request))
-        else:
-            raw_headers = list(self.list_display) \
-                + list(self.get_extra_csv_fields(request))
+        raw_headers = raw_headers or self.get_csv_raw_headers(request)
             
         def get_attr(obj, name, as_name=False):
             """
@@ -390,19 +392,17 @@ class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
 
 #https://djangosnippets.org/snippets/2484/
 class LogEntryAdmin(ReadonlyModelAdmin):
+    
     list_display = (
         'user',
         'action_time',
         'action',
         'admin_url',
     )
+    
     list_filter = (
         filters.LogEntryAdminUserFilter,
     )
-    
-    class Meta:
-        verbose_name = _('log entry')
-        verbose_name_plural = _('log entries')
 
     def get_edited_object(self, obj):
         "Returns the edited object represented by this log entry"
@@ -437,5 +437,5 @@ class LogEntryAdmin(ReadonlyModelAdmin):
         if hasattr(admin, 'models'):
             admin_site.register(admin.models.LogEntry, LogEntryAdmin)
 
-
 #admin.site.register(models.LogEntry, LogEntryAdmin)
+    
