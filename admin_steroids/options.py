@@ -254,7 +254,8 @@ class CSVModelAdminMixin(object):
         response['Content-Disposition'] = 'attachment; filename=%s.csv' \
             % slugify(self.model.__name__)
         
-        raw_headers = raw_headers or self.get_csv_raw_headers(request)
+        if raw_headers is None:
+            raw_headers = self.get_csv_raw_headers(request)
             
         def get_attr(obj, name, as_name=False):
             """
