@@ -76,12 +76,12 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(
                     db_field.rel,
                     site,
-                    raw_id_fields_new_tab=raw_id_fields_new_tab)
+                    raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif type == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(
                     db_field.rel,
                     site,
-                    raw_id_fields_new_tab=raw_id_fields_new_tab)
+                    raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
         return super(BetterRawIdFieldsTabularInline, self)\
             .formfield_for_dbfield(db_field, **kwargs)
