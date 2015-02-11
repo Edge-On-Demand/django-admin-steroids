@@ -19,7 +19,7 @@ def get_admin_change_url(obj):
     if obj is None:
         return
     try:
-        ct = ContentType.objects.get_for_model(obj)
+        ct = ContentType.objects.get_for_model(obj, for_concrete_model=False)
         obj_cls = type(obj)
         if hasattr(obj_cls, 'app_label_name'):
             app_label = obj_cls.app_label_name
