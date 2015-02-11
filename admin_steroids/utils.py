@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 
 def obj_to_hash(o):
     """
@@ -30,13 +30,23 @@ def get_admin_change_url(obj):
     except:
         raise
 
-def get_admin_changelist_url(obj):
+def get_admin_changelist_url(obj, for_concrete_model=False):
     if obj is None:
         return
     try:
-        ct = ContentType.objects.get_for_model(obj)
+        ct = ContentType.objects.get_for_model(
+            obj,
+            for_concrete_model=for_concrete_model)
         list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
-        return reverse(list_url_name)
+        try:
+            return reverse(list_url_name)
+        except NoReverseMatch:
+            # If this is a proxy model and proxy support is on, try to return
+            # the parent changelist.
+            if not for_concrete_model:
+                return get_admin_changelist_url(obj, for_concrete_model=True)
+            else:
+                raise
     except:
         raise
 

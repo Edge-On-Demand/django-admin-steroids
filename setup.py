@@ -6,7 +6,7 @@ from setuptools import setup, find_packages, Command
 
 import admin_steroids
 
-def get_reqs(reqs=["Django>=1.4.0"]):
+def get_reqs(reqs=["Django>=1.4.0", 'Babel>=1.3']):
     # optparse is included with Python <= 2.7, but has been deprecated in favor
     # of argparse.  We try to import argparse and if we can't, then we'll add
     # it to the requirements
