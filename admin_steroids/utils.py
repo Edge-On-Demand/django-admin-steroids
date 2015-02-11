@@ -16,6 +16,9 @@ def obj_to_hash(o):
     return hashlib.sha512(pickle.dumps(o)).hexdigest()
 
 def get_admin_change_url(obj):
+    """
+    Returns the admin change url associated with the given instance.
+    """
     if obj is None:
         return
     try:
@@ -31,6 +34,9 @@ def get_admin_change_url(obj):
         raise
 
 def get_admin_changelist_url(obj, for_concrete_model=False):
+    """
+    Returns the admin changelist url associated with the given instance.
+    """
     if obj is None:
         return
     try:
