@@ -32,6 +32,29 @@ def get_admin_change_url(obj):
         return reverse(change_url_name, args=(obj.id,))
     except:
         raise
+    
+def get_admin_add_url(obj, for_concrete_model=False):
+    """
+    Returns the admin add url associated with the given instance.
+    """
+    if obj is None:
+        return
+    try:
+        ct = ContentType.objects.get_for_model(
+            obj,
+            for_concrete_model=for_concrete_model)
+        list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
+        try:
+            return reverse(list_url_name)
+        except NoReverseMatch:
+            # If this is a proxy model and proxy support is on, try to return
+            # the parent changelist.
+            if not for_concrete_model:
+                return get_admin_add_url(obj, for_concrete_model=True)
+            else:
+                raise
+    except:
+        raise
 
 def get_admin_changelist_url(obj, for_concrete_model=False):
     """
