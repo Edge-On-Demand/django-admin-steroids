@@ -186,12 +186,19 @@ class Command(BaseCommand):
 
                                     for obj in objects:
                                         
-                                        # Attempt to lookup any existing object using natural keys and
-                                        # use that object's PK to duplicate and conflict records aren't created.
-                                        nk = obj.object.natural_key()
-                                        real_object = type(obj.object).objects.get_by_natural_key(*nk)
-                                        if real_object:
-                                            obj.object.pk = real_object.pk
+                                        try:
+                                            # Attempt to lookup any existing object using natural keys and
+                                            # use that object's PK to duplicate and conflict records aren't created.
+                                            nk = obj.object.natural_key()
+                                            real_object = type(obj.object).objects.get_by_natural_key(*nk)
+                                            if real_object:
+                                                obj.object.pk = real_object.pk
+                                        except AttributeError:
+                                            # Model class doesn't support natural keys.
+                                            pass
+                                        except type(obj.object).DoesNotExist:
+                                            # No existing record, so proceed as normal.
+                                            pass
                                             
                                         objects_in_fixture += 1
                                         if router.allow_syncdb(using, obj.object.__class__):
