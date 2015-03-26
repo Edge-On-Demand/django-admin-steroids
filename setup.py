@@ -32,7 +32,7 @@ setup(
     },
     author = "Chris Spencer",
     author_email = "chrisspen@gmail.com",
-    description = "",
+    description = "Tweaks and tools to simplify Django admin.",
     license = "LGPL",
     url = "https://github.com/chrisspen/django-admin-steroids",
     #https://pypi.python.org/pypi?%3Aaction=list_classifiers
