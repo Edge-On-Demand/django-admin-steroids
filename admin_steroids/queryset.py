@@ -1,9 +1,52 @@
 import hashlib
+import re
+import sys
+import traceback
 
 from django.core.cache import cache
-from django.db import connections
+from django.db import connection, connections, transaction
 from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
+
+try:
+    from south.db import db as south_db
+except ImportError:
+    south_db = None
+
+def execute_sql_from_file(fn):
+    """
+    Executes multiple SQL statements in the given file.
+    """
+    return execute_sql(open(fn).read())
+    
+def execute_sql(sql):
+    """
+    Executes multiple SQL statements in the given string.
+    """
+    try:
+        sql_parts = sql.split(';')
+        for part in sql_parts:
+            part = re.sub(r'/\*.*\*/', '', part, flags=re.I|re.DOTALL|re.MULTILINE).strip()
+            part = re.sub(r'\-\-.*\n', '', part, flags=re.I).strip()
+            if not part:
+                continue
+            if not part.endswith(';'):
+                part = part + ';'
+            print>>sys.stdout, 'sql:',part
+            _execute_sql_part(part)
+    except Exception as e:
+        traceback.print_exc(file=sys.stderr)
+        transaction.rollback()
+
+def _execute_sql_part(part):
+    """
+    Executes a single SQL statement.
+    """
+    if south_db:
+        south_db.execute(part)
+    else:
+        with connection.cursor() as c:
+            c.execute(part)
 
 class ApproxCountQuerySet(QuerySet):
     """
