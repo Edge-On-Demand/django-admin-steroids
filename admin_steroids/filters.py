@@ -46,6 +46,60 @@ class NullListFilter(FieldListFilter):
             }
             yield d
 
+class NullBlankListFilter(FieldListFilter):
+    """
+    Like NullListFilter, but treats None and '' values synonymously.
+    """
+    
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.field_path = field_path
+        self.lookup_kwarg = '%s_isnullblank' % field_path
+        
+        self.lookup_val = None
+        try:
+            self.lookup_val = request.GET.get(self.lookup_kwarg, None)
+            if self.lookup_val is not None:
+                if self.lookup_val in (True, 'True', 1, '1'):
+                    self.lookup_val = True
+                else:
+                    self.lookup_val = False
+        except:
+            pass
+        
+        super(NullBlankListFilter, self).__init__(field,
+            request, params, model, model_admin, field_path)
+        
+    def expected_parameters(self):
+        return [self.lookup_kwarg]
+    
+    def queryset(self, request, queryset):
+        try:
+            if self.lookup_val is True:
+                queryset = queryset.filter(
+                    Q(**{self.field_path+'__isnull': True})|\
+                    Q(**{self.field_path: ''}))
+            elif self.lookup_val is False:
+                queryset = queryset.exclude(
+                    Q(**{self.field_path+'__isnull': True})|\
+                    Q(**{self.field_path: ''}))
+            return queryset
+        except ValidationError as e:
+            raise IncorrectLookupParameters(e)
+
+    def choices(self, cl):
+        for lookup, title in (
+                (None, _('All')),
+                (False, _('Has value')),
+                (True, _('Omitted'))):
+            d = {
+                'selected': self.lookup_val == lookup,
+                'query_string': cl.get_query_string({
+                    self.lookup_kwarg: lookup,
+                }, [self.lookup_kwarg]),
+                'display': title,
+            }
+            yield d
+
 class NotInListFilter(FieldListFilter):
     """
     Allows the use of exclude(field=value) via the URL.
