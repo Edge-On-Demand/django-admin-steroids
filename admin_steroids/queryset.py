@@ -13,13 +13,39 @@ try:
 except ImportError:
     south_db = None
 
-def execute_sql_from_file(fn):
+try:
+    from django.db.transaction import atomic
+except ImportError:
+    # Allow Django<1.6 to use atomic().
+    from django.db import transaction
+    class atomic(object):
+        def __init__(self, using=None):
+            self.using = using
+
+        def __enter__(self):
+            if not transaction.is_managed(using=self.using):
+                transaction.enter_transaction_management(using=self.using)
+                self.forced_managed = True
+            else:
+                self.forced_managed = False
+
+        def __exit__(self, *args, **kwargs):
+            try:
+                if self.forced_managed:
+                    transaction.commit(using=self.using)
+                else:
+                    transaction.commit_unless_managed(using=self.using)
+            finally:
+                if self.forced_managed:
+                    transaction.leave_transaction_management(using=self.using)
+
+def execute_sql_from_file(fn, using=None):
     """
     Executes multiple SQL statements in the given file.
     """
-    return execute_sql(open(fn).read())
+    return execute_sql(open(fn).read(), using=using)
     
-def execute_sql(sql):
+def execute_sql(sql, using=None):
     """
     Executes multiple SQL statements in the given string.
     """
@@ -33,20 +59,25 @@ def execute_sql(sql):
             if not part.endswith(';'):
                 part = part + ';'
             print>>sys.stdout, 'sql:',part
-            _execute_sql_part(part)
+            _execute_sql_part(part, using=using)
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
         transaction.rollback()
 
-def _execute_sql_part(part):
+def _execute_sql_part(part, using=None):
     """
     Executes a single SQL statement.
     """
-    if south_db:
-        south_db.execute(part)
-    else:
-        with connection.cursor() as c:
-            c.execute(part)
+    
+    using = using or 'default'
+    
+#     if south_db:
+#         south_db.execute(part)
+#     else:
+    connection = connections[using]
+    with atomic(using=using):
+        cursor = connection.cursor()
+        cursor.execute(part)
 
 class ApproxCountQuerySet(QuerySet):
     """
