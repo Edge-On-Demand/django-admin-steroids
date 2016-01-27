@@ -330,4 +330,17 @@ class DictCursor(object):
         desc = self.cursor.description
         for row in self.cursor.fetchall():
             yield dict(zip([col[0] for col in desc], row))
-            
+
+def count_related_objects(obj):
+    """
+    Counts the number of records pointing to the given object via ForeignKey fields.
+    """
+    cnt = 0
+    links = obj._meta.get_all_related_objects()
+    for link in links:
+        if not link.model._meta.managed:
+            continue
+        referring_objects = getattr(obj, link.get_accessor_name()).all()
+        cnt += referring_objects.count()
+    return cnt
+    
