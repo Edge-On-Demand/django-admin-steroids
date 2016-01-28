@@ -225,6 +225,10 @@ class CSVModelAdminMixin(object):
     
     csv_quoting = csv.QUOTE_MINIMAL
     
+    # In cases where the default fields contain custom html meant for display in a webpage,
+    # strip this out.
+    csv_remove_html = True
+    
     def get_actions(self, request):
         from inspect import isclass
         if hasattr(self, 'actions') and isinstance(self.actions, list):
@@ -377,6 +381,9 @@ class CSVModelAdminMixin(object):
                     
                 if callable(data[name_key]):
                     data[name_key] = to_ascii(data[name_key]())
+                
+                if self.csv_remove_html:
+                    data[name_key] = utils.remove_html(data[name_key])
                     
             #print 'data:',data
             writer.writerow(data)

@@ -343,4 +343,28 @@ def count_related_objects(obj):
         referring_objects = getattr(obj, link.get_accessor_name()).all()
         cnt += referring_objects.count()
     return cnt
+
+def remove_html(s):
+    import HTMLParser
+    
+    s = unicode(s)
+    
+    # We do this ourselves since HTMLParser does not convert this to the ASCII
+    # blank space character.
+    s = s.replace('&nbsp;', ' ')
+    
+    # Strip out all other HTML entities.
+    s = HTMLParser.HTMLParser().unescape(s)
+    
+    try:
+        # Try using BeautifulSoup to strip out HTML, since its parser is more robust
+        # than a simple Regex.
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(s)
+        s = ''.join(soup.findAll(text=True))
+    except ImportError:
+        # However, if the user doesn't want another dependency, fallback to Regex.
+        s = re.sub("<.*?>", '', s)
+        
+    return s
     
