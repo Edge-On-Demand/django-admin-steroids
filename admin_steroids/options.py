@@ -2,6 +2,7 @@ import csv
 
 from django.contrib import admin
 from django.contrib.admin.sites import site
+from django.forms.models import ModelForm
 from django.http import HttpResponse
 from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
@@ -199,10 +200,43 @@ class ReadonlyModelAdmin(BaseModelAdmin):
                 readonly_fields.remove(f)
         return readonly_fields + [f.name for f in self.model._meta.fields if f.name not in exclude]
 
+
+class NoSaveModelForm(ModelForm):
+    
+    def save(self, force_insert=False, force_update=False, commit=True):
+        return
+
+
+class ReadonlyInlineModelAdminMixin(object):
+
+    def get_readonly_fields(self, request, obj=None):
+        lst = list(self.readonly_fields)
+        lst.extend([f.name for f in self.model._meta.fields])
+        return lst
+    
+    def has_add_permission(self, request):
+        return False
+        
+    def has_change_permission(self, request, obj=None):
+        return True
+        
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class ReadonlyTabularInline(ReadonlyInlineModelAdminMixin, admin.TabularInline):
+    form = NoSaveModelForm
+
+
+class ReadonlyStackedInline(ReadonlyInlineModelAdminMixin, admin.StackedInline):
+    form = NoSaveModelForm
+    
+
 def to_ascii(s):
     if not isinstance(s, basestring):
         return s
     return s.encode('ascii', errors='replace')
+
     
 class CSVModelAdminMixin(object):
     """
