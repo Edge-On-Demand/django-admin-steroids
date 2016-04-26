@@ -331,7 +331,7 @@ class CSVModelAdminMixin(object):
                         else:
                             raw_headers = r.keys()
                     else:
-                        raise Exception, 'No headers specified.'
+                        raise Exception('No headers specified.')
                 for name in raw_headers:
                     if name in header_names:
                         name_key = name
@@ -411,7 +411,6 @@ class CSVModelAdminMixin(object):
                 else:
                     name_key = name
                     data[name_key] = to_ascii(get_attr(r, name))
-                    #raise Exception, 'Unknown field: %s' % (name,)
                     
                 if callable(data[name_key]):
                     data[name_key] = to_ascii(data[name_key]())
