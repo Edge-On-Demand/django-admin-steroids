@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
@@ -22,7 +24,8 @@ class Command(BaseCommand):
         else:
             recipient_list = [email for _, email in settings.ADMINS]
             
-        print 'Attempting to send email to %s from %s...' % (', '.join(recipient_list), from_email)
+        print('Attempting to send email to %s from %s...' \
+            % (', '.join(recipient_list), from_email))
         send_mail(
             subject=options['subject'],
             message=' '.join(args),
@@ -33,5 +36,5 @@ class Command(BaseCommand):
             auth_password=settings.EMAIL_HOST_PASSWORD,
             #connection=None
         )
-        print 'Sent email to %s.' % (', '.join(recipient_list),)
+        print('Sent email to %s.' % (', '.join(recipient_list),))
         

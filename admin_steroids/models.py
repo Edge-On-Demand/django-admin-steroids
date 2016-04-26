@@ -1,5 +1,6 @@
+
 # Just here so our default settings are inserted into django.conf.settings.
-import settings as _settings
+from . import settings as _settings
 
 # {(app_label, model_name, field_name): callable}
 _modelsearch_callbacks = {}

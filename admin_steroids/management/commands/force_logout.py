@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 
 from optparse import make_option
@@ -17,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *users, **options):
         for user in users:
             
-            print 'Looking up user %s...' % user
+            print('Looking up user %s...' % user)
             if user.isdigit():
                 user = User.objects.get(id=int(user))
             else:
@@ -33,4 +35,4 @@ class Command(BaseCommand):
                 if s.get_decoded().get('_auth_user_id') == user.id:
                     s.delete()
             
-            print 'Done!'
+            print('Done!')

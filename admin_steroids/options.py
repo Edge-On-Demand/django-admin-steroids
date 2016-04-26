@@ -373,21 +373,21 @@ class CSVModelAdminMixin(object):
                     fieldnames=fieldnames,
                     quoting=self.csv_quoting)
                 writer.writerow(header_data)
-            #print 'fieldnames:',fieldnames
+            #print('fieldnames:',fieldnames
             data = {}
             for name in raw_headers:
                 obj = None
                 if isinstance(r, dict):
                     if name in r:
                         data[name] = r[name]
-    #                    print 'skipping:',name
+    #                    print('skipping:',name
                         continue
 #                    elif 'id' in r:
 #                        obj = self.model.objects.get(id=r['id'])
                 
-#                print 'model:',self.model
-#                print 'r:',r
-#                print 'name:',name,isinstance(name, basestring) and hasattr(r, name)
+#                print('model:',self.model
+#                print('r:',r
+#                print('name:',name,isinstance(name, basestring) and hasattr(r, name)
                 if callable(name):
                     # This is likely a Formatter instance.
                     name_key = name.name
@@ -419,7 +419,7 @@ class CSVModelAdminMixin(object):
                 if self.csv_remove_html:
                     data[name_key] = utils.remove_html(data[name_key])
                     
-            #print 'data:',data
+            #print('data:',data
             writer.writerow(data)
         return response
     csv_export.short_description = \

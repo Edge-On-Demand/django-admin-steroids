@@ -1,2 +1,5 @@
 recursive-include admin_steroids/static *
 recursive-include admin_steroids/templates *
+include pip-requirements-min-django.txt
+include pip-requirements.txt
+include pip-requirements-test.txt

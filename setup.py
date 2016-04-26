@@ -6,15 +6,17 @@ from setuptools import setup, find_packages, Command
 
 import admin_steroids
 
-def get_reqs(reqs=["Django>=1.4.0", 'Babel>=1.3']):
-    # optparse is included with Python <= 2.7, but has been deprecated in favor
-    # of argparse.  We try to import argparse and if we can't, then we'll add
-    # it to the requirements
-    try:
-        import argparse
-    except ImportError:
-        reqs.append("argparse>=1.1")
-    return reqs
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+
+def get_reqs(*fns):
+    lst = []
+    for fn in fns:
+        for package in open(os.path.join(CURRENT_DIR, fn)).readlines():
+            package = package.strip()
+            if not package:
+                continue
+            lst.append(package.strip())
+    return lst
 
 setup(
     name = "django-admin-steroids",
@@ -45,5 +47,6 @@ setup(
         'Framework :: Django',
     ],
     zip_safe = False,
-    install_requires = get_reqs(),
+    install_requires=get_reqs('pip-requirements-min-django.txt', 'pip-requirements.txt'),
+    tests_require=get_reqs('pip-requirements-test.txt'),
 )

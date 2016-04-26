@@ -108,10 +108,10 @@ class ApproxCountQuerySet(QuerySet):
             return len(self._result_cache)
 
         db_backend_name = connections[self.db].client.executable_name.lower()
-#        print 'db_backend_name:',db_backend_name
+#        print('db_backend_name:',db_backend_name
         is_postgres = 'psql' in db_backend_name or 'postgres' in db_backend_name or 'postgis' in db_backend_name
         is_mysql = 'mysql' in db_backend_name
-#        print 'is_postgres:',is_postgres
+#        print('is_postgres:',is_postgres
 
         query = self.query
         if (is_postgres or is_mysql) and (

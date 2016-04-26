@@ -1,4 +1,7 @@
 import re
+import hashlib
+
+from six.moves import cPickle as pickle
 
 from django.conf import settings
 from django.db import models
@@ -11,8 +14,6 @@ def obj_to_hash(o):
     Returns the 128-character SHA-512 hash of the given object's Pickle
     representation.
     """
-    import hashlib
-    import cPickle as pickle
     return hashlib.sha512(pickle.dumps(o)).hexdigest()
 
 def get_admin_change_url(obj):
@@ -255,10 +256,10 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
             _.name for _ in model._meta.fields
             if _.rel and _.rel.to == type(obj) and _.rel.related_name == field_name
         ]
-#        print 'field_name:',field_name
+#        print('field_name:',field_name
 #        for _ in model._meta.fields:
 #            if 'foreignkey' in str(_).lower():
-#                print _.rel.related_name
+#                print(_.rel.related_name
         
         if not reverse_fields:
             reverse_fields = [
@@ -266,11 +267,11 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
                 if _.rel and _.rel.to == type(obj)
             ]
         
-#        print 'related model:',model
-#        print 'fields:',[_.name for _ in model._meta.fields]
-#        print 'obj:',obj
-#        print 'field_name:',field_name
-#        print 'reverse_fields:',reverse_fields
+#        print('related model:',model
+#        print('fields:',[_.name for _ in model._meta.fields]
+#        print('obj:',obj
+#        print('field_name:',field_name
+#        print('reverse_fields:',reverse_fields
         assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 

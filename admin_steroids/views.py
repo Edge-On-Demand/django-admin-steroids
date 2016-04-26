@@ -78,7 +78,7 @@ class ModelFieldSearchView(TemplateView):
         results = []
         if q:
             field = model._meta.get_field(field_name)
-#            print 'field:',field
+#            print('field:',field
             field_type = type(field)
             
             cb = get_modelsearcher(
@@ -121,8 +121,8 @@ class ModelFieldSearchView(TemplateView):
 #                        .order_by(field_name)\
 #                        .distinct()
 #                    qs = qs[:n]
-#                    print 'views.rel:',field.rel.to
-#                    print 'views.query:',qs.query
+#                    print('views.rel:',field.rel.to
+#                    print('views.query:',qs.query
 #                    rel_model = field.rel.to
 #                    results = [
 #                        dict(key=_, value=str(rel_model.objects.get(id=_)))
@@ -137,12 +137,12 @@ class ModelFieldSearchView(TemplateView):
                     for search_field in search_fields:
                         #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
                         qs_args.append(Q(**{search_field+'__icontains': q}))
-#                    print 'qs_args:',qs_args
+#                    print('qs_args:',qs_args
                     rel_model = field.rel.to
-#                    print 'rel_model:',rel_model
+#                    print('rel_model:',rel_model
                     qs = rel_model.objects.filter(reduce(operator.or_, qs_args))
                     qs = qs[:n]
-#                    print 'views.query:',qs.query
+#                    print('views.query:',qs.query
                     results = [
                         dict(key=_.id, value=str(_), field_name=field_name)
                         for _ in qs

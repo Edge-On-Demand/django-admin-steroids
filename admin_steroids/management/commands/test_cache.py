@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
@@ -29,5 +31,5 @@ class Command(BaseCommand):
             'Cache failed. Expected %s but cache gave us %s.' \
                 % (repr(cache_value), repr(_cache_value))
         
-        print 'Cache succeeded.'
+        print('Cache succeeded.')
         

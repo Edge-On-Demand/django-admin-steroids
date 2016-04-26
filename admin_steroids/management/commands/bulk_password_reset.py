@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import getpass
 from optparse import make_option
@@ -64,7 +64,7 @@ class Command(BaseCommand):
 #                site_name = domain
         
         for email in emails:
-            print email
+            print('email:', email)
             user = User.objects.get(email=email)
             
             # Ensure the user has some sort of password.
