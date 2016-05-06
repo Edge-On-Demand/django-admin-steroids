@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import sys
 from datetime import date
-from pprint(import pprint
+from pprint import pprint
 import traceback
 from collections import defaultdict
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
             old_obj = model_cls.objects.get(pk=int(old_id))
             new_obj = model_cls.objects.get(pk=int(new_id))
             
-            print('Attempting to replace %s with %s...' % (old_obj, new_obj) 
+            print('Attempting to replace %s with %s...' % (old_obj, new_obj))
             
             deleted_objects = set()
             # [(new_obj, old_obj, referring_obj, referring_field, exception)]
@@ -48,14 +48,14 @@ class Command(BaseCommand):
             safe_to_delete = True
             referring_classes = defaultdict(int)
             links = old_obj._meta.get_all_related_objects()
-            print('%i links found.' % len(links)
+            print('%i links found.' % len(links))
             for link in links:
                 if not link.model._meta.managed:
                     continue
                 referring_objects = getattr(old_obj, link.get_accessor_name()).all()
                 total = referring_objects.count()
                 i = 0
-                print('%i referring objects found on link %s.' % (total, link.get_accessor_name())
+                print('%i referring objects found on link %s.' % (total, link.get_accessor_name()))
                 for referring_object in referring_objects.iterator():
                     i += 1
                
@@ -73,7 +73,7 @@ class Command(BaseCommand):
                         new_obj.id,
                         i,
                         total,
-                    )
+                    ))
                     deleted_objects.add(
                         (type(old_obj).__name__, old_obj.id, new_obj)
                     )
@@ -92,9 +92,9 @@ class Command(BaseCommand):
                         ))
             
             if only_show_classes:
-                print('Classes referring to %s:' % old_obj
+                print('Classes referring to %s:' % old_obj)
                 for _mdl, _cnt in referring_classes.iteritems():
-                    print(_cnt, _mdl
+                    print(_cnt, _mdl)
             else:
                 # Now all FK links should be gone so we can safely delete the duplicate.
                 if safe_to_delete:
@@ -103,7 +103,7 @@ class Command(BaseCommand):
                     deletion_failures += 1
             
             if dryrun:
-                print('%i objects pending deletion.' % len(deleted_objects)
+                print('%i objects pending deletion.' % len(deleted_objects))
                 deleted_by_type = {}
                 for cls_name, deleted_obj_id, real_obj in deleted_objects:
                     deleted_by_type.setdefault(cls_name, [])
@@ -111,13 +111,13 @@ class Command(BaseCommand):
                 for cls_name, id_lst in deleted_by_type.iteritems():
                     print(cls_name, ', '.join(
                         '%s -> %s' % (old_id, new_id) for old_id, new_id in id_lst
-                    )
+                    ))
             else:
-                print('%i objects deleted.' % len(deleted_objects)
+                print('%i objects deleted.' % len(deleted_objects))
                 
             if deletion_failures:
-                print('!'*80
-                print('%i deletion failures!' % deletion_failures
+                print('!'*80)
+                print('%i deletion failures!' % deletion_failures)
                 for del_exc in deletion_exceptions:
                     new_obj, dup_obj, other_instance, other_field_name, exc = del_exc
                     print('Unable to change %s(id=%i).%s from %s(%s) to %s(%s): %s' % (
@@ -127,10 +127,10 @@ class Command(BaseCommand):
                         dup_obj, dup_obj.id,
                         new_obj, new_obj.id,
                         exc,
-                    )
+                    ))
                     
         except Exception as e:
-            print>>sys.stderr, traceback.format_exc()
+            print(traceback.format_exc(), file=sys.stderr)
             rollback()
         else:
             if dryrun:
