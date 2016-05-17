@@ -52,11 +52,21 @@ class Command(BaseCommand):
             for link in links:
                 if not link.model._meta.managed:
                     continue
-                referring_objects = getattr(old_obj, link.get_accessor_name()).all()
-                total = referring_objects.count()
+                try:
+                    referring_objects = getattr(old_obj, link.get_accessor_name()).all()
+                    total = referring_objects.count()
+                    referring_objects_iters = referring_objects.iterator()
+                except AttributeError:
+                    referring_objects = getattr(old_obj, link.get_accessor_name())
+                    if referring_objects:
+                        total = 1
+                        referring_objects_iters = [referring_objects]
+                    else:
+                        total = 0
+                        referring_objects_iters = []
                 i = 0
                 print('%i referring objects found on link %s.' % (total, link.get_accessor_name()))
-                for referring_object in referring_objects.iterator():
+                for referring_object in referring_objects_iters:
                     i += 1
                
                     if only_show_classes:
@@ -81,7 +91,7 @@ class Command(BaseCommand):
                         setattr(referring_object,  link.field.name, new_obj)
                         referring_object.save()
                     except Exception as e:
-                        print>>sys.stderr, e
+                        print(e, file=sys.stderr)
                         safe_to_delete = False
                         deletion_exceptions.add((
                             new_obj,
