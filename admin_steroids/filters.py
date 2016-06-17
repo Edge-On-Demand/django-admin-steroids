@@ -53,7 +53,7 @@ class NullBlankListFilter(FieldListFilter):
     
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.field_path = field_path
-        self.lookup_kwarg = '%s_isnullblank' % field_path
+        self.lookup_kwarg = '%s__isnull' % field_path
         
         self.lookup_val = None
         try:
