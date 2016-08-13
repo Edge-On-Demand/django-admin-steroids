@@ -14,25 +14,42 @@ class Command(BaseCommand):
     args = ''
     help = 'Forces a specific user to log back in by deleting their session records.'
     option_list = BaseCommand.option_list + (
+        make_option('--all', action='store_true', default=False,
+            help='If given, all users will be logged out.'),
     )
 
     def handle(self, *users, **options):
-        for user in users:
+        
+        if options['all']:
             
-            print('Looking up user %s...' % user)
-            if user.isdigit():
-                user = User.objects.get(id=int(user))
-            else:
-                user = User.objects.get(email=user)
-                
             qs = Session.objects.all()
             total = qs.count()
             i = 0
-            for s in qs.iterator():
+            for r in qs.iterator():
                 i += 1
-                sys.stdout.write('\rChecking user session %i of %i...' % (i, total))
+                sys.stdout.write('\rDeleting session %i of %i...' % (i, total))
                 sys.stdout.flush()
-                if s.get_decoded().get('_auth_user_id') == user.id:
-                    s.delete()
+                r.delete()
+            print('')
+        
+        else:
             
-            print('Done!')
+            for user in users:
+                
+                print('Looking up user %s...' % user)
+                if user.isdigit():
+                    user = User.objects.get(id=int(user))
+                else:
+                    user = User.objects.get(email=user)
+                    
+                qs = Session.objects.all()
+                total = qs.count()
+                i = 0
+                for s in qs.iterator():
+                    i += 1
+                    sys.stdout.write('\rChecking user session %i of %i...' % (i, total))
+                    sys.stdout.flush()
+                    if s.get_decoded().get('_auth_user_id') == user.id:
+                        s.delete()
+                
+        print('Done!')
