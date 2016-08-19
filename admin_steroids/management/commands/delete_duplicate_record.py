@@ -22,6 +22,10 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--dryrun', action='store_true', default=False),
         make_option('--only-show-classes', action='store_true', default=False),
+        make_option('--do-update', action='store_true', default=False,
+            help='If given, does a SQL update instead of calling the model\'s save() method. '
+                'This is only recommended for use when there are circular FK references coupled '
+                'with validation logic preventing incremental saves.'),
     )
 
     @commit_manually
@@ -31,6 +35,7 @@ class Command(BaseCommand):
             settings.DEBUG = False
             dryrun = options['dryrun']
             only_show_classes = options['only_show_classes']
+            do_update = options['do_update']
             
             app_label, model_name = name.split('.')
             ct = ContentType.objects.get(app_label=app_label, model=model_name)
@@ -88,8 +93,15 @@ class Command(BaseCommand):
                         (type(old_obj).__name__, old_obj.id, new_obj)
                     )
                     try:
-                        setattr(referring_object,  link.field.name, new_obj)
-                        referring_object.save()
+                        if do_update:
+                            # Bypass save() logic and directly update the FK field.
+                            type(referring_object).objects\
+                                .filter(pk=referring_object.pk)\
+                                .update(**{link.field.name: new_obj})
+                        else:
+                            # Set field and then save through the ORM.
+                            setattr(referring_object,  link.field.name, new_obj)
+                            referring_object.save()
                     except Exception as e:
                         print(e, file=sys.stderr)
                         safe_to_delete = False
