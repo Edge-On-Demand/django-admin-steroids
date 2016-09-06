@@ -137,15 +137,13 @@ class ModelFieldSearchView(TemplateView):
                     for search_field in search_fields:
                         #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
                         qs_args.append(Q(**{search_field+'__icontains': q}))
-#                    print('qs_args:',qs_args
                     rel_model = field.rel.to
-#                    print('rel_model:',rel_model
                     qs = rel_model.objects.filter(reduce(operator.or_, qs_args))
                     qs = qs[:n]
-#                    print('views.query:',qs.query
+                    pk_name = rel_model._meta.pk.name
                     results = [
-                        dict(key=_.id, value=str(_), field_name=field_name)
-                        for _ in qs
+                        dict(key=getattr(_, pk_name), value=str(_), field_name=field_name)
+                        for _ in qs.iterator()
                     ]
 
         response = HttpResponse(

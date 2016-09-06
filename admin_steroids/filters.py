@@ -301,7 +301,11 @@ class AjaxFieldFilter(FieldListFilter):
             if isinstance(self.field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
                 rel_model = self.field.rel.to
                 #TODO:handle non-numeric IDs?
-                value = str(rel_model.objects.get(id=int(value)))
+                # AvB edit here; some FK models do not have an (integer) or .id attribute!
+                #value = str(rel_model.objects.get(id=int(value)))
+                if value.isdigit():
+                    value = int(value)
+                value = str(rel_model.objects.get(pk=value))
             
             yield {
                 'selected': True,
