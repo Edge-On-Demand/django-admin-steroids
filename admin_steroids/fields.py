@@ -297,7 +297,7 @@ class Currency(Decimal):
         else:
             cls._formatPretty = u'\xa4#,##0.00;\xa4-#'
 
-        ld_rounded = Decimal(value).quantize(TWOPLACES, ROUND_HALF_UP)
+        ld_rounded = Decimal(value or 0).quantize(TWOPLACES, ROUND_HALF_UP)
 
         return super(Currency, cls).__new__(cls, value=ld_rounded, context=context)
 
