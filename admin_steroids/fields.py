@@ -18,9 +18,13 @@ from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
 #from django.db.models import fields
 from django.db import models
-from django.db.models.fields.subclassing import SubfieldBase
+#from django.db.models.fields.subclassing import SubfieldBase
 #from django.forms import fields, widgets
-from django.forms.util import ValidationError
+try:
+    from django.forms.util import ValidationError
+except ImportError:
+    # Renamed in Django 1.9.
+    from django.forms.utils import ValidationError 
 from django.utils import encoding
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
