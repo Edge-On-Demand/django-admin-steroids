@@ -13,6 +13,7 @@ from babel.numbers import (
     NumberFormatError
 )
 
+import django
 from django import forms
 from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
@@ -386,8 +387,9 @@ class CurrencyField(models.fields.DecimalField):
             data = str(val)
         return data
 
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^admin_steroids\.fields\.CurrencyField"])
-except ImportError:
-    pass
+if django.VERSION < (1, 7):
+    try:
+        from south.modelsinspector import add_introspection_rules
+        add_introspection_rules([], ["^admin_steroids\.fields\.CurrencyField"])
+    except ImportError:
+        pass

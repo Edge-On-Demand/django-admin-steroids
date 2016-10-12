@@ -9,11 +9,6 @@ from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
 
 try:
-    from south.db import db as south_db
-except ImportError:
-    south_db = None
-
-try:
     from django.db.transaction import atomic
 except ImportError:
     # Allow Django<1.6 to use atomic().
@@ -68,12 +63,7 @@ def _execute_sql_part(part, using=None):
     """
     Executes a single SQL statement.
     """
-    
     using = using or 'default'
-    
-#     if south_db:
-#         south_db.execute(part)
-#     else:
     connection = connections[using]
     with atomic(using=using):
         cursor = connection.cursor()
