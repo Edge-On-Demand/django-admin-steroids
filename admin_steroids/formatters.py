@@ -250,7 +250,7 @@ class ForeignKeyLink(AdminFieldFormatter):
             else:
                 return '<a href="%s" target="%s">%s</a>' \
                     % (url, self.target, label)
-        except Exception, e:
+        except Exception as e:
             return str(e)
         
     def plaintext(self, v):

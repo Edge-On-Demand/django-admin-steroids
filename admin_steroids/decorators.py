@@ -34,7 +34,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
                     if commit:
                         transaction.commit()
                     return rv
-                except Exception, e:
+                except Exception as e:
                     if retry+1 == mtries:
                         raise
                     if exception_cb:

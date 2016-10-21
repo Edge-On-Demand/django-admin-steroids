@@ -328,7 +328,7 @@ class CurrencyFormField(forms.fields.DecimalField):
             return
         try:
             value = Currency(value, parse_string=True)
-        except NumberFormatError, e:
+        except NumberFormatError as e:
             raise ValidationError(e.message)
         return Currency(super(CurrencyFormField, self).clean(value))
 

@@ -9,6 +9,8 @@ from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+import six
+
 from .utils import get_admin_change_url
 from . import widgets as w
 from . import utils
@@ -222,7 +224,7 @@ class ReadonlyStackedInline(ReadonlyInlineModelAdminMixin, admin.StackedInline):
     
 
 def to_ascii(s):
-    if not isinstance(s, basestring):
+    if not isinstance(s, six.string_types):
         return s
     return s.encode('ascii', errors='replace')
 
