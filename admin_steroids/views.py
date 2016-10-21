@@ -11,6 +11,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
 
+import six
+
 from admin_steroids import utils
 from admin_steroids.models import get_modelsearcher
 
@@ -129,7 +131,7 @@ class ModelFieldSearchView(TemplateView):
                         #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
                         qs_args.append(Q(**{search_field+'__icontains': q}))
                     rel_model = field.rel.to
-                    qs = rel_model.objects.filter(reduce(operator.or_, qs_args))
+                    qs = rel_model.objects.filter(six.reduce(operator.or_, qs_args))
                     qs = qs[:n]
                     pk_name = rel_model._meta.pk.name
                     results = [

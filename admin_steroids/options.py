@@ -336,7 +336,7 @@ class CSVModelAdminMixin(object):
                     elif isinstance(name, (tuple, list)) and len(name) == 2:
                         name_key, name_key_verbose = name
                         header_data[name_key] = name_key_verbose
-                    elif isinstance(name, basestring) and hasattr(self, name):
+                    elif isinstance(name, six.string_types) and hasattr(self, name):
                         # This is likely a ModelAdmin method name.
                         name_key = name
                         header_data[name_key] = getattr(self, name).short_description
@@ -378,10 +378,7 @@ class CSVModelAdminMixin(object):
                         continue
 #                    elif 'id' in r:
 #                        obj = self.model.objects.get(id=r['id'])
-                
-#                print('model:',self.model
-#                print('r:',r
-#                print('name:',name,isinstance(name, basestring) and hasattr(r, name)
+
                 if callable(name):
                     # This is likely a Formatter instance.
                     name_key = name.name
@@ -395,11 +392,11 @@ class CSVModelAdminMixin(object):
                         data[name_key] = to_ascii(getattr(self, name_key))
                     else:
                         data[name_key] = to_ascii(getattr(r, name_key))
-                elif isinstance(name, basestring) and hasattr(self, name):
+                elif isinstance(name, six.string_types) and hasattr(self, name):
                     # This is likely a ModelAdmin method name.
                     name_key = name
                     data[name_key] = to_ascii(getattr(self, name)(r))
-                elif isinstance(name, basestring) and hasattr(r, name):
+                elif isinstance(name, six.string_types) and hasattr(r, name):
                     name_key = name
                     data[name_key] = to_ascii(getattr(r, name))
                 else:

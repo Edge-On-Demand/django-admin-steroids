@@ -1,6 +1,8 @@
 import time
 import math
 
+import six
+
 def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=True):
     '''
     Retries a function or method until it runs without throwing an exception.
@@ -28,7 +30,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
     def deco_retry(f):
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay # make mutable
-            for retry in xrange(int(mtries)):
+            for retry in six.range(int(mtries)):
                 try:
                     rv = f(*args, **kwargs)
                     if commit:

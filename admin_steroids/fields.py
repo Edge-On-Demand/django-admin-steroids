@@ -280,7 +280,7 @@ class Currency(Decimal):
         
         context = kwargs.pop('context', None)
         
-        if value != "0" and isinstance(value, basestring) and parse_string:
+        if value != "0" and isinstance(value, six.string_types) and parse_string:
             value = parse_value(value)
         elif isinstance(value, float):
             value = str(value)

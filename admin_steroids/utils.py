@@ -3,6 +3,7 @@ import hashlib
 import decimal
 #from urlparse import urlparse
 
+import six
 from six.moves.urllib.parse import urlparse
 from six.moves import cPickle as pickle
 
@@ -146,7 +147,7 @@ def FormatWithCommas(fmt, value):
     
     """
     parts = re_digits_nondigits.findall(fmt % (value,))
-    for i in xrange(len(parts)):
+    for i in six.range(len(parts)):
         s = parts[i]
         if s.isdigit():
             parts[i] = _commafy(s)
@@ -340,7 +341,7 @@ def count_related_objects(obj):
 def remove_html(s):
     import HTMLParser
     
-    s = unicode(s)
+    s = six.text_type(s)
     
     # We do this ourselves since HTMLParser does not convert this to the ASCII
     # blank space character.
