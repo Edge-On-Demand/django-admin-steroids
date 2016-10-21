@@ -12,9 +12,8 @@ from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.utils.encoding import force_str, force_text
-from django.utils.six.moves import input
+from django.utils.six.moves import input # pylint: disable=W0622
 from django.utils.text import capfirst
-
 
 class Command(BaseCommand):
 
@@ -26,18 +25,24 @@ class Command(BaseCommand):
         self.username_field = self.UserModel._meta.get_field(self.UserModel.USERNAME_FIELD)
 
         self.option_list = BaseCommand.option_list + (
-            make_option('--%s' % self.UserModel.USERNAME_FIELD, dest=self.UserModel.USERNAME_FIELD, default=None,
+            make_option('--%s' % self.UserModel.USERNAME_FIELD,
+                dest=self.UserModel.USERNAME_FIELD, default=None,
                 help='Specifies the login for the superuser.'),
-            make_option('--noinput', action='store_false', dest='interactive', default=True,
+            make_option('--noinput',
+                action='store_false', dest='interactive', default=True,
                 help=('Tells Django to NOT prompt the user for input of any kind. '
                     'You must use --%s with --noinput, along with an option for '
                     'any other required field. Superusers created with --noinput will '
                     ' not be able to log in until they\'re given a valid password.' %
                     self.UserModel.USERNAME_FIELD)),
-            make_option('--database', action='store', dest='database',
-                default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".'),
-            make_option('--password', action='store', dest='password',
-                default=DEFAULT_DB_ALIAS, help='Specifies the password to use. Default is no password.'),
+            make_option('--database',
+                action='store', dest='database',
+                default=DEFAULT_DB_ALIAS,
+                help='Specifies the database to use. Default is "default".'),
+            make_option('--password',
+                action='store', dest='password',
+                default=DEFAULT_DB_ALIAS,
+                help='Specifies the password to use. Default is no password.'),
         ) + tuple(
             make_option('--%s' % field, dest=field, default=None,
                 help='Specifies the %s for the superuser.' % field)
@@ -100,7 +105,8 @@ class Command(BaseCommand):
                         username = None
                         continue
                     try:
-                        self.UserModel._default_manager.db_manager(database).get_by_natural_key(username)
+                        self.UserModel._default_manager.db_manager(database)\
+                            .get_by_natural_key(username)
                     except self.UserModel.DoesNotExist:
                         pass
                     else:
@@ -112,7 +118,8 @@ class Command(BaseCommand):
                     field = self.UserModel._meta.get_field(field_name)
                     user_data[field_name] = options.get(field_name)
                     while user_data[field_name] is None:
-                        raw_value = input(force_str('%s: ' % capfirst(force_text(field.verbose_name))))
+                        raw_value = input(force_str('%s: ' \
+                            % capfirst(force_text(field.verbose_name))))
                         try:
                             user_data[field_name] = field.clean(raw_value, None)
                         except exceptions.ValidationError as e:

@@ -1,9 +1,10 @@
 from __future__ import print_function
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-
 from optparse import make_option
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.core.mail import send_mail
 
 class Command(BaseCommand):
     args = '<message>'
@@ -15,7 +16,6 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        from django.core.mail import send_mail
         from_email = settings.SERVER_EMAIL
         
         recipient_list = (options.get('recipient_list') or '').strip()
@@ -37,4 +37,3 @@ class Command(BaseCommand):
             #connection=None
         )
         print('Sent email to %s.' % (', '.join(recipient_list),))
-        

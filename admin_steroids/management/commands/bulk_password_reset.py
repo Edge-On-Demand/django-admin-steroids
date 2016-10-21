@@ -50,10 +50,10 @@ class Command(BaseCommand):
         if not domain:
             try:
                 domain = Site.objects.get(id=settings.SITE_ID).domain
-            except:
+            except Exception as e:
                 try:
                     domain = urlparse(settings.BASE_URL).netloc
-                except:
+                except Exception as e:
                     pass
                     
 #        site_name = options['site_name']
@@ -85,4 +85,3 @@ class Command(BaseCommand):
                 'domain_override': domain,
             }
             form.save(**opts)
-            

@@ -1,4 +1,5 @@
 import csv
+from inspect import isclass
 
 from django.contrib import admin
 from django.contrib.admin.sites import site
@@ -8,9 +9,10 @@ from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-import widgets as w
-import utils
-import filters
+from .utils import get_admin_change_url
+from . import widgets as w
+from . import utils
+from . import filters
 
 class BaseModelAdmin(admin.ModelAdmin):
     
@@ -44,13 +46,13 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
-            type = db_field.rel.__class__.__name__
-            if type == "ManyToOneRel" or type == "OneToOneRel":
+            typ = db_field.rel.__class__.__name__
+            if typ == "ManyToOneRel" or typ == "OneToOneRel":
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(
                     db_field.rel,
                     site,
                     raw_id_fields_new_tab=self.raw_id_fields_new_tab)
-            elif type == "ManyToManyRel":
+            elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(
                     db_field.rel,
                     site,
@@ -72,13 +74,13 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
-            type = db_field.rel.__class__.__name__
-            if type == "ManyToOneRel" or type == "OneToOneRel":
+            typ = db_field.rel.__class__.__name__
+            if typ == "ManyToOneRel" or typ == "OneToOneRel":
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(
                     db_field.rel,
                     site,
                     raw_id_fields_new_tab=self.raw_id_fields_new_tab)
-            elif type == "ManyToManyRel":
+            elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(
                     db_field.rel,
                     site,
@@ -129,19 +131,6 @@ class FormatterModelAdmin(BaseModelAdmin):
                     if callable(name):
                         readonly_fields.append(name)
         return readonly_fields
-
-#    def get_fieldsets(self, request, obj=None):
-#        "Hook for specifying fieldsets for the add form."
-#        if self.declared_fieldsets:
-#            return self.declared_fieldsets
-#        
-#        form = self.get_form(request, obj)
-#        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
-#        return [(None, {'fields': fields})]
-#    
-#        form = self.get_formset(request, obj).form
-#        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
-#        return [(None, {'fields': fields})]
 
 class FormatterTabularInline(admin.TabularInline):
         
@@ -264,7 +253,6 @@ class CSVModelAdminMixin(object):
     csv_remove_html = True
     
     def get_actions(self, request):
-        from inspect import isclass
         if hasattr(self, 'actions') and isinstance(self.actions, list):
             self.actions.append('csv_export')
         if isinstance(self, type) or (isclass(self) and issubclass(self, type)):
@@ -288,7 +276,10 @@ class CSVModelAdminMixin(object):
         return qs
     
     def csv_export(self, request, qs=None, raw_headers=None):
-        response = HttpResponse(mimetype='text/csv')
+        try:
+            response = HttpResponse(mimetype='text/csv')
+        except TypeError:
+            response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=%s.csv' \
             % slugify(self.model.__name__)
         
@@ -354,7 +345,8 @@ class CSVModelAdminMixin(object):
                     elif hasattr(self.model, name):
                         name_key = name
                         if hasattr(getattr(self.model, name), 'short_description'):
-                            header_data[name_key] = getattr(getattr(self.model, name), 'short_description')
+                            header_data[name_key] = getattr(
+                                getattr(self.model, name), 'short_description')
                         else:
                             header_data[name_key] = name
                     else:
@@ -446,17 +438,17 @@ class LogEntryAdmin(ReadonlyModelAdmin):
     )
 
     def get_edited_object(self, obj):
-        "Returns the edited object represented by this log entry"
+        """
+        Returns the edited object represented by this log entry.
+        """
         model_class = obj.content_type.model_class()
         if model_class:
             obj = model_class.objects.get(id=obj.object_id)
             return obj
 
     def admin_url(self, obj=None):
-        from utils import get_admin_change_url
         if not obj or not obj.id:
             return ''
-        #obj = obj.get_edited_object()#This doesn't support multiple databases.
         obj = self.get_edited_object(obj)
         if not obj:
             return ''
@@ -464,16 +456,13 @@ class LogEntryAdmin(ReadonlyModelAdmin):
             url = obj.get_admin_url()
         else:
             url = get_admin_change_url(obj)
-        return mark_safe(
-            '<a href="%s">%s</a>' % (url, url),
-        )
+        return mark_safe('<a href="%s">%s</a>' % (url, url))
 
     def action(self, obj):
         return str(obj)
         
     @classmethod
     def register(cls, admin_site=None):
-        from django.contrib import admin
         admin_site = admin_site or admin.site
         if hasattr(admin, 'models'):
             admin_site.register(admin.models.LogEntry, LogEntryAdmin)

@@ -4,7 +4,7 @@ from django.core import urlresolvers
 from django.utils.safestring import SafeString, mark_safe
 from django.conf import settings
 
-import utils
+from . import utils
 
 NONE_STR = '(None)'
 
@@ -290,8 +290,8 @@ class OneToManyLink(AdminFieldFormatter):
                     url = utils.get_admin_change_url(link_obj)
                 elif count > 1:
                     url = utils.get_admin_changelist_url(q[0])
-                    url += '?{1}={2}'.format(url, self.id_param, obj.id)
-            if count is None or count == 0:
+                    url += '?{1}={2}'.format(self.id_param, obj.id)
+            if not count:
                 return count
             return ('<a href="%s" target="%s"><input type="button" ' + \
                 'value="View %d" /></a>') % (url, self.target, count)

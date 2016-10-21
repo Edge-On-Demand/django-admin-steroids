@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail.backends.smtp import EmailBackend
 
+logger = logging.getLogger(__name__)
+
 class DevelopmentEmailBackend(EmailBackend):
     """
     Redirects all email to an specific domain address
@@ -48,9 +50,8 @@ class DevelopmentEmailBackend(EmailBackend):
                         domain = recip.split('@')[1].strip()
                         if domain == default_domain:
                             recipients.append(recip)
-                    except Exception, e:
-                        LOG.error("Invalid email recipient: %s" % e)
-                        pass
+                    except Exception as e:
+                        logger.error("Invalid email recipient: %s", e)
             if not recipients:
                  recipients = [default_redirect_to]
                  if bcc_recipients:
@@ -65,7 +66,7 @@ class DevelopmentEmailBackend(EmailBackend):
                 from_addr=email_message.from_email,
                 to_addrs=recipients,
                 msg=message)
-        except:
+        except Exception as e:
             if not self.fail_silently:
                 raise
             return False
@@ -82,4 +83,3 @@ class BCCEmailBackend(EmailBackend):
             email_message.bcc.extend(bcc_recipients)
 
         super(BCCEmailBackend, self)._send(email_message)
-        

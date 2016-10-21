@@ -11,8 +11,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
 
-import utils
-from models import get_modelsearcher
+from admin_steroids import utils
+from admin_steroids.models import get_modelsearcher
 
 class ModelFieldSearchView(TemplateView):
     """
@@ -67,9 +67,6 @@ class ModelFieldSearchView(TemplateView):
                 raise PermissionDenied
 
         cache_key = self.cache_key
-#        response = cache.get(cache_key)
-#        if response:#TODO:enable
-#            return response
 
         model = self.model
         q = self.q
@@ -78,7 +75,6 @@ class ModelFieldSearchView(TemplateView):
         results = []
         if q:
             field = model._meta.get_field(field_name)
-#            print('field:',field
             field_type = type(field)
             
             cb = get_modelsearcher(
@@ -101,7 +97,16 @@ class ModelFieldSearchView(TemplateView):
                         value=str(_),
                         field_name=field_name)
                     for _ in qs]
-            elif isinstance(field, (models.CharField, models.EmailField, models.SlugField, models.TextField, models.URLField)):
+            elif isinstance(
+                field,
+                (
+                    models.CharField,
+                    models.EmailField,
+                    models.SlugField,
+                    models.TextField,
+                    models.URLField,
+                )):
+                        
                 # Build query for a simple string-based field.
                 qs = model.objects.filter(**{field_name+'__icontains': q})\
                     .values_list(field_name, flat=True)\
@@ -109,27 +114,13 @@ class ModelFieldSearchView(TemplateView):
                     .distinct()
                 qs = qs[:n]
                 results = [dict(key=_, value=_, field_name=field_name) for _ in qs]
-#            elif isinstance(field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
-#                # Build query for a related model.
-#                search_fields = settings.DAS_AJAX_SEARCH_PATH_FIELDS.get(path)
-#                if search_fields:
-#                    qs_args = []
-#                    for search_field in search_fields:
-#                        qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
-#                    qs = model.objects.filter(reduce(operator.or_, qs_args))\
-#                        .values_list(field_name, flat=True)\
-#                        .order_by(field_name)\
-#                        .distinct()
-#                    qs = qs[:n]
-#                    print('views.rel:',field.rel.to
-#                    print('views.query:',qs.query
-#                    rel_model = field.rel.to
-#                    results = [
-#                        dict(key=_, value=str(rel_model.objects.get(id=_)))
-#                        for _ in qs
-#                    ]
 
-            elif isinstance(field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
+            elif isinstance(field,
+                (
+                    models.ForeignKey,
+                    models.ManyToManyField,
+                    models.OneToOneField,
+                )):
                 # Build query for a related model.
                 search_fields = settings.DAS_AJAX_SEARCH_PATH_FIELDS.get(path)
                 if search_fields:

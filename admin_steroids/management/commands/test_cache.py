@@ -1,9 +1,9 @@
 from __future__ import print_function
 
+from optparse import make_option
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-
-from optparse import make_option
 
 class Command(BaseCommand):
     args = ''
@@ -32,4 +32,3 @@ class Command(BaseCommand):
                 % (repr(cache_value), repr(_cache_value))
         
         print('Cache succeeded.')
-        

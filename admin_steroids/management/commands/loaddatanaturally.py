@@ -4,8 +4,9 @@ import sys
 import os
 import gzip
 import zipfile
-from optparse import make_option
 import traceback
+from itertools import product
+from optparse import make_option
 
 from django.conf import settings
 from django.core import serializers
@@ -16,14 +17,12 @@ from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
 from django.db.models import get_apps
 from django.utils.encoding import force_text
 from django.utils._os import upath
-from itertools import product
 
 try:
     import bz2
     has_bz2 = True
 except ImportError:
     has_bz2 = False
-
 
 class Command(BaseCommand):
     help = 'Installs the named fixture(s) in the database.'
@@ -86,7 +85,8 @@ class Command(BaseCommand):
             def __init__(self, *args, **kwargs):
                 zipfile.ZipFile.__init__(self, *args, **kwargs)
                 if settings.DEBUG:
-                    assert len(self.namelist()) == 1, "Zip-compressed fixtures must contain only one file."
+                    assert len(self.namelist()) == 1, \
+                        "Zip-compressed fixtures must contain only one file."
             def read(self):
                 return zipfile.ZipFile.read(self, self.namelist()[0])
 
@@ -108,7 +108,10 @@ class Command(BaseCommand):
                 # It's a models.py module
                 app_module_paths.append(upath(app.__file__))
 
-        app_fixtures = [os.path.join(os.path.dirname(path), 'fixtures') for path in app_module_paths]
+        app_fixtures = [
+            os.path.join(os.path.dirname(path), 'fixtures')
+            for path in app_module_paths
+        ]
 
         try:
             with connection.constraint_checks_disabled():
@@ -125,9 +128,9 @@ class Command(BaseCommand):
                         fixture_name = parts[0]
                         formats = serializers.get_public_serializer_formats()
                     else:
-                        fixture_name, format = '.'.join(parts[:-1]), parts[-1]
-                        if format in serializers.get_public_serializer_formats():
-                            formats = [format]
+                        fixture_name, fmt = '.'.join(parts[:-1]), parts[-1]
+                        if fmt in serializers.get_public_serializer_formats():
+                            formats = [fmt]
                         else:
                             formats = []
 
@@ -136,8 +139,9 @@ class Command(BaseCommand):
                             self.stdout.write("Loading '%s' fixtures..." % fixture_name)
                     else:
                         raise CommandError(
-                            "Problem installing fixture '%s': %s is not a known serialization format." %
-                                (fixture_name, format))
+                            ("Problem installing fixture '%s': "
+                                "%s is not a known serialization format.") \
+                                    % (fixture_name, fmt))
 
                     if os.path.isabs(fixture_name):
                         fixture_dirs = [fixture_name]
@@ -146,14 +150,15 @@ class Command(BaseCommand):
 
                     for fixture_dir in fixture_dirs:
                         if verbosity >= 2:
-                            self.stdout.write("Checking %s for fixtures..." % humanize(fixture_dir))
+                            self.stdout.write(
+                                "Checking %s for fixtures..." % humanize(fixture_dir))
 
                         label_found = False
                         for combo in product([using, None], formats, compression_formats):
-                            database, format, compression_format = combo
+                            database, fmt, compression_format = combo
                             file_name = '.'.join(
                                 p for p in [
-                                    fixture_name, database, format, compression_format
+                                    fixture_name, database, fmt, compression_format
                                 ]
                                 if p
                             )
@@ -168,29 +173,33 @@ class Command(BaseCommand):
                             except IOError:
                                 if verbosity >= 2:
                                     self.stdout.write("No %s fixture '%s' in %s." % \
-                                        (format, fixture_name, humanize(fixture_dir)))
+                                        (fmt, fixture_name, humanize(fixture_dir)))
                             else:
                                 try:
                                     if label_found:
-                                        raise CommandError("Multiple fixtures named '%s' in %s. Aborting." %
-                                            (fixture_name, humanize(fixture_dir)))
+                                        raise CommandError(
+                                            "Multiple fixtures named '%s' in %s. Aborting." \
+                                                % (fixture_name, humanize(fixture_dir)))
 
                                     fixture_count += 1
                                     objects_in_fixture = 0
                                     loaded_objects_in_fixture = 0
                                     if verbosity >= 2:
                                         self.stdout.write("Installing %s fixture '%s' from %s." % \
-                                            (format, fixture_name, humanize(fixture_dir)))
+                                            (fmt, fixture_name, humanize(fixture_dir)))
 
-                                    objects = serializers.deserialize(format, fixture, using=using, ignorenonexistent=ignore)
+                                    objects = serializers.deserialize(
+                                        fmt, fixture, using=using, ignorenonexistent=ignore)
 
                                     for obj in objects:
                                         
                                         try:
-                                            # Attempt to lookup any existing object using natural keys and
-                                            # use that object's PK to duplicate and conflict records aren't created.
+                                            # Attempt to lookup any existing object using natural
+                                            # keys and use that object's PK to duplicate and
+                                            # conflict records aren't created.
                                             nk = obj.object.natural_key()
-                                            real_object = type(obj.object).objects.get_by_natural_key(*nk)
+                                            real_object = type(obj.object).objects\
+                                                .get_by_natural_key(*nk)
                                             if real_object:
                                                 obj.object.pk = real_object.pk
                                         except AttributeError:
@@ -207,7 +216,10 @@ class Command(BaseCommand):
                                             try:
                                                 obj.save(using=using)
                                             except (DatabaseError, IntegrityError) as e:
-                                                e.args = ("Could not load %(app_label)s.%(object_name)s(pk=%(pk)s): %(error_msg)s" % {
+                                                e.args = (
+                                                    ("Could not load %(app_label)s."
+                                                    "%(object_name)s(pk=%(pk)s): %(error_msg)s") \
+                                                    % {
                                                         'app_label': obj.object._meta.app_label,
                                                         'object_name': obj.object._meta.object_name,
                                                         'pk': obj.object.pk,
@@ -220,7 +232,8 @@ class Command(BaseCommand):
                                     label_found = True
                                 except Exception as e:
                                     if not isinstance(e, CommandError):
-                                        e.args = ("Problem installing fixture '%s': %s" % (full_path, e),)
+                                        e.args = ("Problem installing fixture '%s': %s" \
+                                            % (full_path, e),)
                                     raise
                                 finally:
                                     fixture.close()
@@ -229,8 +242,9 @@ class Command(BaseCommand):
                                 # error was encountered during fixture loading.
                                 if objects_in_fixture == 0:
                                     raise CommandError(
-                                        "No fixture data found for '%s'. (File format may be invalid.)" %
-                                            (fixture_name))
+                                        ("No fixture data found for '%s'. "
+                                        "(File format may be invalid.)") \
+                                            % (fixture_name))
 
             # Since we disabled constraint checks, we must manually check for
             # any invalid keys that might have been added

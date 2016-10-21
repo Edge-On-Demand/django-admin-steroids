@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import hashlib
 import re
 import sys
@@ -53,7 +55,7 @@ def execute_sql(sql, using=None):
                 continue
             if not part.endswith(';'):
                 part = part + ';'
-            print>>sys.stdout, 'sql:',part
+            print('sql:', part, file=sys.stdout)
             _execute_sql_part(part, using=using)
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
@@ -64,9 +66,9 @@ def _execute_sql_part(part, using=None):
     Executes a single SQL statement.
     """
     using = using or 'default'
-    connection = connections[using]
+    conn = connections[using]
     with atomic(using=using):
-        cursor = connection.cursor()
+        cursor = conn.cursor()
         cursor.execute(part)
 
 class ApproxCountQuerySet(QuerySet):
@@ -99,7 +101,9 @@ class ApproxCountQuerySet(QuerySet):
 
         db_backend_name = connections[self.db].client.executable_name.lower()
 #        print('db_backend_name:',db_backend_name
-        is_postgres = 'psql' in db_backend_name or 'postgres' in db_backend_name or 'postgis' in db_backend_name
+        is_postgres = 'psql' in db_backend_name \
+            or 'postgres' in db_backend_name \
+            or 'postgis' in db_backend_name
         is_mysql = 'mysql' in db_backend_name
 #        print('is_postgres:',is_postgres
 
@@ -118,7 +122,8 @@ class ApproxCountQuerySet(QuerySet):
                 # Note, there's a bug in the default execute() that
                 # misquotes arguments by using double-quotes when PG only
                 # uses single-quotes.
-                sql = "SELECT reltuples::int FROM pg_class WHERE oid = '%s'::regclass;" % (self.model._meta.db_table,)
+                sql = "SELECT reltuples::int FROM pg_class WHERE oid = '%s'::regclass;" \
+                    % (self.model._meta.db_table,)
                 cursor.execute(sql)
                 results = cursor.fetchall()
                 return results[0][0]
@@ -152,4 +157,3 @@ class CachedCountQuerySet(ApproxCountQuerySet):
         except EmptyResultSet:
             count = super(CachedCountQuerySet, self).count()
         return count
-    

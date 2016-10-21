@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.encoding import smart_unicode, smart_text, force_text
 from django.contrib.admin.options import IncorrectLookupParameters
+from django.contrib.auth.models import User
 
 class NullListFilter(FieldListFilter):
     
@@ -20,11 +21,11 @@ class NullListFilter(FieldListFilter):
         try:
             self.lookup_val = request.GET.get(self.lookup_kwarg, None)
             if self.lookup_val is not None:
-                if self.lookup_val in (True, 'True', 1, '1'):
+                if self.lookup_val in (True, 'True', 1, '1'): # pylint: disable=R0102
                     self.lookup_val = True
                 else:
                     self.lookup_val = False
-        except:
+        except Exception as e:
             pass
         super(NullListFilter, self).__init__(field,
             request, params, model, model_admin, field_path)
@@ -59,11 +60,11 @@ class NullBlankListFilter(FieldListFilter):
         try:
             self.lookup_val = request.GET.get(self.lookup_kwarg, None)
             if self.lookup_val is not None:
-                if self.lookup_val in (True, 'True', 1, '1'):
+                if self.lookup_val in (True, 'True', 1, '1'): # pylint: disable=R0102
                     self.lookup_val = True
                 else:
                     self.lookup_val = False
-        except:
+        except Exception as e:
             pass
         
         super(NullBlankListFilter, self).__init__(field,
@@ -114,7 +115,7 @@ class NotInListFilter(FieldListFilter):
             self.lookup_vals = request.GET.get(self.lookup_kwarg, None)
             if self.lookup_vals is not None:
                 self.lookup_vals = self.lookup_vals.split(',')
-        except:
+        except Exception as e:
             pass
         
         self.lookup_choices = field.get_choices(include_blank=False)
@@ -177,7 +178,8 @@ class CachedFieldFilter(FieldListFilter):
         self.lookup_val = request.GET.get(self.lookup_kwarg, None)
         self.lookup_val2 = request.GET.get(self.lookup_kwarg2, None)
         
-        super(CachedFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super(CachedFieldFilter, self).__init__(
+            field, request, params, model, model_admin, field_path)
         
         self.model = model
     
@@ -240,9 +242,13 @@ class AjaxFieldFilter(FieldListFilter):
         self.field = field
         
         self.lookup_kwarg = '%s__in' % field_path
-        self.lookup_val = [_ for _ in request.GET.get(self.lookup_kwarg, '').split(',') if _.strip()]
+        self.lookup_val = [
+            _ for _ in request.GET.get(self.lookup_kwarg, '').split(',')
+            if _.strip()
+        ]
         
-        super(AjaxFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super(AjaxFieldFilter, self).__init__(
+            field, request, params, model, model_admin, field_path)
         
         self.model = model
         
@@ -298,7 +304,12 @@ class AjaxFieldFilter(FieldListFilter):
                 )
             
             # Lookup the "pretty" display value for IDs of related models.
-            if isinstance(self.field, (models.ForeignKey, models.ManyToManyField, models.OneToOneField)):
+            if isinstance(self.field,
+                (
+                    models.ForeignKey,
+                    models.ManyToManyField,
+                    models.OneToOneField,
+                )):
                 rel_model = self.field.rel.to
                 #TODO:handle non-numeric IDs?
                 # AvB edit here; some FK models do not have an (integer) or .id attribute!
@@ -320,8 +331,6 @@ class LogEntryAdminUserFilter(SimpleListFilter):
     parameter_name = 'user'
 
     def lookups(self, request, model_admin):
-        from django.contrib.auth.models import User
-        from django.db.models import Q
         qs = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True))
         qs = qs.order_by('username')
         return [(user.pk, _(str(user))) for user in qs]
@@ -390,4 +399,3 @@ class SingleTextInputFilter(ListFilter):
             'size': self.size,
             'style': self.style,
         }, )
-        

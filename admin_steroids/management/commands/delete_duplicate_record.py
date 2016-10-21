@@ -1,10 +1,11 @@
 from __future__ import print_function
 
 import sys
+import traceback
 from datetime import date
 from pprint import pprint
-import traceback
 from collections import defaultdict
+from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -13,8 +14,6 @@ from django.db.models.deletion import Collector
 from django.db.transaction import commit, commit_on_success, commit_manually, autocommit, rollback
 from django.db import IntegrityError, DatabaseError
 from django.contrib.contenttypes.models import ContentType
-                
-from optparse import make_option
 
 class Command(BaseCommand):
     help = 'Replaces one record with another, making sure to update all foreign key references.'
@@ -100,7 +99,7 @@ class Command(BaseCommand):
                                 .update(**{link.field.name: new_obj})
                         else:
                             # Set field and then save through the ORM.
-                            setattr(referring_object,  link.field.name, new_obj)
+                            setattr(referring_object, link.field.name, new_obj)
                             referring_object.save()
                     except Exception as e:
                         print(e, file=sys.stderr)
@@ -161,4 +160,3 @@ class Command(BaseCommand):
                 commit()
         finally:
             settings.DEBUG = tmp_debug
-            

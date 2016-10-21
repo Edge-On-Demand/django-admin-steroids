@@ -1,11 +1,13 @@
 import re
 import hashlib
+import decimal
+#from urlparse import urlparse
 
+from six.moves.urllib.parse import urlparse
 from six.moves import cPickle as pickle
 
 from django.conf import settings
 from django.db import models
-
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse, NoReverseMatch
 
@@ -101,7 +103,7 @@ class StringWithTitle(str):
 
 re_digits_nondigits = re.compile(r'\d+|\D+')
 
-def FormatWithCommas(format, value):
+def FormatWithCommas(fmt, value):
     """
     >>> FormatWithCommas('%.4f', .1234)
     '0.1234'
@@ -143,7 +145,7 @@ def FormatWithCommas(format, value):
     '$-1,234,567.5678'
     
     """
-    parts = re_digits_nondigits.findall(format % (value,))
+    parts = re_digits_nondigits.findall(fmt % (value,))
     for i in xrange(len(parts)):
         s = parts[i]
         if s.isdigit():
@@ -163,7 +165,6 @@ def currency_value(value, decimal_places=2):
     """
     Convert a given value to a standard currency value.
     """
-    import decimal
  
     # Build the template for quantizing the decimal places.
     q = '0.' + ('0' * (decimal_places-1)) + '1'
@@ -174,15 +175,17 @@ def currency_value(value, decimal_places=2):
             context.rounding = decimal.ROUND_HALF_UP
             return decimal.Decimal(value).quantize(decimal.Decimal(q), 
                                                    decimal.ROUND_HALF_UP)
-        except:
-            return None
+        except Exception as e:
+            return
 
 class classproperty(object):
     """
     Implements a @property-like decorator for class methods.
     """
+    
     def __init__(self, getter):
-        self.getter= getter
+        self.getter = getter
+        
     def __get__(self, instance, owner):
         return self.getter(owner)
 
@@ -196,16 +199,13 @@ def absolutize_all_urls(
     """
     Inserts a domain and protocol into all href and src URLs missing them.
     """
-    import re
-    from urlparse import urlparse
     if not domain:
-        from django.conf import settings
         domain = urlparse(settings.BASE_URL).netloc
     matches = re.findall(url_pattern, text)
     for old_url in matches:
         result = urlparse(old_url)
         result = result._replace(
-            scheme=(not overwrite_protocol and netloc.scheme) or protocol,
+            scheme=(not overwrite_protocol and result.netloc.scheme) or protocol,
             netloc=(not overwrite_domain and result.netloc) or domain)
         new_url = result.geturl()
         text = text.replace(old_url, new_url)
@@ -256,10 +256,6 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
             _.name for _ in model._meta.fields
             if _.rel and _.rel.to == type(obj) and _.rel.related_name == field_name
         ]
-#        print('field_name:',field_name
-#        for _ in model._meta.fields:
-#            if 'foreignkey' in str(_).lower():
-#                print(_.rel.related_name
         
         if not reverse_fields:
             reverse_fields = [
@@ -267,12 +263,8 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
                 if _.rel and _.rel.to == type(obj)
             ]
         
-#        print('related model:',model
-#        print('fields:',[_.name for _ in model._meta.fields]
-#        print('obj:',obj
-#        print('field_name:',field_name
-#        print('reverse_fields:',reverse_fields
-        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
+        assert len(reverse_fields) == 1, \
+            'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)

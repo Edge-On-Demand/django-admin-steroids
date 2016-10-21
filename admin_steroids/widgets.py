@@ -12,8 +12,6 @@ from django.utils.encoding import force_unicode, smart_unicode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-import utils
-
 try:
     from django.utils.encoding import StrAndUnicode
 except ImportError:
@@ -23,6 +21,8 @@ except ImportError:
     class StrAndUnicode:
         def __str__(self):
             return self.code
+
+from admin_steroids import utils
 
 class LinkedSelect(Select):
     def render(self, name, value, attrs=None, *args, **kwargs):

@@ -5,7 +5,6 @@ import datetime
 from decimal import (
     Decimal, InvalidOperation, ROUND_HALF_UP,
 )
-#from decimal import *
 
 from babel.numbers import (
     format_decimal, format_currency, parse_decimal, parse_number,
@@ -17,17 +16,13 @@ import django
 from django import forms
 from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
-#from django.db.models import fields
 from django.db import models
-#from django.db.models.fields.subclassing import SubfieldBase
-#from django.forms import fields, widgets
 try:
     from django.forms.util import ValidationError
 except ImportError:
     # Renamed in Django 1.9.
     from django.forms.utils import ValidationError 
-from django.utils import encoding
-from django.utils.encoding import force_unicode
+from django.utils.encoding import DjangoUnicodeDecodeError, force_unicode
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext as _
@@ -44,7 +39,6 @@ default_error_messages = {
 
 TWOPLACES = Decimal(10) ** -2
 
-
 def flatatt(attrs):
     """
     Convert a dictionary of attributes to a single string.
@@ -55,7 +49,6 @@ def flatatt(attrs):
     The result is passed through 'mark_safe'.
     """
     return format_html_join('', ' {0}="{1}"', sorted(attrs.items()))
-
 
 def format_html(format_string, *args, **kwargs):
     # django.utils.html
@@ -68,7 +61,6 @@ def format_html(format_string, *args, **kwargs):
     kwargs_safe = dict([(k, conditional_escape(v)) for (k, v) in
                         six.iteritems(kwargs)])
     return mark_safe(format_string.format(*args_safe, **kwargs_safe))
-
 
 def format_html_join(sep, format_string, args_generator):
     # django.utils.html
@@ -90,11 +82,9 @@ def format_html_join(sep, format_string, args_generator):
         format_html(format_string, *tuple(args))
         for args in args_generator))
 
-
 def is_protected_type(obj):
     return isinstance(obj, six.integer_types + (type(None), float, Decimal,
                                                 datetime.datetime, datetime.date, datetime.time))
-
 
 def force_text(s, encoding='utf-8', strings_only=False, errors='strict'):
     if isinstance(s, six.text_type):
@@ -117,12 +107,11 @@ def force_text(s, encoding='utf-8', strings_only=False, errors='strict'):
             s = s.decode(encoding, errors)
     except UnicodeDecodeError as e:
         if not isinstance(s, Exception):
-            raise encoding.DjangoUnicodeDecodeError(s, *e.args)
+            raise DjangoUnicodeDecodeError(s, *e.args)
         else:
             s = ' '.join([force_text(arg, encoding, strings_only,
                                      errors) for arg in s])
     return s
-
 
 class CurrencyInput(forms.widgets.TextInput):
 
@@ -134,14 +123,12 @@ class CurrencyInput(forms.widgets.TextInput):
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             try:
-                #value = Currency(value).format()
                 value = Currency(value).format_pretty()
-            except:
+            except Exception as e:
                 pass
             final_attrs['value'] = force_unicode(value)
 
         return mark_safe(u'<input%s />' % flatatt(final_attrs))
-
 
 def _getSymbols(value):
     retVal = ''
@@ -149,7 +136,6 @@ def _getSymbols(value):
         if x < u'0' or x > u'9':
             retVal += x
     return retVal
-
 
 def _getCodes():
     l_currency_language_code = 'en_US'
@@ -165,7 +151,6 @@ def _getCodes():
         pass
 
     return (l_currency_language_code, l_currency_code)
-
 
 def parse_value(value):
     """
@@ -205,7 +190,6 @@ def parse_value(value):
     # The value is converted into a string because the parse functions return
     # floats
     return str(value)
-
 
 class Currency(Decimal):
 
@@ -276,17 +260,26 @@ class Currency(Decimal):
     u'1.234,00'
     """
 
-    def __new__(cls, value="0", format=None, format_pretty=None, parse_string=False, context=None):
+    def __new__(cls, value='0', **kwargs):
         """
         Create a new Currency object
 
         value: Can be any number (integer, decimal, or float) or a properly formated string
         format: The format to use in the format() method
         format_pretty: The format used in the format_pretty() method
-        parse_string: *IMPORTANT* Set this to True if you are passing a string formatted in a currency 
-                      other than the standard decimal format of #,###.##
+        parse_string: *IMPORTANT* Set this to True if you are passing a string formatted
+        in a currency other than the standard decimal format of #,###.##
         context: How to handle a malformed string value
         """
+        
+        format = kwargs.pop('format', None) # pylint: disable=W0622
+        
+        format_pretty = kwargs.pop('format_pretty', None)
+        
+        parse_string = kwargs.pop('parse_string', False)
+        
+        context = kwargs.pop('context', None)
+        
         if value != "0" and isinstance(value, basestring) and parse_string:
             value = parse_value(value)
         elif isinstance(value, float):
@@ -312,8 +305,8 @@ class Currency(Decimal):
 
     def format_pretty(self):
         l_currency_language_code, l_currency_code = _getCodes()
-        return format_currency(self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
-
+        return format_currency(
+            self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
 
 class CurrencyFormField(forms.fields.DecimalField):
     
@@ -339,7 +332,6 @@ class CurrencyFormField(forms.fields.DecimalField):
             raise ValidationError(e.message)
         return Currency(super(CurrencyFormField, self).clean(value))
 
-
 class CurrencyField(models.fields.DecimalField):
 
     """
@@ -349,12 +341,7 @@ class CurrencyField(models.fields.DecimalField):
 
     #__metaclass__ = SubfieldBase
 
-    def __init__(self,  *args, **kwargs):
-        #        if not kwargs.has_key("help_text"):
-        #            kwargs['help_text'] = _('Format: ') + Currency(9999.00).format()
-        #        decimal_places = 2
-        #        if kwargs.has_key('decimal_places'):
-        #            del kwargs['decimal_places']
+    def __init__(self, *args, **kwargs):
         super(CurrencyField, self).__init__(*args, **kwargs)
 
     def format(self):
@@ -390,6 +377,6 @@ class CurrencyField(models.fields.DecimalField):
 if django.VERSION < (1, 7):
     try:
         from south.modelsinspector import add_introspection_rules
-        add_introspection_rules([], ["^admin_steroids\.fields\.CurrencyField"])
+        add_introspection_rules([], [r"^admin_steroids\.fields\.CurrencyField"])
     except ImportError:
         pass
