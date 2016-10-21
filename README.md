@@ -1,7 +1,7 @@
 Django Admin Steroids - Tweaks and tools to extend Django admin
 =============================================================================
 
-![Build Status](https://secure.travis-ci.org/chrisspen/django-admin-steroids.png?branch=master)
+[<img src="https://secure.travis-ci.org/chrisspen/django-admin-steroids.png?branch=master" alt="Build Status">](https://travis-ci.org/chrisspen/django-admin-steroids)
 
 Overview
 --------
