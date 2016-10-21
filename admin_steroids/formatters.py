@@ -295,7 +295,7 @@ class OneToManyLink(AdminFieldFormatter):
                 return count
             return ('<a href="%s" target="%s"><input type="button" ' + \
                 'value="View %d" /></a>') % (url, self.target, count)
-        except Exception, e:
+        except Exception as e:
             return str(e)
 
     def plaintext(self, v):
