@@ -179,6 +179,7 @@ def currency_value(value, decimal_places=2):
         except Exception as e:
             return
 
+# http://stackoverflow.com/a/5192374/247542
 class classproperty(object):
     """
     Implements a @property-like decorator for class methods.
