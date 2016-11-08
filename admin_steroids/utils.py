@@ -269,7 +269,7 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
             'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
-    url = get_admin_changelist_url(model) + '?' + reverse_field + '=' + str(obj.pk)
+    url = get_admin_changelist_url(model) + '?' + reverse_field + '__id__exact=' + str(obj.pk)
     
     if extra:
         if not extra.startswith('&'):
