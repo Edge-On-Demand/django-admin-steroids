@@ -362,4 +362,15 @@ def remove_html(s):
         s = re.sub("<.*?>", '', s)
         
     return s
-    
+
+def get_model_fields(mdl):
+    try:
+        all_names = mdl._meta.get_all_field_names()
+    except AttributeError:
+        # Django >= 1.10 removed this useful method, so we implement a backwards compatible
+        # replacement using get_fields().
+        all_names = [
+            f.name for f in mdl._meta.get_fields()
+            if not (f.related_model is not None and not f.many_to_one)
+        ]
+    return all_names
