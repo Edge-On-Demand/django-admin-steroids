@@ -147,7 +147,7 @@ def FormatWithCommas(fmt, value):
     
     """
     parts = re_digits_nondigits.findall(fmt % (value,))
-    for i in six.range(len(parts)):
+    for i in six.moves.range(len(parts)):
         s = parts[i]
         if s.isdigit():
             parts[i] = _commafy(s)
