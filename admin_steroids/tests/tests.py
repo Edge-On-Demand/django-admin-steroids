@@ -51,6 +51,10 @@ class Tests(TestCase):
         s = utils.obj_to_hash({123:'abc'})
         self.assertEqual(len(s), 128)
     
+    def test_FormatWithCommas(self):
+        s = utils.FormatWithCommas('%.4f', 1234567.5678)
+        self.assertEqual(s, '1,234,567.5678')
+    
     @override_settings(EMAIL_BACKEND='admin_steroids.email.DevelopmentEmailBackend')
     @override_settings(EMAIL_HOST=EMAIL_HOST)
     @override_settings(EMAIL_PORT=EMAIL_PORT)
