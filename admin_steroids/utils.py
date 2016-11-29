@@ -373,3 +373,44 @@ def get_model_fields(mdl):
             if not (f.related_model is not None and not f.many_to_one)
         ]
     return all_names
+
+def get_related_name(parent, child):
+    """
+    Looks up the related_name variable.
+    
+    Given:
+    
+        class Author(models.Model):
+            name=models.CharField(max_length=30)
+        
+        class Article(models.Model):
+            writer=models.ForeignKey(Author)
+            
+    >>> get_related_name(Author, Article)
+    'article_set'
+    
+    """
+    name = None
+    for field in child._meta.fields:
+        if field.rel and issubclass(parent, field.rel.to):
+            name = field.related_query_name()
+            break
+    if name and not name.endswith('s'):
+        name += '_set'
+    return name
+
+def generate_stub_inline_form_field_names(parent_model, inlines):
+    part_names = [
+        ('TOTAL_FORMS', 0),
+        ('INITIAL_FORMS', 0),
+        ('MAX_NUM_FORMS', 1000),
+    ]
+    names = {}
+    print('parent_model:', parent_model)
+    for inline in inlines:
+        print('child_model:', inline.model)
+        base_name = get_related_name(parent_model, inline.model)
+        print('base_name:', base_name)
+        for part_name, part_default in part_names:
+            names['%s-%s' % (base_name, part_name)] = part_default
+    return names
