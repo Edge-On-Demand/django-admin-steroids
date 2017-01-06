@@ -9,7 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from django.utils.encoding import smart_unicode, smart_text, force_text
+from django.utils.encoding import smart_text, force_text
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.auth.models import User
 
