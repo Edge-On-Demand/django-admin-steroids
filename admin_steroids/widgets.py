@@ -8,7 +8,7 @@ from django.conf import settings
 from django.forms.widgets import Select, TextInput, flatatt
 from django.template import Context, Template
 from django.template.context import Context
-from django.utils.encoding import force_unicode, smart_unicode
+from django.utils.encoding import force_text, smart_text
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -65,7 +65,7 @@ class ForeignKeyTextInput(TextInput):
         final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
-            final_attrs['value'] = force_unicode(self._format_value(value))
+            final_attrs['value'] = force_text(self._format_value(value))
         final_attrs['size'] = 10
         t = Template(u"""
 {% load staticfiles %}
@@ -145,7 +145,7 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         for v in values:
             obj = self.rel.to._default_manager\
                 .using(self.db).get(**{key: v})
-            x = smart_unicode(obj)
+            x = smart_text(obj)
             try:
                 change_url = reverse(
                     "admin:%s_%s_change" \

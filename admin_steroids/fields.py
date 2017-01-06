@@ -22,7 +22,7 @@ try:
 except ImportError:
     # Renamed in Django 1.9.
     from django.forms.utils import ValidationError 
-from django.utils.encoding import DjangoUnicodeDecodeError, force_unicode
+from django.utils.encoding import DjangoUnicodeDecodeError, force_text
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext as _
@@ -126,7 +126,7 @@ class CurrencyInput(forms.widgets.TextInput):
                 value = Currency(value).format_pretty()
             except Exception as e:
                 pass
-            final_attrs['value'] = force_unicode(value)
+            final_attrs['value'] = force_text(value)
 
         return mark_safe(u'<input%s />' % flatatt(final_attrs))
 
