@@ -27,7 +27,9 @@ try:
     from django.test import override_settings
 except ImportError:
     from override_settings import override_settings
+    
 # pylint: disable=C0412
+from admin_steroids import fields
 from admin_steroids import utils
 
 warnings.simplefilter('error', RuntimeWarning)
