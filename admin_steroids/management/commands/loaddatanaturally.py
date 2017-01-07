@@ -1,10 +1,8 @@
 from __future__ import unicode_literals
 
-import sys
 import os
 import gzip
 import zipfile
-import traceback
 from itertools import product
 from optparse import make_option
 

@@ -1,8 +1,6 @@
-import os
 import logging
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.mail.backends.smtp import EmailBackend
 
 logger = logging.getLogger(__name__)

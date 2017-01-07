@@ -7,7 +7,6 @@ from django.forms.models import ModelForm
 from django.http import HttpResponse
 from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
 
 import six
 

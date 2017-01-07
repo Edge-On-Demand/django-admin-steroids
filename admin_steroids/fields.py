@@ -15,14 +15,13 @@ from babel.numbers import (
 import django
 from django import forms
 from django.conf import settings
-from django.contrib.admin.widgets import AdminDateWidget
 from django.db import models
 try:
     from django.forms.util import ValidationError
 except ImportError:
     # Renamed in Django 1.9.
     from django.forms.utils import ValidationError 
-from django.utils.encoding import DjangoUnicodeDecodeError, force_text
+from django.utils.encoding import force_text
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext as _

@@ -1,10 +1,7 @@
 
 from django import forms
-from django.contrib import admin
-from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
 from django.core.urlresolvers import reverse, NoReverseMatch
-from django.conf import settings
 from django.forms.widgets import Select, TextInput, flatatt
 from django.template import Context, Template
 from django.template.context import Context
@@ -13,7 +10,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 try:
-    from django.utils.encoding import StrAndUnicode
+    from django.utils.encoding import StrAndUnicode # pylint: disable=unused-import
 except ImportError:
     from django.utils.encoding import python_2_unicode_compatible
 

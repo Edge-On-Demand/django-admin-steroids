@@ -2,17 +2,12 @@ from __future__ import print_function
 
 import sys
 import traceback
-from datetime import date
-from pprint import pprint
 from collections import defaultdict
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Q, Min, Max, Sum, Count, F
-from django.db.models.deletion import Collector
-from django.db.transaction import commit, commit_on_success, commit_manually, autocommit, rollback
-from django.db import IntegrityError, DatabaseError
+from django.core.management.base import BaseCommand
+from django.db.transaction import commit, commit_manually, rollback
 from django.contrib.contenttypes.models import ContentType
 
 class Command(BaseCommand):

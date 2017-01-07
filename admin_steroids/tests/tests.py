@@ -1,35 +1,17 @@
 from __future__ import print_function
 
-import os
-import shlex
-import sys
-import datetime
-from datetime import timedelta
 import time
-from select import select
 import socket
 import warnings
-import threading
-import subprocess
-from functools import cmp_to_key
 
-import six
-
-import django
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.management import call_command
 from django.core import mail
 from django.test import TestCase 
-from django.test.client import Client
-from django.utils import timezone
 try:
     from django.test import override_settings
 except ImportError:
     from override_settings import override_settings
     
 # pylint: disable=C0412
-from admin_steroids import fields
 from admin_steroids import utils
 
 warnings.simplefilter('error', RuntimeWarning)

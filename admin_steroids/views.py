@@ -1,4 +1,3 @@
-import importlib
 import json
 import operator
 
@@ -13,7 +12,6 @@ from django.db.models import Q
 
 import six
 
-from admin_steroids import utils
 from admin_steroids.models import get_modelsearcher
 
 class ModelFieldSearchView(TemplateView):

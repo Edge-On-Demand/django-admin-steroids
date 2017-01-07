@@ -6,7 +6,7 @@ import sys
 import traceback
 
 from django.core.cache import cache
-from django.db import connection, connections, transaction
+from django.db import connections, transaction
 from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
 

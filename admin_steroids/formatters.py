@@ -1,7 +1,7 @@
 import re
 
 from django.core import urlresolvers
-from django.utils.safestring import SafeString, mark_safe
+from django.utils.safestring import SafeString
 from django.conf import settings
 
 from . import utils

@@ -1,14 +1,11 @@
 from __future__ import unicode_literals, print_function
 
-import getpass
 from optparse import make_option
 from urlparse import urlparse
 from uuid import uuid4
 
-from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import DEFAULT_DB_ALIAS
-from django.utils.encoding import force_str
 from django.conf import settings
 
 from django.contrib.auth.models import User
