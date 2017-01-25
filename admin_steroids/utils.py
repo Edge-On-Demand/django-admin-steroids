@@ -6,12 +6,16 @@ import decimal
 import six
 from six.moves.urllib.parse import urlparse
 from six.moves import cPickle as pickle
-from six import text_type
 
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse, NoReverseMatch
+
+try:
+    unicode
+except NameError:
+    unicode = six.text_type # pylint: disable=redefined-builtin
 
 def obj_to_hash(o):
     """
@@ -92,19 +96,20 @@ class StringWithTitle(str):
     http://ionelmc.wordpress.com/2011/06/24/custom-app-names-in-the-django-admin/
     """
 
-    def __new__(cls, value, title):
+    def __new__(cls, value, title=None):
         instance = str.__new__(cls, value)
-        instance._title = title
+        instance._title = title or value
         return instance
 
     def title(self):
         return self._title
         
     def __eq__(self, other):
-        return text_type(self) == other
+        return unicode(self) == unicode(other)
 
-    __copy__ = lambda self: self
-    __deepcopy__ = lambda self, memodict: self
+    __copy__ = lambda self: StringWithTitle(unicode(self), self.title) # pylint: disable=undefined-variable
+    
+    __deepcopy__ = lambda self, memodict: StringWithTitle(unicode(self), self.title)
 
 re_digits_nondigits = re.compile(r'\d+|\D+')
 
