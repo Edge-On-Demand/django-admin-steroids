@@ -98,6 +98,9 @@ class StringWithTitle(str):
 
     def title(self):
         return self._title
+        
+    def __eq__(self, other):
+        return unicode(self) == other
 
     __copy__ = lambda self: self
     __deepcopy__ = lambda self, memodict: self
