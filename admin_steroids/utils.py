@@ -6,6 +6,7 @@ import decimal
 import six
 from six.moves.urllib.parse import urlparse
 from six.moves import cPickle as pickle
+from six import text_type
 
 from django.conf import settings
 from django.db import models
@@ -100,7 +101,7 @@ class StringWithTitle(str):
         return self._title
         
     def __eq__(self, other):
-        return unicode(self) == other
+        return text_type(self) == other
 
     __copy__ = lambda self: self
     __deepcopy__ = lambda self, memodict: self
