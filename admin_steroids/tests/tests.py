@@ -108,15 +108,15 @@ class Tests(TestCase):
 
     def test_csv_encoding(self):
         s = u'\ufffd'
-        
+
         with self.assertRaises(UnicodeEncodeError):
             print(s.encode('ascii'))
-        
+
         with self.assertRaises((UnicodeEncodeError, TypeError)):
             with open('/tmp/test.csv', 'wb') as fout:
                 writer = csv.DictWriter(fout, fieldnames=['name'])
                 writer.writerow({'name': s})
-            
+
         with open('/tmp/test.csv', 'w') as fout:
             writer = csv.DictWriter(fout, fieldnames=['name'])
             data = utils.encode_csv_data({'name': s})

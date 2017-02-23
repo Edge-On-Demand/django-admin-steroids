@@ -351,7 +351,7 @@ def count_related_objects(obj):
     return cnt
 
 def remove_html(s):
-    import HTMLParser
+    import HTMLParser # pylint: disable=import-error
 
     s = six.text_type(s)
 

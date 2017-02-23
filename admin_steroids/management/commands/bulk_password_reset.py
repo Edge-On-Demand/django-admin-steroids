@@ -1,8 +1,10 @@
 from __future__ import unicode_literals, print_function
 
 from optparse import make_option
-from urlparse import urlparse
+#from urlparse import urlparse
 from uuid import uuid4
+
+from six.moves.urllib.parse import urlparse # pylint: disable=import-error
 
 from django.core.management.base import BaseCommand
 from django.db import DEFAULT_DB_ALIAS

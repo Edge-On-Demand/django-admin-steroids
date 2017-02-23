@@ -413,7 +413,7 @@ class CSVModelAdminMixin(object):
 
             #print('data:',data
             #writer.writerow(data)
-            writer.writerow(encode_csv_data(data))
+            writer.writerow(utils.encode_csv_data(data))
         return response
     csv_export.short_description = \
         'Export selected %(verbose_name_plural)s as a CSV file'
