@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 #Currency field borrowed from:
 #https://djangosnippets.org/snippets/1527/
 
@@ -20,7 +22,7 @@ try:
     from django.forms.util import ValidationError
 except ImportError:
     # Renamed in Django 1.9.
-    from django.forms.utils import ValidationError 
+    from django.forms.utils import ValidationError
 from django.utils.encoding import force_text
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -96,7 +98,7 @@ class CurrencyInput(forms.widgets.TextInput):
             # Only add the 'value' attribute if a value is non-empty.
             try:
                 value = Currency(value).format_pretty()
-            except Exception as e:
+            except (ValueError, TypeError):
                 pass
             final_attrs['value'] = force_text(value)
 
@@ -243,15 +245,15 @@ class Currency(Decimal):
         in a currency other than the standard decimal format of #,###.##
         context: How to handle a malformed string value
         """
-        
+
         format = kwargs.pop('format', None) # pylint: disable=W0622
-        
+
         format_pretty = kwargs.pop('format_pretty', None)
-        
+
         parse_string = kwargs.pop('parse_string', False)
-        
+
         context = kwargs.pop('context', None)
-        
+
         if value != "0" and isinstance(value, six.string_types) and parse_string:
             value = parse_value(value)
         elif isinstance(value, float):
@@ -281,7 +283,7 @@ class Currency(Decimal):
             self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
 
 class CurrencyFormField(forms.fields.DecimalField):
-    
+
     """
     The form-side companion to CurrencyField, rendering and cleaning
     a dollar-formatting value.

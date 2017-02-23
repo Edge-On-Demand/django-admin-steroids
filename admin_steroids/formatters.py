@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import re
 
 from django.core import urlresolvers
@@ -13,18 +15,18 @@ class AdminFieldFormatter(object):
     Base class for controlling the display formatting of field values
     in Django's admin.
     """
-    
+
     # Only necessary for logic in admin.helpers.AdminReadonlyField.__init__.
     __name__ = 'AdminFieldFormatter'
-    
+
     is_readonly = True
-    
+
     object_level = False
-    
+
     title_align = None
-    
+
     null = False
-    
+
     def __init__(self, name, title=None, **kwargs):
         self.name = name
         self.short_description = kwargs.get('short_description', title or name)
@@ -33,13 +35,13 @@ class AdminFieldFormatter(object):
         kwargs.setdefault('title_align',
             kwargs.get('align', kwargs.get('title_align')))
         self.__dict__.update(kwargs)
-        
+
         if not isinstance(self.short_description, SafeString):
             self.short_description = re.sub(
                 '[^0-9a-zA-Z]+',
                 ' ',
                 self.short_description).capitalize()
-            
+
             #TODO: Allow markup in short_description? Not practical due to
             #hardcoded escape() in
             #django.contrib.admin.helpers.AdminReadonlyField
@@ -48,7 +50,7 @@ class AdminFieldFormatter(object):
 #                self.short_description = title_template \
 #                    % (self.title_align, self.short_description)
 #                self.short_description = mark_safe(self.short_description)
-        
+
     def __call__(self, obj, plaintext=False):
         if self.object_level:
             v = obj
@@ -69,10 +71,10 @@ class AdminFieldFormatter(object):
         if plaintext:
             return self.plaintext(v)
         return self.format(v)
-    
+
     def format(self, v, plaintext=False):
         return v
-    
+
     def plaintext(self, *args, **kwargs):
         """
         Called when no HTML is desired.
@@ -84,15 +86,15 @@ class DollarFormat(AdminFieldFormatter):
     """
     Formats a numeric value as dollars.
     """
-    
+
     decimals = 2
-    
+
     title_align = 'right'
-    
+
     align = 'right'
-    
+
     commas = True
-    
+
     def format(self, v, plaintext=False):
         if v is None:
             return NONE_STR
@@ -113,13 +115,13 @@ class PercentFormat(AdminFieldFormatter):
     """
     Formats a ratio as a percent.
     """
-    
+
     template = '%.0f%%'
-    
+
     align = 'right'
-    
+
     rounder = round
-    
+
     def format(self, v, plaintext=False):
         if v is None:
             style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
@@ -138,15 +140,15 @@ class FloatFormat(AdminFieldFormatter):
     """
     Formats a number as a float.
     """
-    
+
     decimals = 2
-    
+
     template = '%.02f'
-    
+
     align = 'left'
-    
+
     rounder = round
-    
+
     def format(self, v, plaintext=False):
         if v is None:
             style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
@@ -159,16 +161,16 @@ class FloatFormat(AdminFieldFormatter):
         if not plaintext:
             template = '<span style="'+style+'">'+template+'</span>'
         return template % v
-    
+
 class CenterFormat(AdminFieldFormatter):
     """
     Formats a ratio as a percent.
     """
-    
+
     title_align = 'center'
-    
+
     align = 'center'
-    
+
     def format(self, v, plaintext=False):
         if plaintext:
             return str(v)
@@ -180,7 +182,7 @@ class ReadonlyFormat(AdminFieldFormatter):
     """
     Formats a the field as a readonly attribute.
     """
-    
+
 #    def format(self, v):
 #        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
 #        template = '<span style="'+style+'">%s</span>'
@@ -190,7 +192,7 @@ class NbspFormat(AdminFieldFormatter):
     """
     Replaces all spaces with a non-breaking space.
     """
-    
+
     def format(self, v, plaintext=False):
         v = str(v)
         if plaintext:
@@ -203,13 +205,13 @@ class BooleanFormat(AdminFieldFormatter):
     Converts the field value into a green checkmark image for true and red dash
     image false.
     """
-    
+
     align = 'left'
-    
+
     yes_path = '%sadmin/img/icon-yes.gif'
-    
+
     no_path = '%sadmin/img/icon-no.gif'
-    
+
     def format(self, v, plaintext=False):
         v = bool(v)
         if plaintext:
@@ -229,15 +231,15 @@ class ForeignKeyLink(AdminFieldFormatter):
     """
     Renders a foreign key value as a link to that object's admin change page.
     """
-    
+
     target = '_blank'
-    
+
     template_type = 'raw' # button|raw
-    
+
     label_template = '{name}'
-    
+
     null = True
-    
+
     def format(self, v, plaintext=False):
         try:
             assert self.template_type in ('button', 'raw'), \
@@ -252,7 +254,7 @@ class ForeignKeyLink(AdminFieldFormatter):
                     % (url, self.target, label)
         except Exception as e:
             return str(e)
-        
+
     def plaintext(self, v):
         if v is None:
             return ''
@@ -263,15 +265,15 @@ class OneToManyLink(AdminFieldFormatter):
     Renders a related objects manager as a link to those object's admin change
     list page.
     """
-    
+
     object_level = True
-    
+
     url_param = None
-    
+
     id_param = 'id'
-    
+
     target = '_blank'
-    
+
     def format(self, obj):
         try:
             url = None
@@ -300,4 +302,3 @@ class OneToManyLink(AdminFieldFormatter):
 
     def plaintext(self, v):
         return '' #TODO?
-    

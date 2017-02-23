@@ -25,9 +25,9 @@ class Command(BaseCommand):
     help = "Sends the 'forgot your password' reset email for several users."
 
     def handle(self, *args, **options):
-        
+
         emails = list(args)
-        
+
         is_admin_site = False,
         template_name = 'registration/password_reset_form.html'
         email_template_name = 'registration/password_reset_email.html'
@@ -39,10 +39,10 @@ class Command(BaseCommand):
         current_app = None
         extra_context = None
         request = None
-        
+
         secure = hasattr(settings, 'BASE_SECURE_URL') \
             and settings.BASE_SECURE_URL.startswith('https')
-        
+
         domain = options['domain']
         if not domain:
             try:
@@ -52,24 +52,24 @@ class Command(BaseCommand):
                     domain = urlparse(settings.BASE_URL).netloc
                 except Exception as e:
                     pass
-                    
+
 #        site_name = options['site_name']
 #        if not site_name:
 #            try:
 #                site_name = Site.objects.get(id=settings.SITE_ID).name
 #            except:
 #                site_name = domain
-        
+
         for email in emails:
             print('email:', email)
             user = User.objects.get(email=email)
-            
+
             # Ensure the user has some sort of password.
             # Otherwise, the password reset form will ignore it.
             if not user.has_usable_password():
                 user.set_password(str(uuid4()))
                 user.save()
-                
+
             form = password_reset_form(dict(email=email))
             assert form.is_valid(), 'Invalid email: %s' % email
             opts = {

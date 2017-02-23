@@ -3,14 +3,15 @@ from __future__ import print_function
 import time
 import socket
 import warnings
+import csv
 
 from django.core import mail
-from django.test import TestCase 
+from django.test import TestCase
 try:
     from django.test import override_settings
 except ImportError:
     from override_settings import override_settings
-    
+
 # pylint: disable=C0412
 from admin_steroids import utils
 
@@ -25,20 +26,20 @@ DEV_EMAIL_REDIRECT_TO = 'test@domain.com'
 SMTPD_LOG = '/tmp/smtpd.log'
 
 class Tests(TestCase):
-    
+
 #     fixtures = []
-    
+
     def setUp(self):
         pass
-    
+
     def test_obj_to_hash(self):
         s = utils.obj_to_hash({123:'abc'})
         self.assertEqual(len(s), 128)
-    
+
     def test_FormatWithCommas(self):
         s = utils.FormatWithCommas('%.4f', 1234567.5678)
         self.assertEqual(s, '1,234,567.5678')
-    
+
     @override_settings(EMAIL_BACKEND='admin_steroids.email.DevelopmentEmailBackend')
     @override_settings(EMAIL_HOST=EMAIL_HOST)
     @override_settings(EMAIL_PORT=EMAIL_PORT)
@@ -46,10 +47,10 @@ class Tests(TestCase):
     @override_settings(DEV_EMAIL_APPEND_HOSTNAME=True)
     @override_settings(DEV_EMAIL_ALLOW_ANY_ON_DOMAIN=False)
     def _test_DevelopmentEmailBackend(self):
-        
+
         # Kill all previous SMTP servers.
 #         os.system("ps aux|grep -i smtp|grep -v grep|awk '{print $2}' | xargs -i kill {}")
-        
+
         # Launch debuggin SMTP server to catch emails.
 #         print('a')
 #         command = 'python -m smtpd -n -c DebuggingServer %s:%s > %s' \
@@ -58,12 +59,12 @@ class Tests(TestCase):
 #         process = subprocess.Popen(command, shell=True)
 #         time.sleep(1)
 #         print('b')
-    
+
         output = []
-    
+
         try:
             #wait_until_response(num=1)
-        
+
             # Send email.
             self.assertEqual(len(mail.outbox), 0)
             mail.send_mail(
@@ -77,7 +78,7 @@ class Tests(TestCase):
 
             # Confirm the email didn't go into Django's fake email backend.
             self.assertEqual(len(mail.outbox), 0)
-                         
+
 #             last = None
 #             t0 = time.time()
 #             timeout = 10
@@ -90,17 +91,34 @@ class Tests(TestCase):
 #                 time.sleep(1)
 #                 if time.time() - t0 > timeout:
 #                     break
-                        
+
             # Poll process for new output until finished
             output = '\n'.join(output)
             print('output:', output)
-            
+
             signature = '(Sent from http://%s)' % EMAIL_HOST
             self.assertTrue(signature in output)
-        
+
         finally:
-            
+
             print('Killing SMTP...')
 #             if process:
 #                 process.kill()
             print('Killed SMTP.')
+
+    def test_csv_encoding(self):
+        s = u'\ufffd'
+        
+        with self.assertRaises(UnicodeEncodeError):
+            print(s.encode('ascii'))
+        
+        with self.assertRaises((UnicodeEncodeError, TypeError)):
+            with open('/tmp/test.csv', 'wb') as fout:
+                writer = csv.DictWriter(fout, fieldnames=['name'])
+                writer.writerow({'name': s})
+            
+        with open('/tmp/test.csv', 'w') as fout:
+            writer = csv.DictWriter(fout, fieldnames=['name'])
+            data = utils.encode_csv_data({'name': s})
+            print('data:', data)
+            writer.writerow(data)

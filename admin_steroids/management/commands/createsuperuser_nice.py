@@ -12,7 +12,7 @@ from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.utils.encoding import force_str, force_text
-from django.utils.six.moves import input # pylint: disable=W0622
+from django.utils.six.moves import input # pylint: disable=import-error,redefined-builtin
 from django.utils.text import capfirst
 
 class Command(BaseCommand):

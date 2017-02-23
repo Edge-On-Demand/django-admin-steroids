@@ -17,13 +17,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from_email = settings.SERVER_EMAIL
-        
+
         recipient_list = (options.get('recipient_list') or '').strip()
         if recipient_list:
             recipient_list = [_ for _ in recipient_list.split(',') if _.strip()]
         else:
             recipient_list = [email for _, email in settings.ADMINS]
-            
+
         print('Attempting to send email to %s from %s...' \
             % (', '.join(recipient_list), from_email))
         send_mail(

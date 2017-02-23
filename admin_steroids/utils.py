@@ -1,10 +1,13 @@
+from __future__ import print_function
+
 import re
+import sys
 import hashlib
 import decimal
 #from urlparse import urlparse
 
 import six
-from six.moves.urllib.parse import urlparse
+from six.moves.urllib.parse import urlparse # pylint: disable=import-error
 from six.moves import cPickle as pickle
 
 from django.conf import settings
@@ -41,7 +44,7 @@ def get_admin_change_url(obj):
         return reverse(change_url_name, args=(obj.id,))
     except:
         raise
-    
+
 def get_admin_add_url(obj, for_concrete_model=False):
     """
     Returns the admin add url associated with the given instance.
@@ -90,7 +93,7 @@ def get_admin_changelist_url(obj, for_concrete_model=False):
 
 class StringWithTitle(str):
     """
-    String class with a title method. Can be used to override 
+    String class with a title method. Can be used to override
     admin app names.
 
     http://ionelmc.wordpress.com/2011/06/24/custom-app-names-in-the-django-admin/
@@ -103,12 +106,12 @@ class StringWithTitle(str):
 
     def title(self):
         return self._title
-        
+
     def __eq__(self, other):
         return unicode(self) == unicode(other)
 
     __copy__ = lambda self: StringWithTitle(unicode(self), self.title) # pylint: disable=undefined-variable
-    
+
     __deepcopy__ = lambda self, memodict: StringWithTitle(unicode(self), self.title)
 
 re_digits_nondigits = re.compile(r'\d+|\D+')
@@ -153,7 +156,7 @@ def FormatWithCommas(fmt, value):
     '-1,234,567.5678'
     >>> FormatWithCommas('$%.4f', -1234567.5678)
     '$-1,234,567.5678'
-    
+
     """
     parts = re_digits_nondigits.findall(fmt % (value,))
     for i, s in enumerate(parts):
@@ -161,7 +164,7 @@ def FormatWithCommas(fmt, value):
             parts[i] = _commafy(s)
             break
     return ''.join(parts)
-    
+
 def _commafy(s):
     r = []
     for i, c in enumerate(reversed(s)):
@@ -174,7 +177,7 @@ def currency_value(value, decimal_places=2):
     """
     Convert a given value to a standard currency value.
     """
- 
+
     # Build the template for quantizing the decimal places.
     q = '0.' + ('0' * (decimal_places-1)) + '1'
 
@@ -182,9 +185,9 @@ def currency_value(value, decimal_places=2):
     with decimal.localcontext() as context:
         try:
             context.rounding = decimal.ROUND_HALF_UP
-            return decimal.Decimal(value).quantize(decimal.Decimal(q), 
+            return decimal.Decimal(value).quantize(decimal.Decimal(q),
                                                    decimal.ROUND_HALF_UP)
-        except Exception as e:
+        except decimal.InvalidOperation:
             return
 
 # http://stackoverflow.com/a/5192374/247542
@@ -192,10 +195,10 @@ class classproperty(object):
     """
     Implements a @property-like decorator for class methods.
     """
-    
+
     def __init__(self, getter):
         self.getter = getter
-        
+
     def __get__(self, instance, owner):
         return self.getter(owner)
 
@@ -225,7 +228,7 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     """
     Returns the HTML for a simple link referring to a page of items,
     usually showing a count.
-    
+
     Meant to be applied to ForeignKey fields on the given object.
     """
     class_str = class_str or 'button'
@@ -241,10 +244,10 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
         view_str = view_str or (prefix + str(obj))
     else:
         view_str = view_str or 'View'
-        
+
     if template:
         view_str = template.format(count=count)
-        
+
     return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
         .format(url=url, view=view_str.replace(' ', '&nbsp;'), tgt=target, class_str=class_str)
 
@@ -252,38 +255,38 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
     """
     Returns the HTML for rendering a link to a related model's
     admin changelist page.
-    
+
     Meant to be applied to ForeignKey fields on a related object where field_name
     is the related_name associated with the ForiegnKey pointing to the given object.
     """
     related = getattr(obj, field_name)
     model = related.model
     q = related.all()
-    
+
     #TODO:is there a more efficient way to do this?
     if not reverse_field:
         reverse_fields = [
             _.name for _ in model._meta.fields
             if _.rel and _.rel.to == type(obj) and _.rel.related_name == field_name
         ]
-        
+
         if not reverse_fields:
             reverse_fields = [
                 _.name for _ in model._meta.fields
                 if _.rel and _.rel.to == type(obj)
             ]
-        
+
         assert len(reverse_fields) == 1, \
             'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '__id__exact=' + str(obj.pk)
-    
+
     if extra:
         if not extra.startswith('&'):
             extra = '&'+extra
         url = url + extra
-    
+
     return view_link(url, q.count(), template=template, **kwargs)
 
 def dereference_value(obj, name, as_name=False):
@@ -349,16 +352,16 @@ def count_related_objects(obj):
 
 def remove_html(s):
     import HTMLParser
-    
+
     s = six.text_type(s)
-    
+
     # We do this ourselves since HTMLParser does not convert this to the ASCII
     # blank space character.
     s = s.replace('&nbsp;', ' ')
-    
+
     # Strip out all other HTML entities.
     s = HTMLParser.HTMLParser().unescape(s)
-    
+
     try:
         # Try using BeautifulSoup to strip out HTML, since its parser is more robust
         # than a simple Regex.
@@ -368,7 +371,7 @@ def remove_html(s):
     except ImportError:
         # However, if the user doesn't want another dependency, fallback to Regex.
         s = re.sub("<.*?>", '', s)
-        
+
     return s
 
 def get_model_fields(mdl):
@@ -386,18 +389,18 @@ def get_model_fields(mdl):
 def get_related_name(parent, child):
     """
     Looks up the related_name variable.
-    
+
     Given:
-    
+
         class Author(models.Model):
             name=models.CharField(max_length=30)
-        
+
         class Article(models.Model):
             writer=models.ForeignKey(Author)
-            
+
     >>> get_related_name(Author, Article)
     'article_set'
-    
+
     """
     name = None
     for field in child._meta.fields:
@@ -423,3 +426,12 @@ def generate_stub_inline_form_field_names(parent_model, inlines):
         for part_name, part_default in part_names:
             names['%s-%s' % (base_name, part_name)] = part_default
     return names
+
+def encode_csv_data(d):
+    for k, v in d.items():
+        if isinstance(v, six.string_types):
+            d[k] = v.encode('utf-8', errors='replace')
+            if sys.version_info.major >= 3:
+                _v = six.binary_type(d[k])
+                d[k] = _v
+    return d

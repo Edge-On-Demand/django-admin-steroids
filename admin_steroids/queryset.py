@@ -41,7 +41,7 @@ def execute_sql_from_file(fn, using=None):
     Executes multiple SQL statements in the given file.
     """
     return execute_sql(open(fn).read(), using=using)
-    
+
 def execute_sql(sql, using=None):
     """
     Executes multiple SQL statements in the given string.
@@ -57,7 +57,7 @@ def execute_sql(sql, using=None):
                 part = part + ';'
             print('sql:', part, file=sys.stdout)
             _execute_sql_part(part, using=using)
-    except Exception as e:
+    except Exception:
         traceback.print_exc(file=sys.stderr)
         transaction.rollback()
 
@@ -79,23 +79,23 @@ class ApproxCountQuerySet(QuerySet):
     behave exactly as QuerySet.
 
     Only works with MySQL. Behaves normally for all other engines.
-    
+
     You'd use it by cloning your queryset, substituting this class
-    
+
     e.g. to apply to a ModelAdmin, you'd override queryset() like:
-    
+
         def queryset(self, *args, **kwargs):
             qs = super(MyModelAdmin, self).queryset(*args, **kwargs)
             qs = qs._clone(klass=ApproxCountQuerySet)
             return qs
-    
+
     Based on code from answer http://stackoverflow.com/a/10446271/247542.
     """
 
     def count(self):
         # Code from django/db/models/query.py
 
-        #if self._result_cache is not None and not self._iter:# ._iter removed in Django 1.6? 
+        #if self._result_cache is not None and not self._iter:# ._iter removed in Django 1.6?
         if self._result_cache is not None:
             return len(self._result_cache)
 
@@ -143,9 +143,9 @@ class CachedCountQuerySet(ApproxCountQuerySet):
     Wraps a caching layer over ApproxCountQuerySet, since it only gives global
     table counts and reverts to a direct query if any filters are applied.
     """
-    
+
     cache_seconds = 3600 # 1-hour
-    
+
     def count(self):
         try:
             sql = str(self.query)

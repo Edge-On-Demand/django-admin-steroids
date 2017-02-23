@@ -18,9 +18,9 @@ class Command(BaseCommand):
     )
 
     def handle(self, *users, **options):
-        
+
         if options['all']:
-            
+
             qs = Session.objects.all()
             total = qs.count()
             i = 0
@@ -30,17 +30,17 @@ class Command(BaseCommand):
                 sys.stdout.flush()
                 r.delete()
             print('')
-        
+
         else:
-            
+
             for user in users:
-                
+
                 print('Looking up user %s...' % user)
                 if user.isdigit():
                     user = User.objects.get(id=int(user))
                 else:
                     user = User.objects.get(email=user)
-                    
+
                 qs = Session.objects.all()
                 total = qs.count()
                 i = 0
@@ -50,5 +50,5 @@ class Command(BaseCommand):
                     sys.stdout.flush()
                     if s.get_decoded().get('_auth_user_id') == user.id:
                         s.delete()
-                
+
         print('Done!')

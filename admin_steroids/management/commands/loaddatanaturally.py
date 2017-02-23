@@ -1,3 +1,6 @@
+"""
+This command is obsolete in Django>=1.7, because proper support for natural keys was later added.
+"""
 from __future__ import unicode_literals
 
 import os
@@ -10,9 +13,8 @@ from django.conf import settings
 from django.core import serializers
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
-from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
-      IntegrityError, DatabaseError)
-from django.db.models import get_apps
+from django.db import connections, router, transaction, DEFAULT_DB_ALIAS, IntegrityError, DatabaseError
+from django.db.models import get_apps # pylint: disable=no-name-in-module
 from django.utils.encoding import force_text
 from django.utils._os import upath
 
@@ -190,7 +192,7 @@ class Command(BaseCommand):
                                         fmt, fixture, using=using, ignorenonexistent=ignore)
 
                                     for obj in objects:
-                                        
+
                                         try:
                                             # Attempt to lookup any existing object using natural
                                             # keys and use that object's PK to duplicate and
@@ -206,7 +208,7 @@ class Command(BaseCommand):
                                         except type(obj.object).DoesNotExist:
                                             # No existing record, so proceed as normal.
                                             pass
-                                            
+
                                         objects_in_fixture += 1
                                         if router.allow_syncdb(using, obj.object.__class__):
                                             loaded_objects_in_fixture += 1

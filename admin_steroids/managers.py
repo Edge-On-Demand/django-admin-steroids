@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from django.db import models, connections
 
 from . import queryset
@@ -5,16 +7,16 @@ from . import queryset
 class ViewModelManager(models.Manager):
     """
     Helper manager for managing Django-managed SQL views.
-    
+
     Given a Django ORM-generated RawQuerySet, creates an equivalent SQL view
     that can then be wrapped in a model class.
-    
+
     To use, subclass ViewModelManager and attach it to an unmanaged model
     with a db_table value. Then implement get_view_query_set()
     and call write_sql_view(). Ensure the model has fields for all the columns
     returns by the raw queryset.
     """
-    
+
     _mysql_view_template = '''SET max_error_count = 0;
 DROP VIEW IF EXISTS {view_name} CASCADE;
 CREATE VIEW {view_name}
@@ -28,13 +30,13 @@ CREATE VIEW {view_name}
 AS
 {view_query};
 '''
-  
+
     _sqlite_view_template = '''DROP VIEW IF EXISTS {view_name};
 CREATE VIEW {view_name}
 AS
 {view_query};
 '''
-  
+
     def get_view_query_set(self):
         raise NotImplementedError
 

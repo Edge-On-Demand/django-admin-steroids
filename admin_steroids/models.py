@@ -12,4 +12,3 @@ def register_modelsearcher(app_label, model_name, field_name, cb):
 def get_modelsearcher(app_label, model_name, field_name):
     return _modelsearch_callbacks.get(
         (app_label.lower(), model_name.lower(), field_name.lower()))
-    

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 
 from django.conf import settings
@@ -9,7 +11,7 @@ class DevelopmentEmailBackend(EmailBackend):
     """
     Redirects all email to an specific domain address
     and appends the hostname to the message.
-    
+
     Designed to be used in development environments, where
     we want to test sending real email, but don't want to risk
     emailing real users.
@@ -19,13 +21,13 @@ class DevelopmentEmailBackend(EmailBackend):
         """
         A helper method that does the actual sending.
         """
-        
+
         # Auto-bcc ourselves. This is useful when using some hosted email
         # services that don't include any "sent mail" folder by default.
         bcc_recipients = getattr(settings, 'EMAIL_BCC_RECIPIENTS', [])
         if bcc_recipients:
             email_message.bcc.extend(bcc_recipients)
-        
+
         if not email_message.recipients():
             return False
         try:
@@ -47,15 +49,15 @@ class DevelopmentEmailBackend(EmailBackend):
                     except Exception as e:
                         logger.error("Invalid email recipient: %s", e)
             if not recipients:
-                 recipients = [default_redirect_to]
-                 if bcc_recipients:
-                     recipients.extend(bcc_recipients)
-                
+                recipients = [default_redirect_to]
+                if bcc_recipients:
+                    recipients.extend(bcc_recipients)
+
             # Append hostname
             message = email_message.message().as_string()
             if getattr(settings, 'DEV_EMAIL_APPEND_HOSTNAME', False):
                 message += '\n(Sent from %s)' % settings.BASE_URL
-                
+
             self.connection.sendmail(
                 from_addr=email_message.from_email,
                 to_addrs=recipients,
@@ -69,7 +71,7 @@ class DevelopmentEmailBackend(EmailBackend):
 class BCCEmailBackend(EmailBackend):
 
     def _send(self, email_message):
-        
+
         # Auto-bcc ourselves. This is useful when using some hosted email
         # services that don't include any "sent mail" folder by default.
         bcc_recipients = getattr(settings, 'EMAIL_BCC_RECIPIENTS', [])

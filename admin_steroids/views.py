@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import json
 import operator
 
@@ -19,7 +21,7 @@ class ModelFieldSearchView(TemplateView):
     Allows searching for field values in an arbitrary model for dynamically
     populating admin list filters.
     """
-    
+
     @property
     def search_path_tuple(self):
         return (
@@ -27,11 +29,11 @@ class ModelFieldSearchView(TemplateView):
             self.kwargs['model_name'],
             self.kwargs['field_name'],
         )
-    
+
     @property
     def q(self):
         return self.request.GET.get('q', '').strip()
-    
+
     @property
     def model(self):
 #        mdls = importlib.import_module('%s.models' % self.kwargs['app_name'])
@@ -40,7 +42,7 @@ class ModelFieldSearchView(TemplateView):
             app_label=self.kwargs['app_name'],
             model=self.kwargs['model_name'])
         return ct.model_class()
-    
+
 #    def get_context_data(self, **kwargs):
 #        context = super(HomePageView, self).get_context_data(**kwargs)
 #        context['latest_articles'] = Article.objects.all()[:5]
@@ -49,13 +51,13 @@ class ModelFieldSearchView(TemplateView):
     @property
     def cache_key(self):
         return self.search_path_tuple + (self.q,)
-    
+
     def render_to_response(self, context, **response_kwargs):
 
         path = self.search_path_tuple
         if path not in settings.DAS_ALLOWED_AJAX_SEARCH_PATHS:
             raise PermissionDenied
-        
+
         # Ensure only authorized users can access admin URLs.
         #TODO:extend this to allow custom authentication options
         if 'admin' in self.request.path:
@@ -76,7 +78,7 @@ class ModelFieldSearchView(TemplateView):
         if q:
             field = model._meta.get_field(field_name)
             field_type = type(field)
-            
+
             cb = get_modelsearcher(
                 app_label=self.kwargs['app_name'],
                 model_name=self.kwargs['model_name'],
@@ -106,7 +108,7 @@ class ModelFieldSearchView(TemplateView):
                     models.TextField,
                     models.URLField,
                 )):
-                        
+
                 # Build query for a simple string-based field.
                 qs = model.objects.filter(**{field_name+'__icontains': q})\
                     .values_list(field_name, flat=True)\
@@ -148,4 +150,3 @@ class ModelFieldSearchView(TemplateView):
                 response,
                 settings.DAS_AJAX_SEARCH_DEFAULT_CACHE_SECONDS)
         return response
-    

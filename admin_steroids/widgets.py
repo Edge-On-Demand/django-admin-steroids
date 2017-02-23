@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 from django import forms
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
@@ -40,7 +41,7 @@ class ForeignKeyTextInput(TextInput):
     Implements the same markup as VerboseForeignKeyRawIdWidget but does not
     require an explicit model relationship.
     """
-    
+
     def __init__(self, model_class, value, *args, **kwargs):
         super(ForeignKeyTextInput, self).__init__(*args, **kwargs)
         self._model_class = model_class
@@ -55,7 +56,7 @@ class ForeignKeyTextInput(TextInput):
         self._instance = None
         if q.count():
             self._instance = q[0]
-            
+
     def render(self, name, value, attrs=None):
         if value is None:
             value = ''
@@ -87,7 +88,7 @@ class ForeignKeyTextInput(TextInput):
 #http://djangosnippets.org/snippets/2217/
 
 class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
-    
+
     def __init__(self, *args, **kwargs):
         raw_id_fields_new_tab = True
         if 'raw_id_fields_new_tab' in kwargs:
@@ -95,13 +96,13 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
             del kwargs['raw_id_fields_new_tab']
         super(VerboseForeignKeyRawIdWidget, self).__init__(*args, **kwargs)
         self.raw_id_fields_new_tab = raw_id_fields_new_tab
-    
+
     @property
     def target(self):
         if self.raw_id_fields_new_tab:
             return '_blank'
         return '_self'
-    
+
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
         try:
@@ -120,7 +121,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
             return ''
 
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
-    
+
     def __init__(self, *args, **kwargs):
         raw_id_fields_new_tab = True
         if 'raw_id_fields_new_tab' in kwargs:
@@ -128,13 +129,13 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
             del kwargs['raw_id_fields_new_tab']
         super(VerboseManyToManyRawIdWidget, self).__init__(*args, **kwargs)
         self.raw_id_fields_new_tab = raw_id_fields_new_tab
-    
+
     @property
     def target(self):
         if self.raw_id_fields_new_tab:
             return '_blank'
         return '_self'
-            
+
     def label_for_value(self, value):
         values = value.split(',')
         str_values = []
@@ -201,6 +202,6 @@ class ReadOnlyText(forms.TextInput):
     input_type = 'text'
 
     def render(self, name, value, attrs=None):
-        if value is None: 
+        if value is None:
             value = ''
         return value
