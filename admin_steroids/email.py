@@ -30,12 +30,8 @@ class DevelopmentEmailBackend(EmailBackend):
             return False
         try:
             # Set recipient redirect.
-            allow_any_on_domain = getattr(
-                settings, 'DEV_EMAIL_ALLOW_ANY_ON_DOMAIN', False)
-            default_redirect_to = getattr(
-                settings,
-                'DEV_EMAIL_REDIRECT_TO',
-                settings.DEV_EMAIL_REDIRECT_TO)
+            allow_any_on_domain = getattr(settings, 'DEV_EMAIL_ALLOW_ANY_ON_DOMAIN', False)
+            default_redirect_to = getattr(settings, 'DEV_EMAIL_REDIRECT_TO', settings.DEV_EMAIL_REDIRECT_TO)
             default_domain = default_redirect_to.split('@')[1].strip()
             recipients = []
             if allow_any_on_domain:

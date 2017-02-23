@@ -30,7 +30,7 @@ class Command(BaseCommand):
             dryrun = options['dryrun']
             only_show_classes = options['only_show_classes']
             do_update = options['do_update']
-            
+
             app_label, model_name = name.split('.')
             ct = ContentType.objects.get(app_label=app_label, model=model_name)
             model_cls = ct.model_class()
