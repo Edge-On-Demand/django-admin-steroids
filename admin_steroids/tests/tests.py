@@ -1,3 +1,9 @@
+"""
+Quick test:
+
+    export TESTNAME=.test_delete_duplicate_record; tox -e py27-django15
+
+"""
 from __future__ import print_function
 
 import time
@@ -122,3 +128,30 @@ class Tests(TestCase):
             data = utils.encode_csv_data({'name': s})
             print('data:', data)
             writer.writerow(data)
+
+    def test_delete_duplicate_record(self):
+        from admin_steroids.tests.models import Person, Contact
+        from django.core.management import call_command
+
+        print('Confirming records with no clear conflicts can be merged...')
+        Person.objects.all().delete()
+        p3 = Person.objects.create(name='Sue')
+        Contact.objects.create(person=p3, email='sue@sue.com')
+        p4 = Person.objects.create(name='Susan')
+        self.assertEqual(Person.objects.all().count(), 2)
+        self.assertEqual(Contact.objects.all().count(), 1)
+        call_command('delete_duplicate_record', 'tests.person', p4.id, p3.id)
+        self.assertEqual(Person.objects.all().count(), 1)
+        self.assertEqual(Contact.objects.all().count(), 1)
+
+        print('Confirming records with conflicting dependencies cannot be merged...')
+        Person.objects.all().delete()
+        self.assertEqual(Person.objects.all().count(), 0)
+        self.assertEqual(Contact.objects.all().count(), 0)
+        p1 = Person.objects.create(name='Bob')
+        Contact.objects.create(person=p1, email='bob@bob.com')
+        p2 = Person.objects.create(name='Bobby')
+        Contact.objects.create(person=p2, email='bob@bob.com')
+        call_command('delete_duplicate_record', 'tests.person', p1.id, p2.id)
+        self.assertEqual(Person.objects.all().count(), 2)
+        self.assertEqual(Contact.objects.all().count(), 2)

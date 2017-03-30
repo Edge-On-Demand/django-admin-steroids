@@ -5,9 +5,8 @@ import sys
 from collections import defaultdict
 from optparse import make_option
 
-#from django.conf import settings
+from django import get_version, VERSION
 from django.core.management.base import BaseCommand
-#from django.db.transaction import commit, rollback
 from django.contrib.contenttypes.models import ContentType
 
 try:
@@ -17,17 +16,53 @@ except ImportError:
 
 from admin_steroids.queryset import atomic
 
-class Command(BaseCommand):
-    help = 'Replaces one record with another, making sure to update all foreign key references.'
-    args = 'app.model old_id new_id'
-    option_list = BaseCommand.option_list + (
-        make_option('--dryrun', action='store_true', default=False),
-        make_option('--only-show-classes', action='store_true', default=False),
-        make_option('--do-update', action='store_true', default=False,
+def get_options(parser=None):
+    make_opt = make_option
+    if parser:
+        make_opt = parser.add_argument
+    return [
+        make_opt('--dryrun', action='store_true', default=False),
+        make_opt('--only-show-classes', action='store_true', default=False),
+        make_opt('--do-update', action='store_true', default=False,
             help='If given, does a SQL update instead of calling the model\'s save() method. '
                 'This is only recommended for use when there are circular FK references coupled '
                 'with validation logic preventing incremental saves.'),
-    )
+    ]
+
+def get_all_related_objects(obj):
+    try:
+        links = obj._meta.get_all_related_objects()
+    except AttributeError:
+        # get_all_related_objects() was removed in Django >= 1.9
+        # https://docs.djangoproject.com/es/1.9/ref/models/meta/
+        links = [
+            f for f in obj._meta.get_fields()
+            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
+        ]
+    return links
+
+class Command(BaseCommand):
+    help = 'Replaces one record with another, making sure to update all foreign key references.'
+    args = 'app.model old_id new_id'
+    option_list = getattr(BaseCommand, 'option_list', ()) + tuple(get_options())
+
+    def create_parser(self, prog_name, subcommand):
+        """
+        For ``Django>=1.10``
+        Create and return the ``ArgumentParser`` which extends ``BaseCommand`` parser with
+        chroniker extra args and will be used to parse the arguments to this command.
+        """
+        from distutils.version import StrictVersion # pylint: disable=E0611,import-error
+        parser = super(Command, self).create_parser(prog_name, subcommand)
+        version_threshold = StrictVersion('1.10')
+        current_version = StrictVersion(get_version(VERSION))
+        if current_version >= version_threshold:
+            parser.add_argument('name')
+            parser.add_argument('old_id')
+            parser.add_argument('new_id')
+            get_options(parser)
+            self.add_arguments(parser)
+        return parser
 
     @atomic
     @override_settings(DEBUG=False)
@@ -52,7 +87,7 @@ class Command(BaseCommand):
         deletion_failures = 0
         safe_to_delete = True
         referring_classes = defaultdict(int)
-        links = old_obj._meta.get_all_related_objects()
+        links = get_all_related_objects(old_obj)
         print('%i links found.' % len(links))
         for link in links:
             if not link.model._meta.managed:
