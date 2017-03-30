@@ -14,27 +14,28 @@ try:
     from django.db.transaction import atomic
 except ImportError:
     # Allow Django<1.6 to use atomic().
-    from django.db import transaction
-    class atomic(object):
-        def __init__(self, using=None):
-            self.using = using
-
-        def __enter__(self):
-            if not transaction.is_managed(using=self.using):
-                transaction.enter_transaction_management(using=self.using)
-                self.forced_managed = True
-            else:
-                self.forced_managed = False
-
-        def __exit__(self, *args, **kwargs):
-            try:
-                if self.forced_managed:
-                    transaction.commit(using=self.using)
-                else:
-                    transaction.commit_unless_managed(using=self.using)
-            finally:
-                if self.forced_managed:
-                    transaction.leave_transaction_management(using=self.using)
+    from django.db.transaction import commit_on_success as atomic
+    # Removed due to TypeError: 'atomic' object is not callable?
+#     class atomic(object):
+#         def __init__(self, using=None):
+#             self.using = using
+#
+#         def __enter__(self):
+#             if not transaction.is_managed(using=self.using):
+#                 transaction.enter_transaction_management(using=self.using)
+#                 self.forced_managed = True
+#             else:
+#                 self.forced_managed = False
+#
+#         def __exit__(self, *args, **kwargs):
+#             try:
+#                 if self.forced_managed:
+#                     transaction.commit(using=self.using)
+#                 else:
+#                     transaction.commit_unless_managed(using=self.using)
+#             finally:
+#                 if self.forced_managed:
+#                     transaction.leave_transaction_management(using=self.using)
 
 def execute_sql_from_file(fn, using=None):
     """
