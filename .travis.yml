@@ -1,8 +1,10 @@
 language: python
 python:
 -   "3.5"
--   "3.6"
 install:
+-   sudo add-apt-repository -y ppa:fkrull/deadsnakes
+-   sudo apt-get -yq update
+-   sudo apt-get -yq install python3.6
 -   pip install tox pylint
 script:
 -   ./pep8.sh
