@@ -3,7 +3,12 @@ from __future__ import print_function
 from django import forms
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
 from django.core.urlresolvers import reverse, NoReverseMatch
-from django.forms.widgets import Select, TextInput, flatatt
+from django.forms.widgets import Select, TextInput
+try:
+    from django.forms.widgets import flatatt
+except ImportError:
+    # Changed in Django>=1.11.
+    from django.forms.utils import flatatt
 from django.template import Context, Template
 from django.template.context import Context
 from django.utils.encoding import force_text, smart_text
