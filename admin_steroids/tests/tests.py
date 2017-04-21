@@ -155,3 +155,8 @@ class Tests(TestCase):
         call_command('delete_duplicate_record', 'tests.person', p1.id, p2.id)
         self.assertEqual(Person.objects.all().count(), 2)
         self.assertEqual(Contact.objects.all().count(), 2)
+
+    def test_widgets(self):
+        import django
+        print('django.version:', django.VERSION)
+        from admin_steroids import widgets
