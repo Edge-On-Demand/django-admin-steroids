@@ -87,13 +87,12 @@ def is_protected_type(obj):
     return isinstance(obj, six.integer_types + (type(None), float, Decimal,
                                                 datetime.datetime, datetime.date, datetime.time))
 
+
 class CurrencyInput(forms.widgets.TextInput):
-
-    def render(self, name, value, attrs=None):
-
+    def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        final_attrs = self.build_attrs(attrs)
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             try:

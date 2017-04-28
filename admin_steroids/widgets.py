@@ -62,10 +62,10 @@ class ForeignKeyTextInput(TextInput):
         if q.count():
             self._instance = q[0]
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        final_attrs = self.build_attrs(attrs)
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(self._format_value(value))
@@ -167,7 +167,7 @@ class PlainTextWidget(forms.Widget):
     """
     Renders the value as plain text.
     """
-    def render(self, _name, value, attrs=None):
+    def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
 
@@ -175,7 +175,7 @@ class PreTextWidget(forms.Widget):
     """
     Renders the value as plain text formatted with the "pre" style.
     """
-    def render(self, _name, value, attrs=None):
+    def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         return mark_safe('<div style="padding-top:3px; white-space:pre;">'+value+'</div>')
 
@@ -183,7 +183,7 @@ class NBSPTextWidget(forms.Widget):
     """
     Renders the value as plain text with all spaces replaced by "&nbsp;".
     """
-    def render(self, _name, value, attrs=None):
+    def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         value = value.replace(' ', '&nbsp;').replace('\n', '<br/>')
         return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
@@ -192,7 +192,7 @@ class BRTextWidget(forms.Widget):
     """
     Renders the value as plain text with all newlines replaced by "<br/>".
     """
-    def render(self, _name, value, attrs=None):
+    def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         value = value.replace('\n', '<br/>')
         _attrs = self.attrs.copy()
@@ -204,9 +204,7 @@ class ReadOnlyText(forms.TextInput):
     """
     Renders the value as plain text.
     """
-    input_type = 'text'
-
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''
         return value
