@@ -88,7 +88,7 @@ class ForeignKeyTextInput(TextInput):
             changelist_url=utils.get_admin_changelist_url(self._model_class),
             instance=self._instance,
         ))
-        return  mark_safe(t.render(c))
+        return mark_safe(t.render(c))
 
 #http://djangosnippets.org/snippets/2217/
 
