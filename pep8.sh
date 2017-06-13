@@ -12,4 +12,5 @@ if [ ! -d $VENV ]; then
     $VENV/bin/pip install -r $REQS
 fi
 . $VENV/bin/activate
+pylint --version
 pylint --rcfile=pylint.rc admin_steroids setup.py

@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
         emails = list(args)
 
-        is_admin_site = False,
+        #is_admin_site = False
         template_name = 'registration/password_reset_form.html'
         email_template_name = 'registration/password_reset_email.html'
         subject_template_name = 'registration/password_reset_subject.txt'
@@ -42,8 +42,7 @@ class Command(BaseCommand):
         extra_context = None
         request = None
 
-        secure = hasattr(settings, 'BASE_SECURE_URL') \
-            and settings.BASE_SECURE_URL.startswith('https')
+        secure = hasattr(settings, 'BASE_SECURE_URL') and settings.BASE_SECURE_URL.startswith('https')
 
         domain = options['domain']
         if not domain:
