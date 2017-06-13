@@ -242,16 +242,12 @@ class ForeignKeyLink(AdminFieldFormatter):
 
     def format(self, v, plaintext=False):
         try:
-            assert self.template_type in ('button', 'raw'), \
-                'Invalid template type: %s' % (self.template_type)
+            assert self.template_type in ('button', 'raw'), 'Invalid template type: %s' % (self.template_type)
             url = utils.get_admin_change_url(v)
             label = self.label_template.format(name=str(v))
             if self.template_type == 'button':
-                return ('<a href="%s" target="%s"><input type="button" ' + \
-                    'value="%s" /></a>') % (url, self.target, label)
-            else:
-                return '<a href="%s" target="%s">%s</a>' \
-                    % (url, self.target, label)
+                return ('<a href="%s" target="%s"><input type="button" ' + 'value="%s" /></a>') % (url, self.target, label)
+            return '<a href="%s" target="%s">%s</a>' % (url, self.target, label)
         except Exception as e:
             return str(e)
 

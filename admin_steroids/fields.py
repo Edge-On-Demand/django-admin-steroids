@@ -3,10 +3,9 @@ from __future__ import print_function
 #Currency field borrowed from:
 #https://djangosnippets.org/snippets/1527/
 
+import re
 import datetime
-from decimal import (
-    Decimal, InvalidOperation, ROUND_HALF_UP,
-)
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from babel.numbers import (
     format_decimal, format_currency, parse_decimal, parse_number,
@@ -158,7 +157,7 @@ def parse_value(value):
     if allSym.count(decSym) > 1:
         raise NumberFormatError(
             default_error_messages['decimal_symbol'] % decSym)
-    elif (allSym.count(decSym) == 1 and allSym[-1] != decSym) or len(invalidSym) > 0:
+    elif (allSym.count(decSym) == 1 and allSym[-1] != decSym) or invalidSym:
         raise NumberFormatError(
             default_error_messages['invalid_format'] % (grpSym, decSym))
     elif value.count(decSym) == 1:
@@ -274,6 +273,10 @@ class Currency(Decimal):
         else:
             cls._formatPretty = u'\xa4#,##0.00;\xa4-#'
 
+        if isinstance(value, six.string_types):
+            # Strip out non-numeric characters like "$" and ",".
+            value = re.sub(r'[^0-9\.]+', '', value)
+
         ld_rounded = Decimal(value or 0).quantize(TWOPLACES, ROUND_HALF_UP)
 
         return super(Currency, cls).__new__(cls, value=ld_rounded, context=context)
@@ -296,8 +299,8 @@ class CurrencyFormField(forms.fields.DecimalField):
 
     widget = CurrencyInput
 
-    def __init__(self, *args, **kwargs):
-        super(CurrencyFormField, self).__init__(*args, **kwargs)
+    #def __init__(self, *args, **kwargs):
+        #super(CurrencyFormField, self).__init__(*args, **kwargs)
 
     def clean(self, value):
         value = (value or '').strip() or None
@@ -320,8 +323,8 @@ class CurrencyField(models.fields.DecimalField):
 
     #__metaclass__ = SubfieldBase
 
-    def __init__(self, *args, **kwargs):
-        super(CurrencyField, self).__init__(*args, **kwargs)
+    #def __init__(self, *args, **kwargs):
+        #super(CurrencyField, self).__init__(*args, **kwargs)
 
     def format(self):
         return Currency(self).format()

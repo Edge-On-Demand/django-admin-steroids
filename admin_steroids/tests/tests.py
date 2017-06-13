@@ -160,3 +160,10 @@ class Tests(TestCase):
         import django
         print('django.version:', django.VERSION)
         from admin_steroids import widgets
+
+    def test_currency(self):
+        from admin_steroids.fields import Currency
+        value = Currency('$500,000.00')
+        self.assertEqual(value, 500000)
+        self.assertEqual(value, 500000.0)
+        self.assertEqual(value.format(), '500,000.00')

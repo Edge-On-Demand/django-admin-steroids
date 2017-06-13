@@ -164,13 +164,10 @@ Install the package via pip with:
 Development
 -----------
 
-Tests require the Python development headers to be installed, which you can install on Ubuntu with:
+Tests require the Python development headers to be installed, which you can install on Ubuntu
+using the [Dead Snakes PPA](https://launchpad.net/~fkrull/+archive/ubuntu/deadsnakes) with:
 
-    sudo apt-get install python-dev python3-dev python3.4-dev
-
-To run unittests across multiple Python versions, install:
-
-    sudo apt-get install python3.4-minimal python3.4-dev python3.5-minimal python3.5-dev
+    sudo apt-get install python-dev python3-dev python3.4-minimal python3.4-dev python3.5-minimal python3.5-dev  python3.6-minimal python3.6-dev
 
 To run all [tests](http://tox.readthedocs.org/en/latest/):
 
@@ -182,4 +179,4 @@ To run tests for a specific environment (e.g. Python 2.7 with Django 1.4):
 
 To run a specific test:
     
-    export TESTNAME=.testName; tox -e py27-django15
+    export TESTNAME=.test_widgets; tox -e py27-django15

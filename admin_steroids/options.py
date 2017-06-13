@@ -270,11 +270,8 @@ class CSVModelAdminMixin(object):
     def get_csv_raw_headers(self, request):
         if self.csv_headers_all:
             all_names = utils.get_model_fields(self.model)
-            return all_names \
-                + list(self.get_extra_csv_fields(request))
-        else:
-            return list(self.list_display) \
-                + list(self.get_extra_csv_fields(request))
+            return all_names + list(self.get_extra_csv_fields(request))
+        return list(self.list_display) + list(self.get_extra_csv_fields(request))
 
     def get_csv_queryset(self, request, qs):
         return qs

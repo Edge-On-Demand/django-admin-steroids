@@ -44,7 +44,7 @@ class Command(BaseCommand):
 
         connection = connections[using]
 
-        if not len(fixture_labels):
+        if not fixture_labels:
             raise CommandError(
                 "No database fixture specified. Please provide the path of at "
                 "least one fixture in the command line."

@@ -16,10 +16,9 @@ from django.contrib.auth.models import User
 def get_empty_value_display(cl):
     if hasattr(cl.model_admin, 'get_empty_value_display'):
         return cl.model_admin.get_empty_value_display()
-    else:
-        # Django < 1.9
-        from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module
-        return EMPTY_CHANGELIST_VALUE
+    # Django < 1.9
+    from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module
+    return EMPTY_CHANGELIST_VALUE
 
 class NullListFilter(FieldListFilter):
 
