@@ -58,4 +58,4 @@ docs/_build/
 # PIP install version files.
 /=*
 /*.geany
-/nohup.out
+/*.out
