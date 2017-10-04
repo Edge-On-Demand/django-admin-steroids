@@ -70,6 +70,8 @@ class ForeignKeyTextInput(TextInput):
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(self._format_value(value))
         final_attrs['size'] = 10
+        final_attrs['type'] = 'text'
+        final_attrs['name'] = name
         t = Template(u"""
 {% load staticfiles %}
 <input{{ attrs|safe }} />
