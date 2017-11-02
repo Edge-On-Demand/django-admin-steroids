@@ -11,7 +11,7 @@ a.button{
 
 #content #changelist-filter .das-ajaxlistfilter-remove .inline-deletelink .inline-deletelink-icon{
     display: inline-block;
-    background: transparent url(../../admin/img/inline-delete.png) no-repeat;
+    background: transparent url(../../admin/img/inline-delete.svg) no-repeat;
     width: 15px;
     height: 15px;
     border: 0px none;
