@@ -247,9 +247,9 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
 
     if template:
         view_str = template.format(count=count)
-
-    return '<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
-        .format(url=url, view=view_str.replace(' ', '&nbsp;'), tgt=target, class_str=class_str)
+    view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
+    url = url.encode('ascii', 'ignore')
+    return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None, extra='', template='', **kwargs):
     """

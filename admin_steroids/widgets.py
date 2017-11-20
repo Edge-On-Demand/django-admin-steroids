@@ -113,15 +113,9 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
         try:
-            obj = self.rel.to._default_manager\
-                .using(self.db).get(**{key: value})
-            change_url = reverse(
-                "admin:%s_%s_change" \
-                    % (obj._meta.app_label, obj._meta.object_name.lower()),
-                args=(obj.pk,)
-            )
-            return '&nbsp;<strong><a href="%s" target="%s">%s</a></strong>' \
-                % (change_url, self.target, escape(obj))
+            obj = self.rel.to._default_manager.using(self.db).get(**{key: value})
+            change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
+            return '&nbsp;<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(obj))
         except NoReverseMatch:
             return '&nbsp;<strong>%s</strong>' % (escape(obj),)
         except (ValueError, self.rel.to.DoesNotExist):
@@ -148,17 +142,11 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         str_values = []
         key = self.rel.get_related_field().name
         for v in values:
-            obj = self.rel.to._default_manager\
-                .using(self.db).get(**{key: v})
+            obj = self.rel.to._default_manager.using(self.db).get(**{key: v})
             x = smart_text(obj)
             try:
-                change_url = reverse(
-                    "admin:%s_%s_change" \
-                        % (obj._meta.app_label, obj._meta.object_name.lower()),
-                    args=(obj.pk,)
-                )
-                str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' \
-                    % (change_url, self.target, escape(x))]
+                change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
+                str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(x))]
             except NoReverseMatch:
                 str_values += ['<strong>%s</strong>' % (escape(x),)]
             except self.rel.to.DoesNotExist:
