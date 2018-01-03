@@ -2,25 +2,22 @@ from __future__ import print_function
 
 import sys
 
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 
 # Based on http://stackoverflow.com/a/954318/247542
 class Command(BaseCommand):
-    args = ''
+    args = '<user ids or emails>'
     help = 'Forces a specific user to log back in by deleting their session records.'
-    option_list = BaseCommand.option_list + (
-        make_option('--all', action='store_true', default=False,
-            help='If given, all users will be logged out.'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('users', nargs='*', help='User IDs or emails.')
+        parser.add_argument('--all', action='store_true', default=False, help='If given, all users will be logged out.')
 
     def handle(self, *users, **options):
-
         if options['all']:
-
+            # Logout all users.
             qs = Session.objects.all()
             total = qs.count()
             i = 0
@@ -32,7 +29,8 @@ class Command(BaseCommand):
             print('')
 
         else:
-
+            # Logout only specific users.
+            users = options['users']
             for user in users:
 
                 print('Looking up user %s...' % user)
