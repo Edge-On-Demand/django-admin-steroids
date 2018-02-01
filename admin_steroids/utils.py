@@ -10,6 +10,8 @@ import six
 from six.moves.urllib.parse import urlparse # pylint: disable=import-error
 from six.moves import cPickle as pickle
 
+from unidecode import unidecode
+
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -247,6 +249,8 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
 
     if template:
         view_str = template.format(count=count)
+    # Convert all non-unicode characters into ascii alternative
+    view_str = unidecode(unicode(view_str, encoding="utf-8"))
     view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
     url = url.encode('ascii', 'ignore')
     return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
