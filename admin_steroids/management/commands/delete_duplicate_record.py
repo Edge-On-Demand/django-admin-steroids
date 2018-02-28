@@ -68,6 +68,24 @@ class Command(BaseCommand):
     @override_settings(DEBUG=False)
     def handle(self, name, old_id, new_id, **options):
 
+        def iter_db(itr):
+            """
+            Wrapper around an iterator, handling attribute assignment errors caused by the database router blocking relations.
+            Exceptions caused by the database router as silently ignored.
+            """
+            while 1:
+                try:
+                    value = itr.next()
+                    yield value
+                except ValueError as exc:
+                    if 'the current database router prevents this relation' in str(exc):
+                        print('Warning, skipping value: %s' % exc)
+                        continue
+                    else:
+                        raise
+                except StopIteration:
+                    break
+
         dryrun = options['dryrun']
         only_show_classes = options['only_show_classes']
         do_update = options['do_update']
@@ -80,6 +98,10 @@ class Command(BaseCommand):
         new_obj = model_cls.objects.get(pk=int(new_id))
 
         print('Attempting to replace %s with %s...' % (old_obj, new_obj))
+
+        if new_obj._state.db != old_obj._state.db:
+            print('Unable to replace. Objects are not on the same database.', file=sys.stderr)
+            sys.exit(1)
 
         deleted_objects = set()
         # [(new_obj, old_obj, referring_obj, referring_field, exception)]
@@ -106,11 +128,16 @@ class Command(BaseCommand):
                     referring_objects_iters = []
             i = 0
             print('%i referring objects found on link %s.' % (total, link.get_accessor_name()))
-            for referring_object in referring_objects_iters:
+            for referring_object in iter_db(referring_objects_iters):
                 i += 1
 
                 if only_show_classes:
                     referring_classes[link.model.__name__] += 1
+                    continue
+
+                if referring_object._state.db != new_obj._state.db:
+                    print('Skipping record %s because it exists on database %s instead of the target database %s.' \
+                        % (referring_object, referring_object._state.db, new_obj._state.db))
                     continue
 
                 print('Changing %s(id=%i).%s = "%s"(%i) -> "%s"(%i). (%i of %i)' % (

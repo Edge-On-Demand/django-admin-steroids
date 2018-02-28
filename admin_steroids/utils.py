@@ -250,7 +250,10 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     if template:
         view_str = template.format(count=count)
     # Convert all non-unicode characters into ascii alternative
-    view_str = unidecode(unicode(view_str, encoding="utf-8"))
+    try:
+        view_str = unidecode(unicode(view_str, encoding="utf-8"))
+    except TypeError:
+        view_str = unidecode(view_str)
     view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
     url = url.encode('ascii', 'ignore')
     return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
