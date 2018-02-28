@@ -75,7 +75,7 @@ class Command(BaseCommand):
             """
             while 1:
                 try:
-                    value = itr.next()
+                    value = next(itr)
                     yield value
                 except ValueError as exc:
                     if 'the current database router prevents this relation' in str(exc):
