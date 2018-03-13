@@ -412,7 +412,7 @@ def get_related_name(parent, child):
     name = None
     for field in child._meta.fields:
         if field.rel and issubclass(parent, field.rel.to):
-            name = field.related_query_name()
+            name = field.related_query_name().rstrip('+')  # Remove trailing plus symbol
             break
     if name and not name.endswith('s'):
         name += '_set'
@@ -429,8 +429,6 @@ def generate_stub_inline_form_field_names(parent_model, inlines):
     for inline in inlines:
         print('child_model:', inline.model)
         base_name = get_related_name(parent_model, inline.model)
-        # Remove trailing plus symbol from inline names
-        base_name = base_name.rstrip('+').replace('+_set', '_set')
         print('base_name:', base_name)
         for part_name, part_default in part_names:
             names['%s-%s' % (base_name, part_name)] = part_default
