@@ -412,7 +412,7 @@ def get_related_name(parent, child):
     name = None
     for field in child._meta.fields:
         if field.rel and issubclass(parent, field.rel.to):
-            name = field.related_query_name()
+            name = field.related_query_name().rstrip('+')  # Remove mysterious trailing plus symbol
             break
     if name and not name.endswith('s'):
         name += '_set'
