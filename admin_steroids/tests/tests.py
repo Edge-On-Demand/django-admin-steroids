@@ -1,7 +1,7 @@
 """
 Quick test:
 
-    export TESTNAME=.test_delete_duplicate_record; tox -e py27-django15
+    export TESTNAME=.test_delete_duplicate_record; tox -e py27-django111
 
 """
 from __future__ import print_function
@@ -13,6 +13,7 @@ import csv
 
 from django.core import mail
 from django.test import TestCase
+from django.core.management import call_command
 try:
     from django.test import override_settings
 except ImportError:
@@ -129,9 +130,26 @@ class Tests(TestCase):
             print('data:', data)
             writer.writerow(data)
 
-    def test_delete_duplicate_record(self):
+    def test_widgets(self):
+        import django
+        print('django.version:', django.VERSION)
+        from admin_steroids import widgets
+
+    def test_currency(self):
+        from admin_steroids.fields import Currency
+        value = Currency('$500,000.00')
+        self.assertEqual(value, 500000)
+        self.assertEqual(value, 500000.0)
+        self.assertEqual(value.format(), '500,000.00')
+
+    def test_command_bulk_password_reset(self):
+        call_command('bulk_password_reset')
+
+    def test_command_createsuperuser_nice(self):
+        call_command('createsuperuser_nice', noinput=True, username='admin@example.com', password='password', email='admin@example.com')
+
+    def test_command_delete_duplicate_record(self):
         from admin_steroids.tests.models import Person, Contact
-        from django.core.management import call_command
 
         print('Confirming records with no clear conflicts can be merged...')
         Person.objects.all().delete()
@@ -156,14 +174,19 @@ class Tests(TestCase):
         self.assertEqual(Person.objects.all().count(), 2)
         self.assertEqual(Contact.objects.all().count(), 2)
 
-    def test_widgets(self):
-        import django
-        print('django.version:', django.VERSION)
-        from admin_steroids import widgets
+    def test_commmand_force_logout(self):
+        call_command('force_logout')
 
-    def test_currency(self):
-        from admin_steroids.fields import Currency
-        value = Currency('$500,000.00')
-        self.assertEqual(value, 500000)
-        self.assertEqual(value, 500000.0)
-        self.assertEqual(value.format(), '500,000.00')
+    def test_command_loaddatanaturally(self):
+        call_command('loaddatanaturally', 'admin_steroids/tests/fixtures/test_data.json')
+
+    def test_command_test_cache(self):
+        with self.assertRaises(AssertionError):
+            call_command('test_cache')
+
+    def test_command_test_mail(self):
+        self.assertEqual(len(mail.outbox), 0)
+        call_command('test_mail', subject='Test 123', recipient_list='abc@example.com')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Test 123')
+        self.assertEqual(mail.outbox[0].to, ['abc@example.com'])

@@ -7,14 +7,14 @@ import os
 import gzip
 import zipfile
 from itertools import product
-from optparse import make_option
 
 from django.conf import settings
 from django.core import serializers
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
-from django.db import connections, router, transaction, DEFAULT_DB_ALIAS, IntegrityError, DatabaseError
-from django.db.models import get_apps # pylint: disable=no-name-in-module
+from django.db import connections, DEFAULT_DB_ALIAS, IntegrityError, DatabaseError
+# from django.db.models import get_apps # pylint: disable=no-name-in-module
+from django.apps import apps
 from django.utils.encoding import force_text
 from django.utils._os import upath
 
@@ -28,14 +28,12 @@ class Command(BaseCommand):
     help = 'Installs the named fixture(s) in the database.'
     args = "fixture [fixture ...]"
 
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a specific database to load '
-                'fixtures into. Defaults to the "default" database.'),
-        make_option('--ignorenonexistent', '-i', action='store_true', dest='ignore',
-            default=False, help='Ignores entries in the serialized data for fields'
-                                ' that do not currently exist on the model.'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('args', nargs='+')
+        parser.add_argument('--database', action='store', dest='database',
+            default=DEFAULT_DB_ALIAS, help='Nominates a specific database to load fixtures into. Defaults to the "default" database.')
+        parser.add_argument('--ignorenonexistent', '-i', action='store_true', dest='ignore',
+            default=False, help='Ignores entries in the serialized data for fields that do not currently exist on the model.')
 
     def handle(self, *fixture_labels, **options):
 
@@ -59,7 +57,7 @@ class Command(BaseCommand):
         # If commit=True, loaddata will use its own transaction;
         # if commit=False, the data load SQL will become part of
         # the transaction in place when loaddata was invoked.
-        commit = options.get('commit', True)
+        # commit = options.get('commit', True)
 
         # Keep a count of the installed objects and fixtures
         fixture_count = 0
@@ -76,10 +74,14 @@ class Command(BaseCommand):
 
         # Start transaction management. All fixtures are installed in a
         # single transaction to ensure that all references are resolved.
-        if commit:
-            transaction.commit_unless_managed(using=using)
-            transaction.enter_transaction_management(using=using)
-            transaction.managed(True, using=using)
+        # if commit:
+            # # transaction.commit_unless_managed(using=using)
+            # try:
+                # transaction.commit(using=using)
+            # except transaction.TransactionManagementError:
+                # pass
+            # # transaction.enter_transaction_management(using=using)
+            # transaction.managed(True, using=using)
 
         class SingleZipReader(zipfile.ZipFile):
             def __init__(self, *args, **kwargs):
@@ -99,14 +101,15 @@ class Command(BaseCommand):
             compression_types['bz2'] = bz2.BZ2File
 
         app_module_paths = []
-        for app in get_apps():
-            if hasattr(app, '__path__'):
+        # for app in get_apps():
+        for app_config in apps.get_app_configs():
+            # print(app_config.__dict__)
+            if hasattr(app_config, 'path'):
                 # It's a 'models/' subpackage
-                for path in app.__path__:
-                    app_module_paths.append(upath(path))
+                app_module_paths.append(upath(app_config.path))
             else:
                 # It's a models.py module
-                app_module_paths.append(upath(app.__file__))
+                app_module_paths.append(upath(app_config.__file__))
 
         app_fixtures = [
             os.path.join(os.path.dirname(path), 'fixtures')
@@ -139,9 +142,7 @@ class Command(BaseCommand):
                             self.stdout.write("Loading '%s' fixtures..." % fixture_name)
                     else:
                         raise CommandError(
-                            ("Problem installing fixture '%s': "
-                                "%s is not a known serialization format.") \
-                                    % (fixture_name, fmt))
+                            ("Problem installing fixture '%s': %s is not a known serialization format.") % (fixture_name, fmt))
 
                     if os.path.isabs(fixture_name):
                         fixture_dirs = [fixture_name]
@@ -210,22 +211,22 @@ class Command(BaseCommand):
                                             pass
 
                                         objects_in_fixture += 1
-                                        if router.allow_syncdb(using, obj.object.__class__):
-                                            loaded_objects_in_fixture += 1
-                                            models.add(obj.object.__class__)
-                                            try:
-                                                obj.save(using=using)
-                                            except (DatabaseError, IntegrityError) as e:
-                                                e.args = (
-                                                    ("Could not load %(app_label)s."
-                                                    "%(object_name)s(pk=%(pk)s): %(error_msg)s") \
-                                                    % {
-                                                        'app_label': obj.object._meta.app_label,
-                                                        'object_name': obj.object._meta.object_name,
-                                                        'pk': obj.object.pk,
-                                                        'error_msg': force_text(e)
-                                                    },)
-                                                raise
+                                        # if router.allow_syncdb(using, obj.object.__class__):
+                                        loaded_objects_in_fixture += 1
+                                        models.add(obj.object.__class__)
+                                        try:
+                                            obj.save(using=using)
+                                        except (DatabaseError, IntegrityError) as e:
+                                            e.args = (
+                                                ("Could not load %(app_label)s."
+                                                "%(object_name)s(pk=%(pk)s): %(error_msg)s") \
+                                                % {
+                                                    'app_label': obj.object._meta.app_label,
+                                                    'object_name': obj.object._meta.object_name,
+                                                    'pk': obj.object.pk,
+                                                    'error_msg': force_text(e)
+                                                },)
+                                            raise
 
                                     loaded_object_count += loaded_objects_in_fixture
                                     fixture_object_count += objects_in_fixture
@@ -258,9 +259,9 @@ class Command(BaseCommand):
         except (SystemExit, KeyboardInterrupt):
             raise
         except Exception as e:
-            if commit:
-                transaction.rollback(using=using)
-                transaction.leave_transaction_management(using=using)
+            # if commit:
+                # transaction.rollback(using=using)
+                # transaction.leave_transaction_management(using=using)
             raise
 
         # If we found even one object in a fixture, we need to reset the
@@ -273,9 +274,9 @@ class Command(BaseCommand):
                 for line in sequence_sql:
                     cursor.execute(line)
 
-        if commit:
-            transaction.commit(using=using)
-            transaction.leave_transaction_management(using=using)
+        # if commit:
+            # transaction.commit(using=using)
+            # transaction.leave_transaction_management(using=using)
 
         if verbosity >= 1:
             if fixture_object_count == loaded_object_count:
@@ -289,5 +290,5 @@ class Command(BaseCommand):
         # edge case in MySQL: if the same connection is used to
         # create tables, load data, and query, the query can return
         # incorrect results. See Django #7572, MySQL #37735.
-        if commit:
-            connection.close()
+        # if commit:
+            # connection.close()

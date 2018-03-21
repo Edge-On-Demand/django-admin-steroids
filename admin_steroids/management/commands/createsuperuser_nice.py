@@ -4,7 +4,6 @@ Management utility to create superusers.
 
 import getpass
 import sys
-from optparse import make_option
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.management import get_default_username
@@ -17,40 +16,32 @@ from django.utils.text import capfirst
 
 class Command(BaseCommand):
 
-    def __init__(self, *args, **kwargs):
-        # Options are defined in an __init__ method to support swapping out
-        # custom user models in tests.
-        super(Command, self).__init__(*args, **kwargs)
+    help = 'Used to create a superuser.'
+
+    def add_arguments(self, parser):
         self.UserModel = get_user_model()
         self.username_field = self.UserModel._meta.get_field(self.UserModel.USERNAME_FIELD)
+        parser.add_argument('--%s' % self.UserModel.USERNAME_FIELD,
+            dest=self.UserModel.USERNAME_FIELD, default=None,
+            help='Specifies the login for the superuser.')
+        parser.add_argument('--noinput',
+            action='store_false', dest='interactive', default=True,
+            help=('Tells Django to NOT prompt the user for input of any kind. '
+                'You must use --%s with --noinput, along with an option for '
+                'any other required field. Superusers created with --noinput will '
+                ' not be able to log in until they\'re given a valid password.' %
+                self.UserModel.USERNAME_FIELD))
+        parser.add_argument('--database',
+            action='store', dest='database',
+            default=DEFAULT_DB_ALIAS,
+            help='Specifies the database to use. Default is "default".')
+        parser.add_argument('--password',
+            action='store', dest='password',
+            default=DEFAULT_DB_ALIAS,
+            help='Specifies the password to use. Default is no password.')
 
-        self.option_list = BaseCommand.option_list + (
-            make_option('--%s' % self.UserModel.USERNAME_FIELD,
-                dest=self.UserModel.USERNAME_FIELD, default=None,
-                help='Specifies the login for the superuser.'),
-            make_option('--noinput',
-                action='store_false', dest='interactive', default=True,
-                help=('Tells Django to NOT prompt the user for input of any kind. '
-                    'You must use --%s with --noinput, along with an option for '
-                    'any other required field. Superusers created with --noinput will '
-                    ' not be able to log in until they\'re given a valid password.' %
-                    self.UserModel.USERNAME_FIELD)),
-            make_option('--database',
-                action='store', dest='database',
-                default=DEFAULT_DB_ALIAS,
-                help='Specifies the database to use. Default is "default".'),
-            make_option('--password',
-                action='store', dest='password',
-                default=DEFAULT_DB_ALIAS,
-                help='Specifies the password to use. Default is no password.'),
-        ) + tuple(
-            make_option('--%s' % field, dest=field, default=None,
-                help='Specifies the %s for the superuser.' % field)
-            for field in self.UserModel.REQUIRED_FIELDS
-        )
-
-    option_list = BaseCommand.option_list
-    help = 'Used to create a superuser.'
+        for field in self.UserModel.REQUIRED_FIELDS:
+            parser.add_argument('--%s' % field, dest=field, default=None, help='Specifies the %s for the superuser.' % field)
 
     def handle(self, *args, **options):
         username = options.get(self.UserModel.USERNAME_FIELD, None)
@@ -66,8 +57,7 @@ class Command(BaseCommand):
         if not interactive:
             try:
                 if not username:
-                    raise CommandError("You must use --%s with --noinput." %
-                            self.UserModel.USERNAME_FIELD)
+                    raise CommandError("You must use --%s with --noinput." % self.UserModel.USERNAME_FIELD)
                 username = self.username_field.clean(username, None)
 
                 for field_name in self.UserModel.REQUIRED_FIELDS:

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function
 
-from optparse import make_option
 #from urlparse import urlparse
 from uuid import uuid4
 
@@ -16,15 +15,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".'),
-        make_option('--domain', action='store', dest='domain',
-            default=None, help='The domain name of the site. Defaults to settings.BASE_URL'),
-#        make_option('--site_name', action='store', dest='site_name',
-#            default=None, help='The name of the site. Defaults to settings.BASE_URL'),
-    )
+
     help = "Sends the 'forgot your password' reset email for several users."
+
+    def add_arguments(self, parser):
+        parser.add_argument('--database', action='store', dest='database',
+            default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".')
+        parser.add_argument('--domain', action='store', dest='domain',
+            default=None, help='The domain name of the site. Defaults to settings.BASE_URL')
 
     def handle(self, *args, **options):
 
