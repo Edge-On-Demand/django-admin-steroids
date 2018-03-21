@@ -6,9 +6,9 @@ import hashlib
 import decimal
 #from urlparse import urlparse
 
-import six
 from six.moves.urllib.parse import urlparse # pylint: disable=import-error
 from six.moves import cPickle as pickle
+import six
 
 from unidecode import unidecode
 

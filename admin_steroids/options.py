@@ -141,7 +141,7 @@ class FormatterTabularInline(admin.TabularInline):
         readonly_fields = list(self.readonly_fields)
         fieldsets = self.get_fieldsets(request, obj)
         for title, data in fieldsets:
-            for name in data['fields']:
+            for name in data['fields']: # pylint: disable=not-an-iterable
                 if callable(name):
                     readonly_fields.append(name)
         return readonly_fields
