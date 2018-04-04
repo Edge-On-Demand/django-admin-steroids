@@ -15,7 +15,11 @@ from unidecode import unidecode
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse, NoReverseMatch
+try:
+    # deprecated in 1.9, moved to django.urls in 1.10, removed at 2.0
+    from django.core.urlresolvers import reverse, NoReverseMatch
+except ImportError:
+    from django.urls import reverse, NoReverseMatch
 
 try:
     unicode
