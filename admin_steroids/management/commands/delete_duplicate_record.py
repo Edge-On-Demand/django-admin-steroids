@@ -8,6 +8,7 @@ from optparse import make_option
 from django import get_version, VERSION
 from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
+from django.db.utils import ProgrammingError
 
 try:
     from django.test import override_settings
@@ -76,11 +77,18 @@ class Command(BaseCommand):
             while 1:
                 try:
                     value = next(itr)
+                    if not value._meta.managed:
+                        continue
                     yield value
                 except ValueError as exc:
                     if 'the current database router prevents this relation' in str(exc):
                         print('Warning, skipping value: %s' % exc)
                         continue
+                    else:
+                        raise
+                except TypeError as exc:
+                    if 'list object is not an iterator' in str(exc):
+                        break
                     else:
                         raise
                 except StopIteration:
@@ -118,14 +126,24 @@ class Command(BaseCommand):
                 referring_objects = getattr(old_obj, link.get_accessor_name()).all()
                 total = referring_objects.count()
                 referring_objects_iters = referring_objects.iterator()
+            except ProgrammingError as exc:
+                # if 'does not exist' in str(exc):
+                    # # A missing view is bad, but means there's nothing for us to update.
+                    # total = 0
+                    # referring_objects_iters = []
+                # else:
+                raise
             except AttributeError:
-                referring_objects = getattr(old_obj, link.get_accessor_name())
-                if referring_objects:
-                    total = 1
-                    referring_objects_iters = [referring_objects]
-                else:
-                    total = 0
-                    referring_objects_iters = []
+                total = 0
+                referring_objects_iters = []
+                try:
+                    referring_objects = getattr(old_obj, link.get_accessor_name())
+                    if referring_objects:
+                        total = 1
+                        referring_objects_iters = [referring_objects]
+                except Exception as exc:
+                    if 'RelatedObjectDoesNotExist' not in type(exc).__name__:
+                        raise
             i = 0
             print('%i referring objects found on link %s.' % (total, link.get_accessor_name()))
             for referring_object in iter_db(referring_objects_iters):
@@ -140,7 +158,7 @@ class Command(BaseCommand):
                         % (referring_object, referring_object._state.db, new_obj._state.db))
                     continue
 
-                print('Changing %s(id=%i).%s = "%s"(%i) -> "%s"(%i). (%i of %i)' % (
+                print('Changing %s(id=%s).%s = "%s"(%s) -> "%s"(%s). (%s of %s)' % (
                     link.model.__name__,
                     referring_object.id,
                     link.field.name,
@@ -157,9 +175,7 @@ class Command(BaseCommand):
                 try:
                     if do_update:
                         # Bypass save() logic and directly update the FK field.
-                        type(referring_object).objects\
-                            .filter(pk=referring_object.pk)\
-                            .update(**{link.field.name: new_obj})
+                        type(referring_object).objects.filter(pk=referring_object.pk).update(**{link.field.name: new_obj})
                     else:
                         # Set field and then save through the ORM.
                         setattr(referring_object, link.field.name, new_obj)
