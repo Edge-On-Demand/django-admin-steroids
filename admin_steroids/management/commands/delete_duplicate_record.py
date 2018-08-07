@@ -159,7 +159,7 @@ class Command(BaseCommand):
                     continue
 
                 print('Changing %s(id=%s).%s = "%s"(%s) -> "%s"(%s). (%s of %s)' % (
-                    link.model.__name__,
+                    type(referring_object).__name__,
                     referring_object.id,
                     link.field.name,
                     getattr(referring_object, link.field.name),
