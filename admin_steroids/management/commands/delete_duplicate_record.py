@@ -8,7 +8,7 @@ from optparse import make_option
 from django import get_version, VERSION
 from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
-from django.db.utils import ProgrammingError
+# from django.db.utils import ProgrammingError
 
 try:
     from django.test import override_settings
@@ -120,19 +120,19 @@ class Command(BaseCommand):
         links = get_all_related_objects(old_obj)
         print('%i links found.' % len(links))
         for link in links:
+
             if not link.model._meta.managed:
+                print('Skipping unmanaged model %s.' % link.model)
                 continue
+
+            if not link.related_model._meta.managed:
+                print('Skipping unmanaged related model %s.' % link.related_model)
+                continue
+
             try:
                 referring_objects = getattr(old_obj, link.get_accessor_name()).all()
                 total = referring_objects.count()
                 referring_objects_iters = referring_objects.iterator()
-            except ProgrammingError as exc:
-                # if 'does not exist' in str(exc):
-                    # # A missing view is bad, but means there's nothing for us to update.
-                    # total = 0
-                    # referring_objects_iters = []
-                # else:
-                raise
             except AttributeError:
                 total = 0
                 referring_objects_iters = []
