@@ -52,6 +52,8 @@ def execute_sql(sql, using=None):
         for part in sql_parts:
             part = re.sub(r'/\*.*\*/', '', part, flags=re.I|re.DOTALL|re.MULTILINE).strip()
             part = re.sub(r'\-\-.*\n', '', part, flags=re.I).strip()
+            part = '\n'.join(line for line in part.split('\n') if not line.strip().startswith('--'))
+            part = part.strip()
             if not part:
                 continue
             if not part.endswith(';'):
@@ -60,7 +62,8 @@ def execute_sql(sql, using=None):
             _execute_sql_part(part, using=using)
     except Exception:
         traceback.print_exc(file=sys.stderr)
-        transaction.rollback()
+        if not connections[using or 'default'].in_atomic_block:
+            transaction.rollback()
 
 def _execute_sql_part(part, using=None):
     """
