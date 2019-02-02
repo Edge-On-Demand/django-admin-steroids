@@ -4,7 +4,7 @@ import uuid
 
 from django.contrib.admin import FieldListFilter, SimpleListFilter, ListFilter
 from django.core.exceptions import ImproperlyConfigured, ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
