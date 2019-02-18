@@ -16,14 +16,23 @@ except ImportError:
         patterns = None
 
 from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
 
 admin.autodiscover()
 
-_patterns = [
-    url(r'^admin/', include(admin.site.urls)),
-]
-
-if patterns is None:
-    urlpatterns = _patterns
-else:
-    urlpatterns = patterns('', *_patterns)
+try:
+    _patterns = [
+        url(r'^admin/', include(admin.site.urls)),
+    ]
+    if patterns is None:
+        urlpatterns = _patterns
+    else:
+        urlpatterns = patterns('', *_patterns)
+except ImproperlyConfigured:
+    _patterns = [
+        url(r'^admin/', admin.site.urls),
+    ]
+    if patterns is None:
+        urlpatterns = _patterns
+    else:
+        urlpatterns = patterns('', *_patterns)
