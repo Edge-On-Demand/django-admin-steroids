@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import re
 
-from django.core import urlresolvers
+from django.core import urlresolvers # pylint: disable=no-name-in-module
 from django.utils.safestring import SafeString
 from django.conf import settings
 

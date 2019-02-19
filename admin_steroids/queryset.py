@@ -134,13 +134,11 @@ class ApproxCountQuerySet(QuerySet):
             elif is_mysql:
                 # Read table count approximation from MySQL's "SHOW TABLE".
                 cursor = connections[self.db].cursor()
-                cursor.execute("SHOW TABLE STATUS LIKE %s",
-                        (self.model._meta.db_table,))
+                cursor.execute("SHOW TABLE STATUS LIKE %s", (self.model._meta.db_table,))
                 return cursor.fetchall()[0][4]
             else:
                 raise NotImplementedError
-        else:
-            return self.query.get_count(using=self.db)
+        return self.query.get_count(using=self.db)
 
 class CachedCountQuerySet(ApproxCountQuerySet):
     """
