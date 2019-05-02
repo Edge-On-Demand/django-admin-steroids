@@ -20,7 +20,7 @@ from django.urls import reverse, NoReverseMatch
 try:
     unicode
 except NameError:
-    unicode = six.text_type # pylint: disable=redefined-builtin
+    unicode = str  # pylint: disable=redefined-builtin
 
 def obj_to_hash(o):
     """
@@ -253,9 +253,13 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     try:
         view_str = unidecode(unicode(view_str, encoding="utf-8"))
     except TypeError:
-        view_str = unidecode(view_str)
-    view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
-    url = url.encode('ascii', 'ignore')
+        view_str = unidecode(view_str)        
+
+    if unicode is not str:
+        # Encode to ASCII for Python 2.x
+        view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
+        url = url.encode('ascii', 'ignore')
+
     return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None, extra='', template='', **kwargs):
