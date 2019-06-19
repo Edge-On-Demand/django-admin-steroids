@@ -1,14 +1,13 @@
-from __future__ import print_function
-
 import re
 
-from django.core import urlresolvers # pylint: disable=no-name-in-module
+from django.urls import reverse
 from django.utils.safestring import SafeString
 from django.conf import settings
 
 from . import utils
 
 NONE_STR = '(None)'
+
 
 class AdminFieldFormatter(object):
     """
@@ -41,15 +40,6 @@ class AdminFieldFormatter(object):
                 '[^0-9a-zA-Z]+',
                 ' ',
                 self.short_description).capitalize()
-
-            #TODO: Allow markup in short_description? Not practical due to
-            #hardcoded escape() in
-            #django.contrib.admin.helpers.AdminReadonlyField
-#            if self.title_align:
-#                title_template = '<span style="text-align:%s">%s</span>'
-#                self.short_description = title_template \
-#                    % (self.title_align, self.short_description)
-#                self.short_description = mark_safe(self.short_description)
 
     def __call__(self, obj, plaintext=False):
         if self.object_level:
@@ -274,7 +264,7 @@ class OneToManyLink(AdminFieldFormatter):
         try:
             url = None
             try:
-                url = urlresolvers.reverse(self.url_param)
+                url = reverse(self.url_param)
                 url = '{0}?{1}={2}'.format(url, self.id_param, obj.id)
             except Exception:
                 pass
