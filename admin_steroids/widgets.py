@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from django import forms
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.urls import reverse, NoReverseMatch
 from django.forms.widgets import Select, TextInput
 try:
     from django.forms.widgets import flatatt

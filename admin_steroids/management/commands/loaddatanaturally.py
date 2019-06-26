@@ -258,11 +258,6 @@ class Command(BaseCommand):
 
         except (SystemExit, KeyboardInterrupt):
             raise
-        except Exception as e:
-            # if commit:
-                # transaction.rollback(using=using)
-                # transaction.leave_transaction_management(using=using)
-            raise
 
         # If we found even one object in a fixture, we need to reset the
         # database sequences.

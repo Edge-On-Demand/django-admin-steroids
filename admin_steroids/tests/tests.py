@@ -133,7 +133,7 @@ class Tests(TestCase):
     def test_widgets(self):
         import django
         print('django.version:', django.VERSION)
-        from admin_steroids import widgets
+        from admin_steroids import widgets # pylint: disable=unused-import
 
     def test_currency(self):
         from admin_steroids.fields import Currency

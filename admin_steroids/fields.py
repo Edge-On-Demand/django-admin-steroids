@@ -58,8 +58,7 @@ def format_html(format_string, *args, **kwargs):
     of str.format or % interpolation to build up small HTML fragments.
     """
     args_safe = map(conditional_escape, args)
-    kwargs_safe = dict([(k, conditional_escape(v)) for (k, v) in
-                        six.iteritems(kwargs)])
+    kwargs_safe = dict((k, conditional_escape(v)) for (k, v) in six.iteritems(kwargs))
     return mark_safe(format_string.format(*args_safe, **kwargs_safe))
 
 def format_html_join(sep, format_string, args_generator):
@@ -83,8 +82,7 @@ def format_html_join(sep, format_string, args_generator):
         for args in args_generator))
 
 def is_protected_type(obj):
-    return isinstance(obj, six.integer_types + (type(None), float, Decimal,
-                                                datetime.datetime, datetime.date, datetime.time))
+    return isinstance(obj, six.integer_types + (type(None), float, Decimal, datetime.datetime, datetime.date, datetime.time))
 
 
 class CurrencyInput(forms.widgets.TextInput):
@@ -170,7 +168,6 @@ def parse_value(value):
     return str(value)
 
 class Currency(Decimal):
-
     """
     A Currency data type that extends the Decimal type and integrates the Bable libraries.
 
@@ -291,7 +288,6 @@ class Currency(Decimal):
             self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
 
 class CurrencyFormField(forms.fields.DecimalField):
-
     """
     The form-side companion to CurrencyField, rendering and cleaning
     a dollar-formatting value.
@@ -315,7 +311,6 @@ class CurrencyFormField(forms.fields.DecimalField):
         return Currency(super(CurrencyFormField, self).clean(value))
 
 class CurrencyField(models.fields.DecimalField):
-
     """
     A variant of models.DecimalField that formats its value as dollars,
     inserting a dollar-sign and commas as necessary, when rendered on a form.

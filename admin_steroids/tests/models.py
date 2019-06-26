@@ -7,7 +7,7 @@ class Person(models.Model):
 
 class Contact(models.Model):
 
-    person = models.ForeignKey(Person)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
     email = models.EmailField(max_length=100, blank=False, null=False)
 
