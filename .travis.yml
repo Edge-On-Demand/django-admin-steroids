@@ -6,7 +6,7 @@ python:
 install:
 -   sudo add-apt-repository -y ppa:deadsnakes/ppa
 -   sudo apt-get -yq update
--   sudo apt-get -yq install python3.6 python3.7 python3.7 python3.7-dev python3-pip python3-setuptools python3-venv python3.7-venv
+-   sudo apt-get -yq install python3.6 python3.7 python3.7 python3.7-dev python3-pip python3-setuptools python3.7-venv
 -   pip install tox pylint
 script:
 -   ./init_virtualenv.sh
