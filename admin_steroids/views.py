@@ -63,9 +63,9 @@ class ModelFieldSearchView(TemplateView):
         if 'admin' in self.request.path:
             if not self.request.user.is_authenticated():
                 raise PermissionDenied
-            elif not self.request.user.is_active:
+            if not self.request.user.is_active:
                 raise PermissionDenied
-            elif not self.request.user.is_staff:
+            if not self.request.user.is_staff:
                 raise PermissionDenied
 
         cache_key = self.cache_key

@@ -50,7 +50,7 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             typ = db_field.rel.__class__.__name__
-            if typ == "ManyToOneRel" or typ == "OneToOneRel":
+            if typ in ("ManyToOneRel", "OneToOneRel"):
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
@@ -71,7 +71,7 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
             typ = db_field.rel.__class__.__name__
-            if typ == "ManyToOneRel" or typ == "OneToOneRel":
+            if typ in ("ManyToOneRel", "OneToOneRel"):
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
@@ -267,8 +267,7 @@ class CSVModelAdminMixin(object):
             response = HttpResponse(mimetype='text/csv')
         except TypeError:
             response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s.csv' \
-            % slugify(self.model.__name__)
+        response['Content-Disposition'] = 'attachment; filename=%s.csv' % slugify(self.model.__name__)
 
         if raw_headers is None:
             raw_headers = self.get_csv_raw_headers(request)

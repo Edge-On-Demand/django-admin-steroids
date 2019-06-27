@@ -35,17 +35,15 @@ def get_admin_change_url(obj):
     """
     if obj is None:
         return
-    try:
-        ct = ContentType.objects.get_for_model(obj, for_concrete_model=False)
-        obj_cls = type(obj)
-        if hasattr(obj_cls, 'app_label_name'):
-            app_label = obj_cls.app_label_name
-        else:
-            app_label = ct.app_label
-        change_url_name = 'admin:%s_%s_change' % (app_label, ct.model)
-        return reverse(change_url_name, args=(obj.id,))
-    except:
-        raise
+    ct = ContentType.objects.get_for_model(obj, for_concrete_model=False)
+    obj_cls = type(obj)
+    if hasattr(obj_cls, 'app_label_name'):
+        app_label = obj_cls.app_label_name
+    else:
+        app_label = ct.app_label
+    change_url_name = 'admin:%s_%s_change' % (app_label, ct.model)
+    return reverse(change_url_name, args=(obj.id,))
+
 
 def get_admin_add_url(obj, for_concrete_model=False):
     """
@@ -53,21 +51,17 @@ def get_admin_add_url(obj, for_concrete_model=False):
     """
     if obj is None:
         return
+    ct = ContentType.objects.get_for_model(
+        obj,
+        for_concrete_model=for_concrete_model)
+    list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
     try:
-        ct = ContentType.objects.get_for_model(
-            obj,
-            for_concrete_model=for_concrete_model)
-        list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
-        try:
-            return reverse(list_url_name)
-        except NoReverseMatch:
-            # If this is a proxy model and proxy support is on, try to return
-            # the parent changelist.
-            if not for_concrete_model:
-                return get_admin_add_url(obj, for_concrete_model=True)
-            else:
-                raise
-    except:
+        return reverse(list_url_name)
+    except NoReverseMatch:
+        # If this is a proxy model and proxy support is on, try to return
+        # the parent changelist.
+        if not for_concrete_model:
+            return get_admin_add_url(obj, for_concrete_model=True)
         raise
 
 def get_admin_changelist_url(obj, for_concrete_model=False):
@@ -76,21 +70,17 @@ def get_admin_changelist_url(obj, for_concrete_model=False):
     """
     if obj is None:
         return
+    ct = ContentType.objects.get_for_model(
+        obj,
+        for_concrete_model=for_concrete_model)
+    list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
     try:
-        ct = ContentType.objects.get_for_model(
-            obj,
-            for_concrete_model=for_concrete_model)
-        list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
-        try:
-            return reverse(list_url_name)
-        except NoReverseMatch:
-            # If this is a proxy model and proxy support is on, try to return
-            # the parent changelist.
-            if not for_concrete_model:
-                return get_admin_changelist_url(obj, for_concrete_model=True)
-            else:
-                raise
-    except:
+        return reverse(list_url_name)
+    except NoReverseMatch:
+        # If this is a proxy model and proxy support is on, try to return
+        # the parent changelist.
+        if not for_concrete_model:
+            return get_admin_changelist_url(obj, for_concrete_model=True)
         raise
 
 class StringWithTitle(str):
