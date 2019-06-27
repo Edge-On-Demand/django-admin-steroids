@@ -35,7 +35,7 @@ setup(
     author_email="chrisspen@gmail.com",
     description="Tweaks and tools to simplify Django admin.",
     license="LGPL",
-    url="https://github.com/chrisspen/django-admin-steroids",
+    url="https://gitlab.com/chrisspen/django-admin-steroids",
     #https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Environment :: Web Environment',
