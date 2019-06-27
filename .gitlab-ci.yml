@@ -1,0 +1,25 @@
+# https://hub.docker.com/_/ubuntu
+image: ubuntu:latest
+
+cache:
+  paths:
+  - ~/.cache/pip/
+
+before_script:
+  - cat /etc/lsb-release
+  - apt-get -yq update
+  - add-apt-repository -y ppa:deadsnakes/ppa
+  - apt-get -yq update
+  - apt-get -yq install python-minimal python2.7 python2.7-dev python3.7 python3.7-dev python-pip python3-pip python3-setuptools python3-venv python3.7-venv
+  - pip install tox pylint
+  - python -V
+  - pip3 install -r requirements-test.txt
+
+test:
+  script:
+  - ./init_virtualenv.sh
+  - ". .env/bin/activate"
+  - "pip --version"
+  - "pylint --version"
+  - ./pep8.sh
+  - tox
