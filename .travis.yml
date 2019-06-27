@@ -9,5 +9,6 @@ install:
 -   sudo apt-get -yq install python3.6 python3.7
 -   pip install tox pylint
 script:
+-   ./init_virtualenv.sh
 -   ./pep8.sh
 -   tox
