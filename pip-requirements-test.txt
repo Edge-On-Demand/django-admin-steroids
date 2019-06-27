@@ -1,3 +1,4 @@
 tox>=2.0.0
 pylint>=2.2.2
 django-override-settings>=1.2
+twine>=1.13.0
