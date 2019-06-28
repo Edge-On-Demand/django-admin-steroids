@@ -246,7 +246,8 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
         view_str = unidecode(view_str)
     view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
     url = url.encode('ascii', 'ignore')
-    return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
+    return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
+        .format(url=url.decode('ascii'), view=view_str.decode('utf-8'), tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None, extra='', template='', **kwargs):
     """
@@ -273,8 +274,7 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
                 if _.rel and _.rel.to == type(obj)
             ]
 
-        assert len(reverse_fields) == 1, \
-            'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '__id__exact=' + str(obj.pk)
