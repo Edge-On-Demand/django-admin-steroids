@@ -35,17 +35,15 @@ def get_admin_change_url(obj):
     """
     if obj is None:
         return
-    try:
-        ct = ContentType.objects.get_for_model(obj, for_concrete_model=False)
-        obj_cls = type(obj)
-        if hasattr(obj_cls, 'app_label_name'):
-            app_label = obj_cls.app_label_name
-        else:
-            app_label = ct.app_label
-        change_url_name = 'admin:%s_%s_change' % (app_label, ct.model)
-        return reverse(change_url_name, args=(obj.id,))
-    except:
-        raise
+    ct = ContentType.objects.get_for_model(obj, for_concrete_model=False)
+    obj_cls = type(obj)
+    if hasattr(obj_cls, 'app_label_name'):
+        app_label = obj_cls.app_label_name
+    else:
+        app_label = ct.app_label
+    change_url_name = 'admin:%s_%s_change' % (app_label, ct.model)
+    return reverse(change_url_name, args=(obj.id,))
+
 
 def get_admin_add_url(obj, for_concrete_model=False):
     """
@@ -53,21 +51,17 @@ def get_admin_add_url(obj, for_concrete_model=False):
     """
     if obj is None:
         return
+    ct = ContentType.objects.get_for_model(
+        obj,
+        for_concrete_model=for_concrete_model)
+    list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
     try:
-        ct = ContentType.objects.get_for_model(
-            obj,
-            for_concrete_model=for_concrete_model)
-        list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
-        try:
-            return reverse(list_url_name)
-        except NoReverseMatch:
-            # If this is a proxy model and proxy support is on, try to return
-            # the parent changelist.
-            if not for_concrete_model:
-                return get_admin_add_url(obj, for_concrete_model=True)
-            else:
-                raise
-    except:
+        return reverse(list_url_name)
+    except NoReverseMatch:
+        # If this is a proxy model and proxy support is on, try to return
+        # the parent changelist.
+        if not for_concrete_model:
+            return get_admin_add_url(obj, for_concrete_model=True)
         raise
 
 def get_admin_changelist_url(obj, for_concrete_model=False):
@@ -76,21 +70,17 @@ def get_admin_changelist_url(obj, for_concrete_model=False):
     """
     if obj is None:
         return
+    ct = ContentType.objects.get_for_model(
+        obj,
+        for_concrete_model=for_concrete_model)
+    list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
     try:
-        ct = ContentType.objects.get_for_model(
-            obj,
-            for_concrete_model=for_concrete_model)
-        list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
-        try:
-            return reverse(list_url_name)
-        except NoReverseMatch:
-            # If this is a proxy model and proxy support is on, try to return
-            # the parent changelist.
-            if not for_concrete_model:
-                return get_admin_changelist_url(obj, for_concrete_model=True)
-            else:
-                raise
-    except:
+        return reverse(list_url_name)
+    except NoReverseMatch:
+        # If this is a proxy model and proxy support is on, try to return
+        # the parent changelist.
+        if not for_concrete_model:
+            return get_admin_changelist_url(obj, for_concrete_model=True)
         raise
 
 class StringWithTitle(str):
@@ -253,14 +243,11 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     try:
         view_str = unidecode(unicode(view_str, encoding="utf-8"))
     except TypeError:
-        view_str = unidecode(view_str)        
-
-    if unicode is not str:
-        # Encode to ASCII for Python 2.x
-        view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
-        url = url.encode('ascii', 'ignore')
-
-    return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'.format(url=url, view=view_str, tgt=target, class_str=class_str)
+        view_str = unidecode(view_str)
+    view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
+    url = url.encode('ascii', 'ignore')
+    return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
+        .format(url=url.decode('ascii'), view=view_str.decode('utf-8'), tgt=target, class_str=class_str)
 
 def view_related_link(obj, field_name, reverse_field=None, extra='', template='', **kwargs):
     """
@@ -287,8 +274,7 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
                 if _.rel and _.rel.to == type(obj)
             ]
 
-        assert len(reverse_fields) == 1, \
-            'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '__id__exact=' + str(obj.pk)
@@ -416,7 +402,7 @@ def get_related_name(parent, child):
     name = None
     for field in child._meta.fields:
         if field.rel and issubclass(parent, field.rel.to):
-            name = field.related_query_name()
+            name = field.related_query_name().rstrip('+')  # Remove trailing plus symbol
             break
     if name and not name.endswith('s'):
         name += '_set'

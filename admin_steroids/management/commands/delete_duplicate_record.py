@@ -3,6 +3,8 @@ from __future__ import print_function
 import sys
 #import traceback
 from collections import defaultdict
+from collections.abc import Iterator
+
 from optparse import make_option
 
 from django import get_version, VERSION
@@ -74,6 +76,8 @@ class Command(BaseCommand):
             Wrapper around an iterator, handling attribute assignment errors caused by the database router blocking relations.
             Exceptions caused by the database router as silently ignored.
             """
+            if not isinstance(itr, Iterator):
+                itr = iter(itr)
             while 1:
                 try:
                     value = next(itr)

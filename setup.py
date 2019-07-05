@@ -35,7 +35,7 @@ setup(
     author_email="chrisspen@gmail.com",
     description="Tweaks and tools to simplify Django admin.",
     license="LGPL",
-    url="https://github.com/chrisspen/django-admin-steroids",
+    url="https://gitlab.com/chrisspen/django-admin-steroids",
     #https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Environment :: Web Environment',
@@ -44,10 +44,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Framework :: Django',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     zip_safe=False,
     install_requires=get_reqs('pip-requirements-min-django.txt', 'pip-requirements.txt'),

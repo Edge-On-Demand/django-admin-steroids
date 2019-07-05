@@ -153,18 +153,15 @@ def parse_value(value):
     value = value.replace(curSym, '')
 
     if allSym.count(decSym) > 1:
-        raise NumberFormatError(
-            default_error_messages['decimal_symbol'] % decSym)
-    elif (allSym.count(decSym) == 1 and allSym[-1] != decSym) or invalidSym:
-        raise NumberFormatError(
-            default_error_messages['invalid_format'] % (grpSym, decSym))
-    elif value.count(decSym) == 1:
+        raise NumberFormatError(default_error_messages['decimal_symbol'] % decSym)
+    if (allSym.count(decSym) == 1 and allSym[-1] != decSym) or invalidSym:
+        raise NumberFormatError(default_error_messages['invalid_format'] % (grpSym, decSym))
+    if value.count(decSym) == 1:
         value = parse_decimal(value, locale=l_currency_language_code.lower())
     else:
         value = parse_number(value, locale=l_currency_language_code.lower())
 
-    # The value is converted into a string because the parse functions return
-    # floats
+    # The value is converted into a string because the parse functions return floats
     return str(value)
 
 class Currency(Decimal):
@@ -295,9 +292,6 @@ class CurrencyFormField(forms.fields.DecimalField):
 
     widget = CurrencyInput
 
-    #def __init__(self, *args, **kwargs):
-        #super(CurrencyFormField, self).__init__(*args, **kwargs)
-
     def clean(self, value):
         value = (value or '').strip() or None
         if value is None:
@@ -315,11 +309,6 @@ class CurrencyField(models.fields.DecimalField):
     A variant of models.DecimalField that formats its value as dollars,
     inserting a dollar-sign and commas as necessary, when rendered on a form.
     """
-
-    #__metaclass__ = SubfieldBase
-
-    #def __init__(self, *args, **kwargs):
-        #super(CurrencyField, self).__init__(*args, **kwargs)
 
     def format(self):
         return Currency(self).format()
