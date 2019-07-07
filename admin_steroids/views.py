@@ -123,7 +123,7 @@ class ModelFieldSearchView(TemplateView):
                     for search_field in search_fields:
                         #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
                         qs_args.append(Q(**{search_field+'__icontains': q}))
-                    rel_model = field.rel.to
+                    rel_model = field.remote_field.model
                     qs = rel_model.objects.filter(six.moves.reduce(operator.or_, qs_args))
                     qs = qs[:n]
                     pk_name = rel_model._meta.pk.name

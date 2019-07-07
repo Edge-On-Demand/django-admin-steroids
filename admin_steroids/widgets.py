@@ -113,12 +113,12 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
     def label_for_value(self, value):
         key = self.remote_field.get_related_field().name
         try:
-            obj = self.remote_field.to._default_manager.using(self.db).get(**{key: value})
+            obj = self.remote_field.model._default_manager.using(self.db).get(**{key: value})
             change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
             return '&nbsp;<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(obj))
         except NoReverseMatch:
             return '&nbsp;<strong>%s</strong>' % (escape(obj),)
-        except (ValueError, self.remote_field.to.DoesNotExist):
+        except (ValueError, self.remote_field.model.DoesNotExist):
             return ''
 
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
@@ -142,14 +142,14 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         str_values = []
         key = self.remote_field.get_related_field().name
         for v in values:
-            obj = self.remote_field.to._default_manager.using(self.db).get(**{key: v})
+            obj = self.remote_field.model._default_manager.using(self.db).get(**{key: v})
             x = smart_text(obj)
             try:
                 change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
                 str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(x))]
             except NoReverseMatch:
                 str_values += ['<strong>%s</strong>' % (escape(x),)]
-            except self.remote_field.to.DoesNotExist:
+            except self.remote_field.model.DoesNotExist:
                 str_values += [u'???']
         return u', '.join(str_values)
 
