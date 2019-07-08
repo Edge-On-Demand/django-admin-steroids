@@ -49,9 +49,9 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
-            typ = db_field.remote_field.__class__.__name__
-            if typ == "ManyToOneRel" or typ == "OneToOneRel":
-                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
+            typ = db_field.rel.__class__.__name__
+            if typ in ("ManyToOneRel", "OneToOneRel"):
+                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
@@ -70,9 +70,9 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
-            typ = db_field.remote_field.__class__.__name__
-            if typ == "ManyToOneRel" or typ == "OneToOneRel":
-                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
+            typ = db_field.rel.__class__.__name__
+            if typ in ("ManyToOneRel", "OneToOneRel"):
+                kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
@@ -267,8 +267,7 @@ class CSVModelAdminMixin(object):
             response = HttpResponse(mimetype='text/csv')
         except TypeError:
             response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s.csv' \
-            % slugify(self.model.__name__)
+        response['Content-Disposition'] = 'attachment; filename=%s.csv' % slugify(self.model.__name__)
 
         if raw_headers is None:
             raw_headers = self.get_csv_raw_headers(request)

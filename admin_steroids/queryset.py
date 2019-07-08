@@ -126,18 +126,16 @@ class ApproxCountQuerySet(QuerySet):
                 # Note, there's a bug in the default execute() that
                 # misquotes arguments by using double-quotes when PG only
                 # uses single-quotes.
-                sql = "SELECT reltuples::int FROM pg_class WHERE oid = '%s'::regclass;" \
-                    % (self.model._meta.db_table,)
+                sql = "SELECT reltuples::int FROM pg_class WHERE oid = '%s'::regclass;" % (self.model._meta.db_table,)
                 cursor.execute(sql)
                 results = cursor.fetchall()
                 return results[0][0]
-            elif is_mysql:
+            if is_mysql:
                 # Read table count approximation from MySQL's "SHOW TABLE".
                 cursor = connections[self.db].cursor()
                 cursor.execute("SHOW TABLE STATUS LIKE %s", (self.model._meta.db_table,))
                 return cursor.fetchall()[0][4]
-            else:
-                raise NotImplementedError
+            raise NotImplementedError
         return self.query.get_count(using=self.db)
 
 class CachedCountQuerySet(ApproxCountQuerySet):
