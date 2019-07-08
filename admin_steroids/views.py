@@ -36,17 +36,10 @@ class ModelFieldSearchView(TemplateView):
 
     @property
     def model(self):
-#        mdls = importlib.import_module('%s.models' % self.kwargs['app_name'])
-#        return getattr(mdls, self.kwargs['model_name'])
         ct = ContentType.objects.get(
             app_label=self.kwargs['app_name'],
             model=self.kwargs['model_name'])
         return ct.model_class()
-
-#    def get_context_data(self, **kwargs):
-#        context = super(HomePageView, self).get_context_data(**kwargs)
-#        context['latest_articles'] = Article.objects.all()[:5]
-#        return context
 
     @property
     def cache_key(self):

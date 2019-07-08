@@ -24,7 +24,7 @@ except ImportError:
 try:
     unicode
 except NameError:
-    unicode = six.text_type # pylint: disable=redefined-builtin
+    unicode = str  # pylint: disable=redefined-builtin
 
 def obj_to_hash(o):
     """

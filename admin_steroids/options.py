@@ -53,7 +53,7 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
             if typ in ("ManyToOneRel", "OneToOneRel"):
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
-                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
+                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
         return super(BetterRawIdFieldsModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
@@ -74,7 +74,7 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
             if typ in ("ManyToOneRel", "OneToOneRel"):
                 kwargs['widget'] = w.VerboseForeignKeyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             elif typ == "ManyToManyRel":
-                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.rel, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
+                kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
         return super(BetterRawIdFieldsTabularInline, self).formfield_for_dbfield(db_field, **kwargs)
 
@@ -161,7 +161,7 @@ class ReadonlyModelAdmin(BaseModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request):
         return False
 
     def get_actions(self, request):

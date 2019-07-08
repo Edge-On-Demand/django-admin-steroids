@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     else:
                         raise
                 except TypeError as exc:
-                    if 'list object is not an iterator' in str(exc):
+                    if "'list' object is not an iterator" in str(exc) or "list object is not an iterator" in str(exc):
                         break
                     else:
                         raise
