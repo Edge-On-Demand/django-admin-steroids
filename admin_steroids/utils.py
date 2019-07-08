@@ -319,6 +319,8 @@ class DictCursor(object):
     def field_order(self):
         return [_[0] for _ in self.desc]
     def __getitem__(self, i):
+        if isinstance(i, slice):
+            i = i.stop
         lst = []
         j = 0
         for r in self:
@@ -348,7 +350,7 @@ def count_related_objects(obj):
     return cnt
 
 def remove_html(s):
-    import HTMLParser # pylint: disable=import-error
+    from html.parser import HTMLParser
 
     s = six.text_type(s)
 
@@ -357,7 +359,7 @@ def remove_html(s):
     s = s.replace('&nbsp;', ' ')
 
     # Strip out all other HTML entities.
-    s = HTMLParser.HTMLParser().unescape(s)
+    s = HTMLParser().unescape(s)
 
     try:
         # Try using BeautifulSoup to strip out HTML, since its parser is more robust
