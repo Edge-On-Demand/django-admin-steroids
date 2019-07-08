@@ -1,7 +1,8 @@
 Django Admin Steroids - Tweaks and tools to extend Django admin
 ===============================================================
 
-[![](https://img.shields.io/pypi/v/django-admin-steroids.svg)](https://pypi.python.org/pypi/django-admin-steroids) [![Build Status](https://img.shields.io/travis/chrisspen/django-admin-steroids.svg?branch=master)](https://travis-ci.org/chrisspen/django-admin-steroids) [![](https://pyup.io/repos/github/chrisspen/django-admin-steroids/shield.svg)](https://pyup.io/repos/github/chrisspen/django-admin-steroids)
+[![](https://img.shields.io/pypi/v/django-admin-steroids.svg)](https://pypi.python.org/pypi/django-admin-steroids)
+[![Pipeline Status](https://gitlab.com/chrisspen/django-admin-steroids/badges/master/pipeline.svg)](https://gitlab.com/chrisspen/django-admin-steroids/commits/master) 
 
 Overview
 --------
