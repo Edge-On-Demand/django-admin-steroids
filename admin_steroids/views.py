@@ -61,7 +61,7 @@ class ModelFieldSearchView(TemplateView):
         # Ensure only authorized users can access admin URLs.
         #TODO:extend this to allow custom authentication options
         if 'admin' in self.request.path:
-            if not self.request.user.is_authenticated():
+            if not self.request.user.is_authenticated:
                 raise PermissionDenied
             if not self.request.user.is_active:
                 raise PermissionDenied
