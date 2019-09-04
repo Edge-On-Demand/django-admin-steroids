@@ -269,13 +269,13 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
     if not reverse_field:
         reverse_fields = [
             _.name for _ in model._meta.fields
-            if _.rel and _.rel.to == type(obj) and _.rel.related_name == field_name
+            if _.remote_field and _.remote_field.model == type(obj) and _.remote_field.related_name == field_name
         ]
 
         if not reverse_fields:
             reverse_fields = [
                 _.name for _ in model._meta.fields
-                if _.rel and _.rel.to == type(obj)
+                if _.remote_field and _.remote_field.model == type(obj)
             ]
 
         assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
@@ -407,7 +407,7 @@ def get_related_name(parent, child):
     """
     name = None
     for field in child._meta.fields:
-        if field.rel and issubclass(parent, field.rel.to):
+        if field.remote_field and issubclass(parent, field.remote_field.model):
             name = field.related_query_name().rstrip('+')  # Remove trailing plus symbol
             break
     if name and not name.endswith('s'):
