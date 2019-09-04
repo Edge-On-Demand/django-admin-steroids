@@ -7,6 +7,12 @@ import admin_steroids
 
 CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
+try:
+    with open(path.join(CURRENT_DIR, 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
+except TypeError:
+    with open(path.join(CURRENT_DIR, 'README.md')) as f:
+        long_description = f.read()
 
 def get_reqs(*fns):
     lst = []
@@ -36,6 +42,8 @@ setup(
     author="Chris Spencer",
     author_email="chrisspen@gmail.com",
     description="Tweaks and tools to simplify Django admin.",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license="LGPL",
     url="https://gitlab.com/chrisspen/django-admin-steroids",
     #https://pypi.python.org/pypi?%3Aaction=list_classifiers
