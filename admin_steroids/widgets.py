@@ -22,24 +22,29 @@ except ImportError:
 
     @python_2_unicode_compatible
     class StrAndUnicode:
+
         def __str__(self):
             return self.code
 
+
 from admin_steroids import utils
 
+
 class LinkedSelect(Select):
+
     def render(self, name, value, attrs=None, *args, **kwargs):
         output = super(LinkedSelect, self).render(name, value, attrs=attrs, *args, **kwargs)
         model = self.choices.field.queryset.model
         to_field_name = self.choices.field.to_field_name or 'id'
         try:
-            kwargs = {to_field_name:value}
+            kwargs = {to_field_name: value}
             obj = model.objects.get(**kwargs)
             view_url = utils.get_admin_change_url(obj)
             output += mark_safe('&nbsp;<a href="%s" target="_blank">view</a>&nbsp;' % (view_url,))
         except model.DoesNotExist:
             pass
         return output
+
 
 class ForeignKeyTextInput(TextInput):
     """
@@ -72,7 +77,8 @@ class ForeignKeyTextInput(TextInput):
         final_attrs['size'] = 10
         final_attrs['type'] = 'text'
         final_attrs['name'] = name
-        t = Template(u"""
+        t = Template(
+            u"""
 {% load staticfiles %}
 <input{{ attrs|safe }} />
 {% if instance %}
@@ -81,18 +87,23 @@ class ForeignKeyTextInput(TextInput):
     </a>
     <strong><a href="{{ url|safe }}" target="_blank">{{ instance|safe }}</a></strong>
 {% endif %}
-        """)
-        c = Context(dict(
-            id=final_attrs['id'],
-            attrs=flatatt(final_attrs),
-            raw_value=self._raw_value,
-            url=utils.get_admin_change_url(self._instance),
-            changelist_url=utils.get_admin_changelist_url(self._model_class),
-            instance=self._instance,
-        ))
+        """
+        )
+        c = Context(
+            dict(
+                id=final_attrs['id'],
+                attrs=flatatt(final_attrs),
+                raw_value=self._raw_value,
+                url=utils.get_admin_change_url(self._instance),
+                changelist_url=utils.get_admin_changelist_url(self._model_class),
+                instance=self._instance,
+            )
+        )
         return mark_safe(t.render(c))
 
+
 #http://djangosnippets.org/snippets/2217/
+
 
 class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
 
@@ -120,6 +131,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
             return '&nbsp;<strong>%s</strong>' % (escape(obj),)
         except (ValueError, self.remote_field.model.DoesNotExist):
             return ''
+
 
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
 
@@ -153,47 +165,57 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
                 str_values += [u'???']
         return u', '.join(str_values)
 
+
 class PlainTextWidget(forms.Widget):
     """
     Renders the value as plain text.
     """
+
     def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
-        return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
+        return mark_safe('<div style="padding-top:3px;">' + value + '</div>')
+
 
 class PreTextWidget(forms.Widget):
     """
     Renders the value as plain text formatted with the "pre" style.
     """
+
     def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
-        return mark_safe('<div style="padding-top:3px; white-space:pre;">'+value+'</div>')
+        return mark_safe('<div style="padding-top:3px; white-space:pre;">' + value + '</div>')
+
 
 class NBSPTextWidget(forms.Widget):
     """
     Renders the value as plain text with all spaces replaced by "&nbsp;".
     """
+
     def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         value = value.replace(' ', '&nbsp;').replace('\n', '<br/>')
-        return mark_safe('<div style="padding-top:3px;">'+value+'</div>')
+        return mark_safe('<div style="padding-top:3px;">' + value + '</div>')
+
 
 class BRTextWidget(forms.Widget):
     """
     Renders the value as plain text with all newlines replaced by "<br/>".
     """
+
     def render(self, _name, value, attrs=None, renderer=None):
         value = value or ''
         value = value.replace('\n', '<br/>')
         _attrs = self.attrs.copy()
         _attrs.update(attrs or {})
         style = _attrs.get('style', '')
-        return mark_safe('<div style="'+style+'">'+value+'</div>')
+        return mark_safe('<div style="' + style + '">' + value + '</div>')
+
 
 class ReadOnlyText(forms.TextInput):
     """
     Renders the value as plain text.
     """
+
     def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''

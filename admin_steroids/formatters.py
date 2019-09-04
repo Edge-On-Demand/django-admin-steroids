@@ -31,15 +31,11 @@ class AdminFieldFormatter(object):
         self.short_description = kwargs.get('short_description', title or name)
         kwargs.setdefault('allow_tags', True)
         kwargs.setdefault('admin_order_field', name)
-        kwargs.setdefault('title_align',
-            kwargs.get('align', kwargs.get('title_align')))
+        kwargs.setdefault('title_align', kwargs.get('align', kwargs.get('title_align')))
         self.__dict__.update(kwargs)
 
         if not isinstance(self.short_description, SafeString):
-            self.short_description = re.sub(
-                '[^0-9a-zA-Z]+',
-                ' ',
-                self.short_description).capitalize()
+            self.short_description = re.sub('[^0-9a-zA-Z]+', ' ', self.short_description).capitalize()
 
     def __call__(self, obj, plaintext=False):
         if self.object_level:
@@ -72,6 +68,7 @@ class AdminFieldFormatter(object):
         kwargs['plaintext'] = True
         return self.format(*args, **kwargs)
 
+
 class DollarFormat(AdminFieldFormatter):
     """
     Formats a numeric value as dollars.
@@ -91,15 +88,16 @@ class DollarFormat(AdminFieldFormatter):
         template = '$%.' + str(self.decimals) + 'f'
         if v < 0:
             v *= -1
-            template = '('+template+')'
+            template = '(' + template + ')'
         if self.commas:
             template = utils.FormatWithCommas(template, v)
         else:
             template = template % v
-        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+        style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
         if not plaintext:
-            template = '<span style="'+style+'">'+template+'</span>'
+            template = '<span style="' + style + '">' + template + '</span>'
         return template
+
 
 class PercentFormat(AdminFieldFormatter):
     """
@@ -114,17 +112,18 @@ class PercentFormat(AdminFieldFormatter):
 
     def format(self, v, plaintext=False):
         if v is None:
-            style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+            style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
             if not plaintext:
-                template = '<span style="'+style+'">'+NONE_STR+'</span>'
+                template = '<span style="' + style + '">' + NONE_STR + '</span>'
             return template
         v *= 100
         v = self.rounder(v)
         template = self.template
-        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+        style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
         if not plaintext:
-            template = '<span style="'+style+'">'+template+'</span>'
+            template = '<span style="' + style + '">' + template + '</span>'
         return template % v
+
 
 class FloatFormat(AdminFieldFormatter):
     """
@@ -141,16 +140,17 @@ class FloatFormat(AdminFieldFormatter):
 
     def format(self, v, plaintext=False):
         if v is None:
-            style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+            style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
             if not plaintext:
-                template = '<span style="'+style+'">'+NONE_STR+'</span>'
+                template = '<span style="' + style + '">' + NONE_STR + '</span>'
             return template
         v = self.rounder(v, self.decimals)
         template = self.template
-        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+        style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
         if not plaintext:
-            template = '<span style="'+style+'">'+template+'</span>'
+            template = '<span style="' + style + '">' + template + '</span>'
         return template % v
+
 
 class CenterFormat(AdminFieldFormatter):
     """
@@ -164,19 +164,22 @@ class CenterFormat(AdminFieldFormatter):
     def format(self, v, plaintext=False):
         if plaintext:
             return str(v)
-        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
-        template = '<span style="'+style+'">%s</span>'
+        style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
+        template = '<span style="' + style + '">%s</span>'
         return template % v
+
 
 class ReadonlyFormat(AdminFieldFormatter):
     """
     Formats a the field as a readonly attribute.
     """
 
+
 #    def format(self, v):
 #        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
 #        template = '<span style="'+style+'">%s</span>'
 #        return template % v
+
 
 class NbspFormat(AdminFieldFormatter):
     """
@@ -189,6 +192,7 @@ class NbspFormat(AdminFieldFormatter):
             return v
         v = v.replace(' ', '&nbsp;')
         return v
+
 
 class BooleanFormat(AdminFieldFormatter):
     """
@@ -206,7 +210,7 @@ class BooleanFormat(AdminFieldFormatter):
         v = bool(v)
         if plaintext:
             return v
-        style = 'display:inline-block; width:100%%; text-align:'+self.align+';'
+        style = 'display:inline-block; width:100%%; text-align:' + self.align + ';'
         template = '<span style="'+style+'"><img src="%s" alt="%s" ' + \
             'title="%s" /></span>'
         if v:
@@ -216,6 +220,7 @@ class BooleanFormat(AdminFieldFormatter):
         url = url % (settings.STATIC_URL,)
         v = template % (url, v, v)
         return v
+
 
 class ForeignKeyLink(AdminFieldFormatter):
     """
@@ -245,6 +250,7 @@ class ForeignKeyLink(AdminFieldFormatter):
         if v is None:
             return ''
         return v.id
+
 
 class OneToManyLink(AdminFieldFormatter):
     """

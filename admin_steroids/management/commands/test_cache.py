@@ -6,11 +6,13 @@ try:
 except ImportError:
     from django.core.cache import get_cache as _get_cache
 
+
 def get_cache(name):
     # print('_get_cache:', _get_cache)
     # if isinstance(_get_cache, dict):
     return _get_cache[name]
     # return _get_cache(name)
+
 
 class Command(BaseCommand):
     args = ''

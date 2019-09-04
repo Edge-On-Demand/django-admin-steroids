@@ -5,6 +5,7 @@ import math
 
 import six
 
+
 def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=True):
     '''
     Retries a function or method until it runs without throwing an exception.
@@ -30,6 +31,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
         raise ValueError("delay is %s but must be greater than 0" % (delay,))
 
     def deco_retry(f):
+
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay # make mutable
             for retry in six.moves.range(int(mtries)):
@@ -39,7 +41,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
                         transaction.commit()
                     return rv
                 except Exception as e:
-                    if retry+1 == mtries:
+                    if retry + 1 == mtries:
                         raise
                     if exception_cb:
                         exception_cb(e)
@@ -47,5 +49,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
                     time.sleep(mdelay)
                     # Make future wait longer.
                     mdelay *= backoff
+
         return f_retry # true decorator -> decorated function
+
     return deco_retry # @retry(arg[, ...]) -> true decorator

@@ -24,7 +24,8 @@ except ImportError:
 try:
     unicode
 except NameError:
-    unicode = str  # pylint: disable=redefined-builtin
+    unicode = str # pylint: disable=redefined-builtin
+
 
 def obj_to_hash(o):
     """
@@ -32,6 +33,7 @@ def obj_to_hash(o):
     representation.
     """
     return hashlib.sha512(pickle.dumps(o)).hexdigest()
+
 
 def get_admin_change_url(obj):
     """
@@ -55,9 +57,7 @@ def get_admin_add_url(obj, for_concrete_model=False):
     """
     if obj is None:
         return
-    ct = ContentType.objects.get_for_model(
-        obj,
-        for_concrete_model=for_concrete_model)
+    ct = ContentType.objects.get_for_model(obj, for_concrete_model=for_concrete_model)
     list_url_name = 'admin:%s_%s_add' % (ct.app_label, ct.model)
     try:
         return reverse(list_url_name)
@@ -68,15 +68,14 @@ def get_admin_add_url(obj, for_concrete_model=False):
             return get_admin_add_url(obj, for_concrete_model=True)
         raise
 
+
 def get_admin_changelist_url(obj, for_concrete_model=False):
     """
     Returns the admin changelist url associated with the given instance.
     """
     if obj is None:
         return
-    ct = ContentType.objects.get_for_model(
-        obj,
-        for_concrete_model=for_concrete_model)
+    ct = ContentType.objects.get_for_model(obj, for_concrete_model=for_concrete_model)
     list_url_name = 'admin:%s_%s_changelist' % (ct.app_label, ct.model)
     try:
         return reverse(list_url_name)
@@ -86,6 +85,7 @@ def get_admin_changelist_url(obj, for_concrete_model=False):
         if not for_concrete_model:
             return get_admin_changelist_url(obj, for_concrete_model=True)
         raise
+
 
 class StringWithTitle(str):
     """
@@ -110,7 +110,9 @@ class StringWithTitle(str):
 
     __deepcopy__ = lambda self, memodict: StringWithTitle(unicode(self), self.title)
 
+
 re_digits_nondigits = re.compile(r'\d+|\D+')
+
 
 def FormatWithCommas(fmt, value):
     """
@@ -161,6 +163,7 @@ def FormatWithCommas(fmt, value):
             break
     return ''.join(parts)
 
+
 def _commafy(s):
     r = []
     for i, c in enumerate(reversed(s)):
@@ -169,22 +172,23 @@ def _commafy(s):
         r.insert(0, c)
     return ''.join(r)
 
+
 def currency_value(value, decimal_places=2):
     """
     Convert a given value to a standard currency value.
     """
 
     # Build the template for quantizing the decimal places.
-    q = '0.' + ('0' * (decimal_places-1)) + '1'
+    q = '0.' + ('0' * (decimal_places - 1)) + '1'
 
     # Use the Decimal package to get the proper fixed point value.
     with decimal.localcontext() as context:
         try:
             context.rounding = decimal.ROUND_HALF_UP
-            return decimal.Decimal(value).quantize(decimal.Decimal(q),
-                                                   decimal.ROUND_HALF_UP)
+            return decimal.Decimal(value).quantize(decimal.Decimal(q), decimal.ROUND_HALF_UP)
         except decimal.InvalidOperation:
             return
+
 
 # http://stackoverflow.com/a/5192374/247542
 class classproperty(object):
@@ -198,13 +202,8 @@ class classproperty(object):
     def __get__(self, instance, owner):
         return self.getter(owner)
 
-def absolutize_all_urls(
-    text,
-    domain=None,
-    overwrite_domain=False,
-    protocol='http',
-    overwrite_protocol=True,
-    url_pattern='(?:href|src)=[\'"](/+.*?)[\'"]'):
+
+def absolutize_all_urls(text, domain=None, overwrite_domain=False, protocol='http', overwrite_protocol=True, url_pattern='(?:href|src)=[\'"](/+.*?)[\'"]'):
     """
     Inserts a domain and protocol into all href and src URLs missing them.
     """
@@ -214,11 +213,12 @@ def absolutize_all_urls(
     for old_url in matches:
         result = urlparse(old_url)
         result = result._replace(
-            scheme=(not overwrite_protocol and result.netloc.scheme) or protocol,
-            netloc=(not overwrite_domain and result.netloc) or domain)
+            scheme=(not overwrite_protocol and result.netloc.scheme) or protocol, netloc=(not overwrite_domain and result.netloc) or domain
+        )
         new_url = result.geturl()
         text = text.replace(old_url, new_url)
     return text
+
 
 def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='', class_str=''):
     """
@@ -253,6 +253,7 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
     return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\
         .format(url=url.decode('ascii'), view=view_str.decode('utf-8'), tgt=target, class_str=class_str)
 
+
 def view_related_link(obj, field_name, reverse_field=None, extra='', template='', **kwargs):
     """
     Returns the HTML for rendering a link to a related model's
@@ -268,27 +269,27 @@ def view_related_link(obj, field_name, reverse_field=None, extra='', template=''
     #TODO:is there a more efficient way to do this?
     if not reverse_field:
         reverse_fields = [
-            _.name for _ in model._meta.fields
-            if _.remote_field and _.remote_field.model == type(obj) and _.remote_field.related_name == field_name
+            _.name for _ in model._meta.fields if _.remote_field and _.remote_field.model == type(obj) and _.remote_field.related_name == field_name
         ]
 
         if not reverse_fields:
-            reverse_fields = [
-                _.name for _ in model._meta.fields
-                if _.remote_field and _.remote_field.model == type(obj)
-            ]
+            reverse_fields = [_.name for _ in model._meta.fields if _.remote_field and _.remote_field.model == type(obj)]
 
-        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (field_name, reverse_fields,)
+        assert len(reverse_fields) == 1, 'Ambiguous reverse_field for %s: %s' % (
+            field_name,
+            reverse_fields,
+        )
         reverse_field = reverse_fields[0]
 
     url = get_admin_changelist_url(model) + '?' + reverse_field + '__id__exact=' + str(obj.pk)
 
     if extra:
         if not extra.startswith('&'):
-            extra = '&'+extra
+            extra = '&' + extra
         url = url + extra
 
     return view_link(url, q.count(), template=template, **kwargs)
+
 
 def dereference_value(obj, name, as_name=False):
     """
@@ -307,21 +308,26 @@ def dereference_value(obj, name, as_name=False):
         return name
     return cursor
 
+
 class DictCursor(object):
     """
     A database cursor that returns records as dictionaries,
     using the field names as keys.
     """
+
     def __init__(self, database_name='default'):
         from django.db import connections
         self.cursor = connections[database_name].cursor()
         self._results = None
+
     def execute(self, *args, **kwargs):
         self.cursor.execute(*args, **kwargs)
         self.desc = self.cursor.description
+
     @property
     def field_order(self):
         return [_[0] for _ in self.desc]
+
     def __getitem__(self, i):
         if isinstance(i, slice):
             i = i.stop
@@ -333,12 +339,15 @@ class DictCursor(object):
                 break
             lst.append(r)
         return lst
+
     def fetchall(self):
         return list(self)
+
     def __iter__(self):
         desc = self.cursor.description
         for row in self.cursor.fetchall():
             yield dict(zip([col[0] for col in desc], row))
+
 
 def count_related_objects(obj):
     """
@@ -352,6 +361,7 @@ def count_related_objects(obj):
         referring_objects = getattr(obj, link.get_accessor_name()).all()
         cnt += referring_objects.count()
     return cnt
+
 
 def remove_html(s):
     from html.parser import HTMLParser
@@ -377,17 +387,16 @@ def remove_html(s):
 
     return s
 
+
 def get_model_fields(mdl):
     try:
         all_names = mdl._meta.get_all_field_names()
     except AttributeError:
         # Django >= 1.10 removed this useful method, so we implement a backwards compatible
         # replacement using get_fields().
-        all_names = [
-            f.name for f in mdl._meta.get_fields()
-            if not (f.related_model is not None and not f.many_to_one)
-        ]
+        all_names = [f.name for f in mdl._meta.get_fields() if not (f.related_model is not None and not f.many_to_one)]
     return all_names
+
 
 def get_related_name(parent, child):
     """
@@ -408,11 +417,12 @@ def get_related_name(parent, child):
     name = None
     for field in child._meta.fields:
         if field.remote_field and issubclass(parent, field.remote_field.model):
-            name = field.related_query_name().rstrip('+')  # Remove trailing plus symbol
+            name = field.related_query_name().rstrip('+') # Remove trailing plus symbol
             break
     if name and not name.endswith('s'):
         name += '_set'
     return name
+
 
 def generate_stub_inline_form_field_names(parent_model, inlines):
     part_names = [
@@ -429,6 +439,7 @@ def generate_stub_inline_form_field_names(parent_model, inlines):
         for part_name, part_default in part_names:
             names['%s-%s' % (base_name, part_name)] = part_default
     return names
+
 
 def encode_csv_data(d):
     for k, v in d.items():

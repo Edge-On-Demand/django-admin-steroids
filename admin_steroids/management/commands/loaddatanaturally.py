@@ -24,16 +24,28 @@ try:
 except ImportError:
     has_bz2 = False
 
+
 class Command(BaseCommand):
     help = 'Installs the named fixture(s) in the database.'
     args = "fixture [fixture ...]"
 
     def add_arguments(self, parser):
         parser.add_argument('args', nargs='+')
-        parser.add_argument('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a specific database to load fixtures into. Defaults to the "default" database.')
-        parser.add_argument('--ignorenonexistent', '-i', action='store_true', dest='ignore',
-            default=False, help='Ignores entries in the serialized data for fields that do not currently exist on the model.')
+        parser.add_argument(
+            '--database',
+            action='store',
+            dest='database',
+            default=DEFAULT_DB_ALIAS,
+            help='Nominates a specific database to load fixtures into. Defaults to the "default" database.'
+        )
+        parser.add_argument(
+            '--ignorenonexistent',
+            '-i',
+            action='store_true',
+            dest='ignore',
+            default=False,
+            help='Ignores entries in the serialized data for fields that do not currently exist on the model.'
+        )
 
     def handle(self, *fixture_labels, **options):
 
@@ -43,10 +55,7 @@ class Command(BaseCommand):
         connection = connections[using]
 
         if not fixture_labels:
-            raise CommandError(
-                "No database fixture specified. Please provide the path of at "
-                "least one fixture in the command line."
-            )
+            raise CommandError("No database fixture specified. Please provide the path of at " "least one fixture in the command line.")
 
         verbosity = int(options.get('verbosity'))
         show_traceback = options.get('traceback')
@@ -75,28 +84,26 @@ class Command(BaseCommand):
         # Start transaction management. All fixtures are installed in a
         # single transaction to ensure that all references are resolved.
         # if commit:
-            # # transaction.commit_unless_managed(using=using)
-            # try:
-                # transaction.commit(using=using)
-            # except transaction.TransactionManagementError:
-                # pass
-            # # transaction.enter_transaction_management(using=using)
-            # transaction.managed(True, using=using)
+        # # transaction.commit_unless_managed(using=using)
+        # try:
+        # transaction.commit(using=using)
+        # except transaction.TransactionManagementError:
+        # pass
+        # # transaction.enter_transaction_management(using=using)
+        # transaction.managed(True, using=using)
 
         class SingleZipReader(zipfile.ZipFile):
+
             def __init__(self, *args, **kwargs):
                 zipfile.ZipFile.__init__(self, *args, **kwargs)
                 if settings.DEBUG:
                     assert len(self.namelist()) == 1, \
                         "Zip-compressed fixtures must contain only one file."
+
             def read(self):
                 return zipfile.ZipFile.read(self, self.namelist()[0])
 
-        compression_types = {
-            None:   open,
-            'gz':   gzip.GzipFile,
-            'zip':  SingleZipReader
-        }
+        compression_types = {None: open, 'gz': gzip.GzipFile, 'zip': SingleZipReader}
         if has_bz2:
             compression_types['bz2'] = bz2.BZ2File
 
@@ -111,10 +118,7 @@ class Command(BaseCommand):
                 # It's a models.py module
                 app_module_paths.append(upath(app_config.__file__))
 
-        app_fixtures = [
-            os.path.join(os.path.dirname(path), 'fixtures')
-            for path in app_module_paths
-        ]
+        app_fixtures = [os.path.join(os.path.dirname(path), 'fixtures') for path in app_module_paths]
 
         with connection.constraint_checks_disabled():
             for fixture_label in fixture_labels:
@@ -140,8 +144,7 @@ class Command(BaseCommand):
                     if verbosity >= 2:
                         self.stdout.write("Loading '%s' fixtures..." % fixture_name)
                 else:
-                    raise CommandError(
-                        ("Problem installing fixture '%s': %s is not a known serialization format.") % (fixture_name, fmt))
+                    raise CommandError(("Problem installing fixture '%s': %s is not a known serialization format.") % (fixture_name, fmt))
 
                 if os.path.isabs(fixture_name):
                     fixture_dirs = [fixture_name]
@@ -150,18 +153,12 @@ class Command(BaseCommand):
 
                 for fixture_dir in fixture_dirs:
                     if verbosity >= 2:
-                        self.stdout.write(
-                            "Checking %s for fixtures..." % humanize(fixture_dir))
+                        self.stdout.write("Checking %s for fixtures..." % humanize(fixture_dir))
 
                     label_found = False
                     for combo in product([using, None], formats, compression_formats):
                         database, fmt, compression_format = combo
-                        file_name = '.'.join(
-                            p for p in [
-                                fixture_name, database, fmt, compression_format
-                            ]
-                            if p
-                        )
+                        file_name = '.'.join(p for p in [fixture_name, database, fmt, compression_format] if p)
 
                         if verbosity >= 3:
                             self.stdout.write("Trying %s for %s fixture '%s'..." % \
@@ -188,8 +185,7 @@ class Command(BaseCommand):
                                     self.stdout.write("Installing %s fixture '%s' from %s." % \
                                         (fmt, fixture_name, humanize(fixture_dir)))
 
-                                objects = serializers.deserialize(
-                                    fmt, fixture, using=using, ignorenonexistent=ignore)
+                                objects = serializers.deserialize(fmt, fixture, using=using, ignorenonexistent=ignore)
 
                                 for obj in objects:
 
@@ -266,20 +262,18 @@ class Command(BaseCommand):
                     cursor.execute(line)
 
         # if commit:
-            # transaction.commit(using=using)
-            # transaction.leave_transaction_management(using=using)
+        # transaction.commit(using=using)
+        # transaction.leave_transaction_management(using=using)
 
         if verbosity >= 1:
             if fixture_object_count == loaded_object_count:
-                self.stdout.write("Installed %d object(s) from %d fixture(s)" % (
-                    loaded_object_count, fixture_count))
+                self.stdout.write("Installed %d object(s) from %d fixture(s)" % (loaded_object_count, fixture_count))
             else:
-                self.stdout.write("Installed %d object(s) (of %d) from %d fixture(s)" % (
-                    loaded_object_count, fixture_object_count, fixture_count))
+                self.stdout.write("Installed %d object(s) (of %d) from %d fixture(s)" % (loaded_object_count, fixture_object_count, fixture_count))
 
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
         # create tables, load data, and query, the query can return
         # incorrect results. See Django #7572, MySQL #37735.
         # if commit:
-            # connection.close()
+        # connection.close()

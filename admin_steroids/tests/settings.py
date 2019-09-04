@@ -3,11 +3,11 @@ import os
 PROJECT_DIR = os.path.dirname(__file__)
 
 DATABASES = {
-    'default':{
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         # Don't do this. It dramatically slows down the test.
-#        'NAME': '/tmp/admin_steroids.db',
-#        'TEST_NAME': '/tmp/admin_steroids.db',
+        #        'NAME': '/tmp/admin_steroids.db',
+        #        'TEST_NAME': '/tmp/admin_steroids.db',
     }
 }
 

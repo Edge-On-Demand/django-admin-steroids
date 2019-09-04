@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 
+
 # Based on http://stackoverflow.com/a/954318/247542
 class Command(BaseCommand):
     args = '<user ids or emails>'

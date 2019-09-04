@@ -17,13 +17,14 @@ from . import widgets as w
 from . import utils
 from . import filters
 
+
 class BaseModelAdmin(admin.ModelAdmin):
 
-#    # Cleanup the breadcrumbs on the change page.
-#    def change_view(self, request, object_id, form_url='', extra_context=None):
-#        extra_context = extra_context or {}
-#        extra_context['app_label'] = self.model._meta.app_label.title()
-#        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
+    #    # Cleanup the breadcrumbs on the change page.
+    #    def change_view(self, request, object_id, form_url='', extra_context=None):
+    #        extra_context = extra_context or {}
+    #        extra_context['app_label'] = self.model._meta.app_label.title()
+    #        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
 
     # Cleanup the breadcrumbs on the changelist page.
     def changelist_view(self, request, extra_context=None):
@@ -36,6 +37,7 @@ class BaseModelAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['app_label'] = self.model._meta.app_label.title()
         return super(BaseModelAdmin, self).delete_view(request, object_id, extra_context)
+
 
 # Based on http://djangosnippets.org/snippets/2217/.
 class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
@@ -57,7 +59,9 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
             return db_field.formfield(**kwargs)
         return super(BetterRawIdFieldsModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
+
 ImproveRawIdFieldsForm = BetterRawIdFieldsModelAdmin
+
 
 class BetterRawIdFieldsTabularInline(admin.TabularInline):
     """
@@ -78,7 +82,9 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
             return db_field.formfield(**kwargs)
         return super(BetterRawIdFieldsTabularInline, self).formfield_for_dbfield(db_field, **kwargs)
 
+
 ImproveRawIdFieldsFormTabularInline = BetterRawIdFieldsTabularInline
+
 
 class FormatterModelAdmin(BaseModelAdmin):
     """
@@ -121,6 +127,7 @@ class FormatterModelAdmin(BaseModelAdmin):
                         readonly_fields.append(name)
         return readonly_fields
 
+
 class FormatterTabularInline(admin.TabularInline):
 
     base_readonly_fields = ()
@@ -134,7 +141,7 @@ class FormatterTabularInline(admin.TabularInline):
         for name in cls.fields: #pylint: disable=not-an-iterable
             if callable(name):
                 readonly_fields.append(name)
-        return readonly_fields+['id']
+        return readonly_fields + ['id']
 
     def get_readonly_fields(self, request, obj=None):
         # Inserts our formatter instances into the readonly_field list.
@@ -148,6 +155,7 @@ class FormatterTabularInline(admin.TabularInline):
 
     def id(self, request, obj=None):
         return obj.id
+
 
 class ReadonlyModelAdmin(BaseModelAdmin):
     """
@@ -326,18 +334,16 @@ class CSVModelAdminMixin(object):
                         header_data[name_key] = getattr(self, name).short_description
                     elif hasattr(name, 'short_description'):
                         name_key = name
-                        header_data[name_key] = getattr(
-                            name, 'short_description')
+                        header_data[name_key] = getattr(name, 'short_description')
                     elif hasattr(self.model, name):
                         name_key = name
                         if hasattr(getattr(self.model, name), 'short_description'):
-                            header_data[name_key] = getattr(
-                                getattr(self.model, name), 'short_description')
+                            header_data[name_key] = getattr(getattr(self.model, name), 'short_description')
                         else:
                             header_data[name_key] = name
                     else:
                         name_key = name
-                        header_data[name_key] = name_key#get_attr(r, name, as_name=True)
+                        header_data[name_key] = name_key #get_attr(r, name, as_name=True)
 #                        field = self.model._meta.get_field_by_name(name)
 #                        if field and field[0].verbose_name:
 #                            header_data[name_key] = field[0].verbose_name
@@ -346,10 +352,7 @@ class CSVModelAdminMixin(object):
                     header_data[name_key] = header_data[name_key].title()
                     fieldnames.append(name_key)
 
-                writer = csv.DictWriter(
-                    response,
-                    fieldnames=fieldnames,
-                    quoting=self.csv_quoting)
+                writer = csv.DictWriter(response, fieldnames=fieldnames, quoting=self.csv_quoting)
                 writer.writerow(header_data)
             #print('fieldnames:',fieldnames
             data = {}
@@ -358,8 +361,10 @@ class CSVModelAdminMixin(object):
                 if isinstance(r, dict):
                     if name in r:
                         data[name] = r[name]
-    #                    print('skipping:',name
+                        #                    print('skipping:',name
                         continue
+
+
 #                    elif 'id' in r:
 #                        obj = self.model.objects.get(id=r['id'])
 
@@ -400,12 +405,14 @@ class CSVModelAdminMixin(object):
     csv_export.short_description = \
         'Export selected %(verbose_name_plural)s as a CSV file'
 
+
 class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
 
     def get_actions(self, request):
         #TODO:is there a better way to do this? super() ignores the mixin's get_actions()...
         CSVModelAdminMixin.get_actions(self, request)
         return super(CSVModelAdmin, self).get_actions(request)
+
 
 #https://djangosnippets.org/snippets/2484/
 class LogEntryAdmin(ReadonlyModelAdmin):
@@ -417,9 +424,7 @@ class LogEntryAdmin(ReadonlyModelAdmin):
         'admin_url',
     )
 
-    list_filter = (
-        filters.LogEntryAdminUserFilter,
-    )
+    list_filter = (filters.LogEntryAdminUserFilter,)
 
     def get_edited_object(self, obj):
         """
@@ -450,5 +455,6 @@ class LogEntryAdmin(ReadonlyModelAdmin):
         admin_site = admin_site or admin.site
         if hasattr(admin, 'models'):
             admin_site.register(admin.models.LogEntry, LogEntryAdmin)
+
 
 #admin.site.register(models.LogEntry, LogEntryAdmin)

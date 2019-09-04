@@ -14,15 +14,16 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 
+
 class Command(BaseCommand):
 
     help = "Sends the 'forgot your password' reset email for several users."
 
     def add_arguments(self, parser):
-        parser.add_argument('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".')
-        parser.add_argument('--domain', action='store', dest='domain',
-            default=None, help='The domain name of the site. Defaults to settings.BASE_URL')
+        parser.add_argument(
+            '--database', action='store', dest='database', default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".'
+        )
+        parser.add_argument('--domain', action='store', dest='domain', default=None, help='The domain name of the site. Defaults to settings.BASE_URL')
 
     def handle(self, *args, **options):
 
@@ -51,6 +52,7 @@ class Command(BaseCommand):
                     domain = urlparse(settings.BASE_URL).netloc
                 except Exception as e:
                     pass
+
 
 #        site_name = options['site_name']
 #        if not site_name:

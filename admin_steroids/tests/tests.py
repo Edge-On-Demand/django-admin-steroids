@@ -32,15 +32,16 @@ EMAIL_PORT = '1025'
 DEV_EMAIL_REDIRECT_TO = 'test@domain.com'
 SMTPD_LOG = '/tmp/smtpd.log'
 
+
 class Tests(TestCase):
 
-#     fixtures = []
+    #     fixtures = []
 
     def setUp(self):
         pass
 
     def test_obj_to_hash(self):
-        s = utils.obj_to_hash({123:'abc'})
+        s = utils.obj_to_hash({123: 'abc'})
         self.assertEqual(len(s), 128)
 
     def test_FormatWithCommas(self):
@@ -56,16 +57,16 @@ class Tests(TestCase):
     def _test_DevelopmentEmailBackend(self):
 
         # Kill all previous SMTP servers.
-#         os.system("ps aux|grep -i smtp|grep -v grep|awk '{print $2}' | xargs -i kill {}")
+        #         os.system("ps aux|grep -i smtp|grep -v grep|awk '{print $2}' | xargs -i kill {}")
 
         # Launch debuggin SMTP server to catch emails.
-#         print('a')
-#         command = 'python -m smtpd -n -c DebuggingServer %s:%s > %s' \
-#             % (EMAIL_HOST, EMAIL_PORT, SMTPD_LOG)
-#         print('command:', command)
-#         process = subprocess.Popen(command, shell=True)
-#         time.sleep(1)
-#         print('b')
+        #         print('a')
+        #         command = 'python -m smtpd -n -c DebuggingServer %s:%s > %s' \
+        #             % (EMAIL_HOST, EMAIL_PORT, SMTPD_LOG)
+        #         print('command:', command)
+        #         process = subprocess.Popen(command, shell=True)
+        #         time.sleep(1)
+        #         print('b')
 
         output = []
 
@@ -86,18 +87,18 @@ class Tests(TestCase):
             # Confirm the email didn't go into Django's fake email backend.
             self.assertEqual(len(mail.outbox), 0)
 
-#             last = None
-#             t0 = time.time()
-#             timeout = 10
-#             while 1:
-#                 print('checking smtp')
-#                 chunk = open(SMTPD_LOG, 'r').read().strip()
-#                 if last is not None and last == chunk:
-#                     break
-#                 last = chunk
-#                 time.sleep(1)
-#                 if time.time() - t0 > timeout:
-#                     break
+            #             last = None
+            #             t0 = time.time()
+            #             timeout = 10
+            #             while 1:
+            #                 print('checking smtp')
+            #                 chunk = open(SMTPD_LOG, 'r').read().strip()
+            #                 if last is not None and last == chunk:
+            #                     break
+            #                 last = chunk
+            #                 time.sleep(1)
+            #                 if time.time() - t0 > timeout:
+            #                     break
 
             # Poll process for new output until finished
             output = '\n'.join(output)
@@ -109,8 +110,8 @@ class Tests(TestCase):
         finally:
 
             print('Killing SMTP...')
-#             if process:
-#                 process.kill()
+            #             if process:
+            #                 process.kill()
             print('Killed SMTP.')
 
     def test_csv_encoding(self):

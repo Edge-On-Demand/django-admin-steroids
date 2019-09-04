@@ -4,6 +4,7 @@ from django.db import models, connections
 
 from . import queryset
 
+
 class ViewModelManager(models.Manager):
     """
     Helper manager for managing Django-managed SQL views.
@@ -44,9 +45,7 @@ AS
         using = using or 'default'
         conn = connections[using]
         view_template = getattr(self, '_%s_view_template' % conn.vendor)
-        view_sql = view_template.format(
-            view_name=self.model._meta.db_table,
-            view_query=str(self.get_view_query_set().query))
+        view_sql = view_template.format(view_name=self.model._meta.db_table, view_query=str(self.get_view_query_set().query))
         return view_sql
 
     def write_sql_view(self, using=None):

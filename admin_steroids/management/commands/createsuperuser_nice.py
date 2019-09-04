@@ -14,6 +14,7 @@ from django.utils.encoding import force_str, force_text
 from django.utils.six.moves import input # pylint: disable=import-error,redefined-builtin
 from django.utils.text import capfirst
 
+
 class Command(BaseCommand):
 
     help = 'Used to create a superuser.'
@@ -21,24 +22,27 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         self.UserModel = get_user_model()
         self.username_field = self.UserModel._meta.get_field(self.UserModel.USERNAME_FIELD)
-        parser.add_argument('--%s' % self.UserModel.USERNAME_FIELD,
-            dest=self.UserModel.USERNAME_FIELD, default=None,
-            help='Specifies the login for the superuser.')
-        parser.add_argument('--noinput',
-            action='store_false', dest='interactive', default=True,
-            help=('Tells Django to NOT prompt the user for input of any kind. '
+        parser.add_argument(
+            '--%s' % self.UserModel.USERNAME_FIELD, dest=self.UserModel.USERNAME_FIELD, default=None, help='Specifies the login for the superuser.'
+        )
+        parser.add_argument(
+            '--noinput',
+            action='store_false',
+            dest='interactive',
+            default=True,
+            help=(
+                'Tells Django to NOT prompt the user for input of any kind. '
                 'You must use --%s with --noinput, along with an option for '
                 'any other required field. Superusers created with --noinput will '
-                ' not be able to log in until they\'re given a valid password.' %
-                self.UserModel.USERNAME_FIELD))
-        parser.add_argument('--database',
-            action='store', dest='database',
-            default=DEFAULT_DB_ALIAS,
-            help='Specifies the database to use. Default is "default".')
-        parser.add_argument('--password',
-            action='store', dest='password',
-            default=DEFAULT_DB_ALIAS,
-            help='Specifies the password to use. Default is no password.')
+                ' not be able to log in until they\'re given a valid password.' % self.UserModel.USERNAME_FIELD
+            )
+        )
+        parser.add_argument(
+            '--database', action='store', dest='database', default=DEFAULT_DB_ALIAS, help='Specifies the database to use. Default is "default".'
+        )
+        parser.add_argument(
+            '--password', action='store', dest='password', default=DEFAULT_DB_ALIAS, help='Specifies the password to use. Default is no password.'
+        )
 
         for field in self.UserModel.REQUIRED_FIELDS:
             parser.add_argument('--%s' % field, dest=field, default=None, help='Specifies the %s for the superuser.' % field)
@@ -82,8 +86,7 @@ class Command(BaseCommand):
                     if not username:
                         input_msg = capfirst(verbose_field_name)
                         if default_username:
-                            input_msg = "%s (leave blank to use '%s')" % (
-                                input_msg, default_username)
+                            input_msg = "%s (leave blank to use '%s')" % (input_msg, default_username)
                         raw_value = input(force_str('%s: ' % input_msg))
 
                     if default_username and raw_value == '':
@@ -100,8 +103,7 @@ class Command(BaseCommand):
                     except self.UserModel.DoesNotExist:
                         pass
                     else:
-                        self.stderr.write("Error: That %s is already taken." %
-                                verbose_field_name)
+                        self.stderr.write("Error: That %s is already taken." % verbose_field_name)
                         username = None
 
                 for field_name in self.UserModel.REQUIRED_FIELDS:

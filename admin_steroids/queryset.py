@@ -37,11 +37,13 @@ except ImportError:
 #                 if self.forced_managed:
 #                     transaction.leave_transaction_management(using=self.using)
 
+
 def execute_sql_from_file(fn, using=None):
     """
     Executes multiple SQL statements in the given file.
     """
     return execute_sql(open(fn).read(), using=using)
+
 
 def execute_sql(sql, using=None):
     """
@@ -50,7 +52,7 @@ def execute_sql(sql, using=None):
     try:
         sql_parts = sql.split(';')
         for part in sql_parts:
-            part = re.sub(r'/\*.*\*/', '', part, flags=re.I|re.DOTALL|re.MULTILINE).strip()
+            part = re.sub(r'/\*.*\*/', '', part, flags=re.I | re.DOTALL | re.MULTILINE).strip()
             part = re.sub(r'\-\-.*\n', '', part, flags=re.I).strip()
             part = '\n'.join(line for line in part.split('\n') if not line.strip().startswith('--'))
             part = part.strip()
@@ -65,6 +67,7 @@ def execute_sql(sql, using=None):
         if not connections[using or 'default'].in_atomic_block:
             transaction.rollback()
 
+
 def _execute_sql_part(part, using=None):
     """
     Executes a single SQL statement.
@@ -74,6 +77,7 @@ def _execute_sql_part(part, using=None):
     with atomic(using=using):
         cursor = conn.cursor()
         cursor.execute(part)
+
 
 class ApproxCountQuerySet(QuerySet):
     """
@@ -104,22 +108,18 @@ class ApproxCountQuerySet(QuerySet):
             return len(self._result_cache)
 
         db_backend_name = connections[self.db].client.executable_name.lower()
-#        print('db_backend_name:',db_backend_name
+        #        print('db_backend_name:',db_backend_name
         is_postgres = 'psql' in db_backend_name \
             or 'postgres' in db_backend_name \
             or 'postgis' in db_backend_name
         is_mysql = 'mysql' in db_backend_name
-#        print('is_postgres:',is_postgres
+        #        print('is_postgres:',is_postgres
 
         query = self.query
         if (is_postgres or is_mysql) and (
-            not query.where and
-            query.high_mark is None and
-            query.low_mark == 0 and
-            not query.select and
-            not query.group_by and
-            not query.having and
-            not query.distinct):
+            not query.where and query.high_mark is None and query.low_mark == 0 and not query.select and not query.group_by and not query.having
+            and not query.distinct
+        ):
             if is_postgres:
                 # Read table count approximation from PostgreSQL's pg_class.
                 cursor = connections[self.db].cursor()
@@ -137,6 +137,7 @@ class ApproxCountQuerySet(QuerySet):
                 return cursor.fetchall()[0][4]
             raise NotImplementedError
         return self.query.get_count(using=self.db)
+
 
 class CachedCountQuerySet(ApproxCountQuerySet):
     """

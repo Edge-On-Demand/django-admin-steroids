@@ -19,6 +19,7 @@ except ImportError:
 
 from admin_steroids.queryset import atomic
 
+
 def get_options(parser=None):
     make_opt = make_option
     if parser:
@@ -26,11 +27,16 @@ def get_options(parser=None):
     return [
         make_opt('--dryrun', action='store_true', default=False),
         make_opt('--only-show-classes', action='store_true', default=False),
-        make_opt('--do-update', action='store_true', default=False,
+        make_opt(
+            '--do-update',
+            action='store_true',
+            default=False,
             help='If given, does a SQL update instead of calling the model\'s save() method. '
-                'This is only recommended for use when there are circular FK references coupled '
-                'with validation logic preventing incremental saves.'),
+            'This is only recommended for use when there are circular FK references coupled '
+            'with validation logic preventing incremental saves.'
+        ),
     ]
+
 
 def get_all_related_objects(obj):
     try:
@@ -38,11 +44,9 @@ def get_all_related_objects(obj):
     except AttributeError:
         # get_all_related_objects() was removed in Django >= 1.9
         # https://docs.djangoproject.com/es/1.9/ref/models/meta/
-        links = [
-            f for f in obj._meta.get_fields()
-            if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete
-        ]
+        links = [f for f in obj._meta.get_fields() if (f.one_to_many or f.one_to_one) and f.auto_created and not f.concrete]
     return links
+
 
 class Command(BaseCommand):
     help = 'Replaces one record with another, making sure to update all foreign key references.'
@@ -162,20 +166,20 @@ class Command(BaseCommand):
                         % (referring_object, referring_object._state.db, new_obj._state.db))
                     continue
 
-                print('Changing %s(id=%s).%s = "%s"(%s) -> "%s"(%s). (%s of %s)' % (
-                    type(referring_object).__name__,
-                    referring_object.id,
-                    link.field.name,
-                    getattr(referring_object, link.field.name),
-                    getattr(referring_object, link.field.name).id,
-                    new_obj,
-                    new_obj.id,
-                    i,
-                    total,
-                ))
-                deleted_objects.add(
-                    (type(old_obj).__name__, old_obj.id, new_obj)
+                print(
+                    'Changing %s(id=%s).%s = "%s"(%s) -> "%s"(%s). (%s of %s)' % (
+                        type(referring_object).__name__,
+                        referring_object.id,
+                        link.field.name,
+                        getattr(referring_object, link.field.name),
+                        getattr(referring_object, link.field.name).id,
+                        new_obj,
+                        new_obj.id,
+                        i,
+                        total,
+                    )
                 )
+                deleted_objects.add((type(old_obj).__name__, old_obj.id, new_obj))
                 try:
                     if do_update:
                         # Bypass save() logic and directly update the FK field.
@@ -213,22 +217,24 @@ class Command(BaseCommand):
                 deleted_by_type.setdefault(cls_name, [])
                 deleted_by_type[cls_name].append((deleted_obj_id, real_obj.id))
             for cls_name, id_lst in deleted_by_type.iteritems():
-                print(cls_name, ', '.join(
-                    '%s -> %s' % (old_id, new_id) for old_id, new_id in id_lst
-                ))
+                print(cls_name, ', '.join('%s -> %s' % (old_id, new_id) for old_id, new_id in id_lst))
         else:
             print('%i objects deleted.' % len(deleted_objects))
 
         if deletion_failures:
-            print('!'*80)
+            print('!' * 80)
             print('%i deletion failures!' % deletion_failures)
             for del_exc in deletion_exceptions:
                 new_obj, dup_obj, other_instance, other_field_name, exc = del_exc
-                print('Unable to change %s(id=%i).%s from %s(%s) to %s(%s): %s' % (
-                    type(other_instance).__name__,
-                    other_instance.id,
-                    other_field_name,
-                    dup_obj, dup_obj.id,
-                    new_obj, new_obj.id,
-                    exc,
-                ))
+                print(
+                    'Unable to change %s(id=%i).%s from %s(%s) to %s(%s): %s' % (
+                        type(other_instance).__name__,
+                        other_instance.id,
+                        other_field_name,
+                        dup_obj,
+                        dup_obj.id,
+                        new_obj,
+                        new_obj.id,
+                        exc,
+                    )
+                )

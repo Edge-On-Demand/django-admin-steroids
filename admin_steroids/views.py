@@ -16,6 +16,7 @@ import six
 
 from admin_steroids.models import get_modelsearcher
 
+
 class ModelFieldSearchView(TemplateView):
     """
     Allows searching for field values in an arbitrary model for dynamically
@@ -36,9 +37,7 @@ class ModelFieldSearchView(TemplateView):
 
     @property
     def model(self):
-        ct = ContentType.objects.get(
-            app_label=self.kwargs['app_name'],
-            model=self.kwargs['model_name'])
+        ct = ContentType.objects.get(app_label=self.kwargs['app_name'], model=self.kwargs['model_name'])
         return ct.model_class()
 
     @property
@@ -86,21 +85,14 @@ class ModelFieldSearchView(TemplateView):
                     q=q,
                 ) or []
                 qs = qs[:n]
-                results = [
-                    dict(
-                        key=_.id if hasattr(_, 'id') else _,
-                        value=str(_),
-                        field_name=field_name)
-                    for _ in qs]
-            elif isinstance(
-                field,
-                (
-                    models.CharField,
-                    models.EmailField,
-                    models.SlugField,
-                    models.TextField,
-                    models.URLField,
-                )):
+                results = [dict(key=_.id if hasattr(_, 'id') else _, value=str(_), field_name=field_name) for _ in qs]
+            elif isinstance(field, (
+                models.CharField,
+                models.EmailField,
+                models.SlugField,
+                models.TextField,
+                models.URLField,
+            )):
 
                 # Build query for a simple string-based field.
                 qs = model.objects.filter(**{field_name+'__icontains': q})\
@@ -110,36 +102,25 @@ class ModelFieldSearchView(TemplateView):
                 qs = qs[:n]
                 results = [dict(key=_, value=_, field_name=field_name) for _ in qs]
 
-            elif isinstance(field,
-                (
-                    models.ForeignKey,
-                    models.ManyToManyField,
-                    models.OneToOneField,
-                )):
+            elif isinstance(field, (
+                models.ForeignKey,
+                models.ManyToManyField,
+                models.OneToOneField,
+            )):
                 # Build query for a related model.
                 search_fields = settings.DAS_AJAX_SEARCH_PATH_FIELDS.get(path)
                 if search_fields:
                     qs_args = []
                     for search_field in search_fields:
                         #qs_args.append(Q(**{field_name+'__'+search_field+'__icontains': q}))
-                        qs_args.append(Q(**{search_field+'__icontains': q}))
+                        qs_args.append(Q(**{search_field + '__icontains': q}))
                     rel_model = field.remote_field.model
                     qs = rel_model.objects.filter(six.moves.reduce(operator.or_, qs_args))
                     qs = qs[:n]
                     pk_name = rel_model._meta.pk.name
-                    results = [
-                        dict(key=getattr(_, pk_name), value=str(_), field_name=field_name)
-                        for _ in qs.iterator()
-                    ]
+                    results = [dict(key=getattr(_, pk_name), value=str(_), field_name=field_name) for _ in qs.iterator()]
 
-        response = HttpResponse(
-            json.dumps(results),
-            content_type='application/json',
-            **response_kwargs
-        )
+        response = HttpResponse(json.dumps(results), content_type='application/json', **response_kwargs)
         if settings.DAS_AJAX_SEARCH_DEFAULT_CACHE_SECONDS:
-            cache.set(
-                cache_key,
-                response,
-                settings.DAS_AJAX_SEARCH_DEFAULT_CACHE_SECONDS)
+            cache.set(cache_key, response, settings.DAS_AJAX_SEARCH_DEFAULT_CACHE_SECONDS)
         return response

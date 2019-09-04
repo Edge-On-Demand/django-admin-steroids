@@ -13,12 +13,14 @@ from django.utils.encoding import smart_text
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.auth.models import User
 
+
 def get_empty_value_display(cl):
     if hasattr(cl.model_admin, 'get_empty_value_display'):
         return cl.model_admin.get_empty_value_display()
     # Django < 1.9
     from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module
     return EMPTY_CHANGELIST_VALUE
+
 
 class NullListFilter(FieldListFilter):
 
@@ -34,17 +36,15 @@ class NullListFilter(FieldListFilter):
                     self.lookup_val = False
         except Exception as e:
             pass
-        super(NullListFilter, self).__init__(field,
-            request, params, model, model_admin, field_path)
+        super(NullListFilter, self).__init__(field, request, params, model, model_admin, field_path)
 
     def expected_parameters(self):
-        return [self.lookup_kwarg,]
+        return [
+            self.lookup_kwarg,
+        ]
 
     def choices(self, cl):
-        for lookup, title in (
-                (None, _('All')),
-                (False, _('Has value')),
-                (True, _('Omitted'))):
+        for lookup, title in ((None, _('All')), (False, _('Has value')), (True, _('Omitted'))):
             d = {
                 'selected': self.lookup_val == lookup,
                 'query_string': cl.get_query_string({
@@ -53,6 +53,7 @@ class NullListFilter(FieldListFilter):
                 'display': title,
             }
             yield d
+
 
 class NullBlankListFilter(FieldListFilter):
     """
@@ -74,8 +75,7 @@ class NullBlankListFilter(FieldListFilter):
         except Exception as e:
             pass
 
-        super(NullBlankListFilter, self).__init__(field,
-            request, params, model, model_admin, field_path)
+        super(NullBlankListFilter, self).__init__(field, request, params, model, model_admin, field_path)
 
     def expected_parameters(self):
         return [self.lookup_kwarg]
@@ -95,10 +95,7 @@ class NullBlankListFilter(FieldListFilter):
             raise IncorrectLookupParameters(e)
 
     def choices(self, cl):
-        for lookup, title in (
-                (None, _('All')),
-                (False, _('Has value')),
-                (True, _('Omitted'))):
+        for lookup, title in ((None, _('All')), (False, _('Has value')), (True, _('Omitted'))):
             d = {
                 'selected': self.lookup_val == lookup,
                 'query_string': cl.get_query_string({
@@ -107,6 +104,7 @@ class NullBlankListFilter(FieldListFilter):
                 'display': title,
             }
             yield d
+
 
 class NotInListFilter(FieldListFilter):
     """
@@ -126,8 +124,7 @@ class NotInListFilter(FieldListFilter):
             pass
 
         self.lookup_choices = field.get_choices(include_blank=False)
-        super(NotInListFilter, self).__init__(field,
-            request, params, model, model_admin, field_path)
+        super(NotInListFilter, self).__init__(field, request, params, model, model_admin, field_path)
 
         self.title = getattr(field, 'verbose_name', field_path) + ' is not'
 
@@ -138,16 +135,15 @@ class NotInListFilter(FieldListFilter):
         try:
             # Convert the __notin to a Django ORM .exclude(...)
             if self.lookup_kwarg in self.used_parameters and self.lookup_vals:
-                queryset = queryset.exclude(**{self.field_path+'__in': self.lookup_vals})
+                queryset = queryset.exclude(**{self.field_path + '__in': self.lookup_vals})
             return queryset
         except ValidationError as e:
             raise IncorrectLookupParameters(e)
 
     def choices(self, cl):
         yield {
-            'selected': self.lookup_vals is None,# and not self.lookup_val_isnull,
-            'query_string': cl.get_query_string({},
-                [self.lookup_kwarg]),
+            'selected': self.lookup_vals is None, # and not self.lookup_val_isnull,
+            'query_string': cl.get_query_string({}, [self.lookup_kwarg]),
             'display': _('None'),
         }
         for pk_val, val in self.lookup_choices:
@@ -158,6 +154,7 @@ class NotInListFilter(FieldListFilter):
                 }, []),
                 'display': val,
             }
+
 
 class CachedFieldFilter(FieldListFilter):
     """
@@ -174,8 +171,7 @@ class CachedFieldFilter(FieldListFilter):
         self.lookup_val = request.GET.get(self.lookup_kwarg, None)
         self.lookup_val2 = request.GET.get(self.lookup_kwarg2, None)
 
-        super(CachedFieldFilter, self).__init__(
-            field, request, params, model, model_admin, field_path)
+        super(CachedFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
 
         self.model = model
 
@@ -201,8 +197,8 @@ class CachedFieldFilter(FieldListFilter):
         yield {
             'selected': self.lookup_val is None and self.lookup_val2 is None,
             'query_string': cl.get_query_string({
-                    self.lookup_kwarg2: '',
-                }, [self.lookup_kwarg]),
+                self.lookup_kwarg2: '',
+            }, [self.lookup_kwarg]),
             'display': _('All'),
         }
 
@@ -211,18 +207,19 @@ class CachedFieldFilter(FieldListFilter):
                 yield {
                     'selected': self.lookup_val2,
                     'query_string': cl.get_query_string({
-                            self.lookup_kwarg: value,
-                        }, [self.lookup_kwarg2]),
+                        self.lookup_kwarg: value,
+                    }, [self.lookup_kwarg2]),
                     'display': value,
                 }
             else:
                 yield {
                     'selected': self.lookup_val == value,
                     'query_string': cl.get_query_string({
-                            self.lookup_kwarg: value,
-                        }, [self.lookup_kwarg2]),
+                        self.lookup_kwarg: value,
+                    }, [self.lookup_kwarg2]),
                     'display': value,
                 }
+
 
 class AjaxFieldFilter(FieldListFilter):
     """
@@ -238,28 +235,23 @@ class AjaxFieldFilter(FieldListFilter):
         self.field = field
 
         self.lookup_kwarg = '%s__in' % field_path
-        self.lookup_val = [
-            _ for _ in request.GET.get(self.lookup_kwarg, '').split(',')
-            if _.strip()
-        ]
+        self.lookup_val = [_ for _ in request.GET.get(self.lookup_kwarg, '').split(',') if _.strip()]
 
-        super(AjaxFieldFilter, self).__init__(
-            field, request, params, model, model_admin, field_path)
+        super(AjaxFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
 
         self.model = model
 
-        self.uuid = '_'+str(uuid.uuid4())
+        self.uuid = '_' + str(uuid.uuid4())
 
-#        _d = request.GET.copy()
-#        del _d[self.lookup_kwarg]
-#        self.base_url = request.path + '?' + _d.urlencode
-#        if _d:
-#            self.base_url += '&'
-#        self.base_url += self.lookup_kwarg + '='
+        #        _d = request.GET.copy()
+        #        del _d[self.lookup_kwarg]
+        #        self.base_url = request.path + '?' + _d.urlencode
+        #        if _d:
+        #            self.base_url += '&'
+        #        self.base_url += self.lookup_kwarg + '='
 
-        self.ajax_url = reverse(
-            'model_field_search',
-            args=(model._meta.app_label, model.__name__.lower(), self.field_name))
+        self.ajax_url = reverse('model_field_search', args=(model._meta.app_label, model.__name__.lower(), self.field_name))
+
 
 #    def __call__(self, *args, **kwargs):
 #        return
@@ -300,12 +292,11 @@ class AjaxFieldFilter(FieldListFilter):
                 )
 
             # Lookup the "pretty" display value for IDs of related models.
-            if isinstance(self.field,
-                (
-                    models.ForeignKey,
-                    models.ManyToManyField,
-                    models.OneToOneField,
-                )):
+            if isinstance(self.field, (
+                models.ForeignKey,
+                models.ManyToManyField,
+                models.OneToOneField,
+            )):
                 rel_model = self.field.remote_field.model
                 #TODO:handle non-numeric IDs?
                 # AvB edit here; some FK models do not have an (integer) or .id attribute!
@@ -322,6 +313,7 @@ class AjaxFieldFilter(FieldListFilter):
                 'alt': 'Remove',
             }
 
+
 class LogEntryAdminUserFilter(SimpleListFilter):
     title = _('user')
     parameter_name = 'user'
@@ -337,6 +329,7 @@ class LogEntryAdminUserFilter(SimpleListFilter):
 
         return queryset
 
+
 #http://stackoverflow.com/a/20588975/247542
 class SingleTextInputFilter(ListFilter):
     """
@@ -348,12 +341,9 @@ class SingleTextInputFilter(ListFilter):
     style = ''
 
     def __init__(self, request, params, model, model_admin):
-        super(SingleTextInputFilter, self).__init__(
-            request, params, model, model_admin)
+        super(SingleTextInputFilter, self).__init__(request, params, model, model_admin)
         if self.parameter_name is None:
-            raise ImproperlyConfigured(
-                "The list filter '%s' does not specify "
-                "a 'parameter_name'." % self.__class__.__name__)
+            raise ImproperlyConfigured("The list filter '%s' does not specify " "a 'parameter_name'." % self.__class__.__name__)
 
         if self.parameter_name in params:
             value = params.pop(self.parameter_name)
@@ -396,4 +386,4 @@ class SingleTextInputFilter(ListFilter):
             'title': self.title,
             'size': self.size,
             'style': self.style,
-        }, )
+        },)

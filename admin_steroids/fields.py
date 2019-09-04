@@ -8,9 +8,7 @@ import datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from babel.numbers import (
-    format_decimal, format_currency, parse_decimal, parse_number,
-    get_decimal_symbol, get_group_symbol, get_currency_symbol,
-    NumberFormatError
+    format_decimal, format_currency, parse_decimal, parse_number, get_decimal_symbol, get_group_symbol, get_currency_symbol, NumberFormatError
 )
 
 import django
@@ -37,7 +35,8 @@ default_error_messages = {
     'invalid_format': _(u'Invalid currency format. Please use the format 9%s999%s00')
 }
 
-TWOPLACES = Decimal(10) ** -2
+TWOPLACES = Decimal(10)**-2
+
 
 def flatatt(attrs):
     """
@@ -50,6 +49,7 @@ def flatatt(attrs):
     """
     return format_html_join('', ' {0}="{1}"', sorted(attrs.items()))
 
+
 def format_html(format_string, *args, **kwargs):
     # django.utils.html
     """
@@ -60,6 +60,7 @@ def format_html(format_string, *args, **kwargs):
     args_safe = map(conditional_escape, args)
     kwargs_safe = dict((k, conditional_escape(v)) for (k, v) in six.iteritems(kwargs))
     return mark_safe(format_string.format(*args_safe, **kwargs_safe))
+
 
 def format_html_join(sep, format_string, args_generator):
     # django.utils.html
@@ -77,15 +78,15 @@ def format_html_join(sep, format_string, args_generator):
     for u in users))
 
     """
-    return mark_safe(conditional_escape(sep).join(
-        format_html(format_string, *tuple(args))
-        for args in args_generator))
+    return mark_safe(conditional_escape(sep).join(format_html(format_string, *tuple(args)) for args in args_generator))
+
 
 def is_protected_type(obj):
     return isinstance(obj, six.integer_types + (type(None), float, Decimal, datetime.datetime, datetime.date, datetime.time))
 
 
 class CurrencyInput(forms.widgets.TextInput):
+
     def render(self, name, value, attrs=None, renderer=None):
         if value is None:
             value = ''
@@ -106,12 +107,14 @@ class CurrencyInput(forms.widgets.TextInput):
 
         return mark_safe(u'<input%s />' % flatatt(final_attrs))
 
+
 def _getSymbols(value):
     retVal = ''
     for x in value:
         if x < u'0' or x > u'9':
             retVal += x
     return retVal
+
 
 def _getCodes():
     l_currency_language_code = 'en_US'
@@ -127,6 +130,7 @@ def _getCodes():
         pass
 
     return (l_currency_language_code, l_currency_code)
+
 
 def parse_value(value):
     """
@@ -147,8 +151,7 @@ def parse_value(value):
         value = value.replace(u' ', grpSym)
 
     allSym = _getSymbols(value)
-    invalidSym = allSym.replace(curSym, '').replace(
-        grpSym, '').replace(decSym, '').replace(u'-', '')
+    invalidSym = allSym.replace(curSym, '').replace(grpSym, '').replace(decSym, '').replace(u'-', '')
 
     value = value.replace(curSym, '')
 
@@ -163,6 +166,7 @@ def parse_value(value):
 
     # The value is converted into a string because the parse functions return floats
     return str(value)
+
 
 class Currency(Decimal):
     """
@@ -281,8 +285,8 @@ class Currency(Decimal):
 
     def format_pretty(self):
         l_currency_language_code, l_currency_code = _getCodes()
-        return format_currency(
-            self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
+        return format_currency(self, l_currency_code, format=self._formatPretty, locale=l_currency_language_code)
+
 
 class CurrencyFormField(forms.fields.DecimalField):
     """
@@ -303,6 +307,7 @@ class CurrencyFormField(forms.fields.DecimalField):
         except NumberFormatError as e:
             raise ValidationError(e.message)
         return Currency(super(CurrencyFormField, self).clean(value))
+
 
 class CurrencyField(models.fields.DecimalField):
     """
@@ -329,8 +334,7 @@ class CurrencyField(models.fields.DecimalField):
         try:
             return Currency(value)
         except InvalidOperation as e:
-            raise InvalidOperation(
-                _("This value must be a decimal number."))
+            raise InvalidOperation(_("This value must be a decimal number."))
 
     def value_to_string(self, obj):
         val = self._get_val_from_obj(obj)
@@ -339,6 +343,7 @@ class CurrencyField(models.fields.DecimalField):
         else:
             data = str(val)
         return data
+
 
 if django.VERSION < (1, 7):
     try:
