@@ -149,6 +149,32 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
             return '_blank'
         return '_self'
 
+    # Note, Django changed its internals for the base widget so that it forces all the ManyToMany fields to use a single label and URL,
+    # so we have to link to a filtered view of the change list page instead of providing individual direct links to each object.
+    def label_and_url_for_value(self, value):
+        if isinstance(value, (tuple, list)):
+            values = list(value)
+        else:
+            values = [value]
+        str_values = []
+        label_lst = []
+        id_lst = []
+        try:
+            changelist_url = reverse("admin:%s_%s_changelist" % (self.rel.model._meta.app_label, self.rel.model._meta.object_name.lower()))
+        except NoReverseMatch:
+            changelist_url = ''
+        pk_name = self.rel.model._meta.pk.name
+        for v in values:
+            obj = self.rel.model._default_manager.using(self.db).get(**{pk_name: v})
+            label_lst.append(escape(smart_text(obj)))
+            id_lst.append(obj.pk)
+        label = ', '.join(label_lst)
+        url = ''
+        if changelist_url:
+            url = '%s?%s__in=%s' % (changelist_url, pk_name, ','.join(map(str, id_lst)))
+        return label, url
+
+    #TODO:Remove? Deprecated as of Django 2.2?
     def label_for_value(self, value):
         values = value.split(',')
         str_values = []
@@ -159,7 +185,7 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
             try:
                 change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
                 str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(x))]
-            except NoReverseMatch:
+            except NoReverseMatch as exc:
                 str_values += ['<strong>%s</strong>' % (escape(x),)]
             except self.remote_field.model.DoesNotExist:
                 str_values += [u'???']

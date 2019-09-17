@@ -1,7 +1,7 @@
 """
 Quick test:
 
-    export TESTNAME=.test_delete_duplicate_record; tox -e py27-django111
+    export TESTNAME=.test_delete_duplicate_record; tox -e py37-django225
 
 """
 from __future__ import print_function
@@ -13,7 +13,9 @@ import csv
 
 from django.core import mail
 from django.test import TestCase
+from django.test import Client
 from django.core.management import call_command
+from django.contrib.auth.models import User
 try:
     from django.test import override_settings
 except ImportError:
@@ -21,6 +23,7 @@ except ImportError:
 
 # pylint: disable=C0412
 from admin_steroids import utils
+from admin_steroids.tests.models import Person, Contact
 
 warnings.simplefilter('error', RuntimeWarning)
 
@@ -150,7 +153,6 @@ class Tests(TestCase):
         call_command('createsuperuser_nice', noinput=True, username='admin@example.com', password='password', email='admin@example.com')
 
     def test_command_delete_duplicate_record(self):
-        from admin_steroids.tests.models import Person, Contact
 
         print('Confirming records with no clear conflicts can be merged...')
         Person.objects.all().delete()
@@ -191,3 +193,34 @@ class Tests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Test 123')
         self.assertEqual(mail.outbox[0].to, ['abc@example.com'])
+
+    def test_VerboseManyToManyRawIdWidget(self):
+        user = User.objects.create(username='admin')
+        user.set_password('password')
+        user.is_staff = True
+        user.is_superuser = True
+        user.is_active = True
+        user.save()
+        c = Client()
+        logged_in = c.login(username='admin', password='password')
+        self.assertTrue(logged_in)
+        bob = Person.objects.create(name='Bobby')
+        Person.objects.update()
+        self.assertEqual(Person.objects.all().count(), 1)
+        response = c.get('/admin/tests/person/', follow=True)
+        # print(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('login' not in str(response.content).lower())
+        self.assertTrue('bobby' in str(response.content).lower())
+
+        # Confirm the ManyToManyField isn't rendering any URL yet on the person change page.
+        response = c.get('/admin/tests/person/%i/change/' % bob.id, follow=True)
+        self.assertTrue('/admin/tests/person/?' not in str(response.content).lower())
+
+        # Attach an associate to Bob and confirm the field now shows a link.
+        john = Person.objects.create(name='Johnny')
+        bob.associates.add(john)
+        self.assertEqual(Person.objects.all().count(), 2)
+        response = c.get('/admin/tests/person/%i/change/' % bob.id, follow=True)
+        # print(response.content)
+        self.assertTrue('/admin/tests/person/?id__in=' in str(response.content).lower())
