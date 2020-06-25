@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.db import connections, transaction
 from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
+from django.db.models.query import RawQuerySet
 
 try:
     from django.db.transaction import atomic
@@ -158,3 +159,45 @@ class CachedCountQuerySet(ApproxCountQuerySet):
         except EmptyResultSet:
             count = super(CachedCountQuerySet, self).count()
         return count
+
+
+class SmartRawQuerySet(RawQuerySet):
+    """
+    Adds common queryset operators, like exists() and count() to Django's RawQuerySet.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clear_cache()
+
+    @classmethod
+    def from_queryset(cls, qs):
+        return SmartRawQuerySet(
+            raw_query=qs.raw_query, model=qs.model, query=qs.query, params=qs.params, translations=qs.translations, using=qs._db, hints=qs._hints
+        )
+
+    def clear_cache(self):
+        self._cache_count = None
+        self._cache_exists = None
+
+    def count(self):
+        if self._cache_count is None:
+            new_sql = self.raw_query
+            new_sql = re.sub('SELECT(.*?)FROM', 'SELECT COUNT(1) FROM', new_sql, 1, re.M)
+            new_sql = re.sub(r'ORDER BY(.|\s)*$', '', new_sql, re.MULTILINE | re.DOTALL)
+            with connections[self._db].cursor() as cursor:
+                cursor.execute(new_sql)
+                row = cursor.fetchone()
+                self._cache_count = row[0]
+        return self._cache_count
+
+    def exists(self):
+        if self._cache_exists is None:
+            new_sql = self.raw_query
+            new_sql = re.sub('SELECT(.*?)FROM', 'SELECT 1 FROM', new_sql, 1, re.M)
+            new_sql = re.sub(r'ORDER BY(.|\s)*$', 'LIMIT 1', new_sql, re.MULTILINE | re.DOTALL)
+            with connections[self._db].cursor() as cursor:
+                cursor.execute(new_sql)
+                row = cursor.fetchone()
+                self._cache_exists = bool(row)
+        return self._cache_exists
