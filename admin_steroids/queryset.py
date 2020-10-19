@@ -16,27 +16,6 @@ try:
 except ImportError:
     # Allow Django<1.6 to use atomic().
     from django.db.transaction import commit_on_success as atomic
-    # Removed due to TypeError: 'atomic' object is not callable?
-#     class atomic(object):
-#         def __init__(self, using=None):
-#             self.using = using
-#
-#         def __enter__(self):
-#             if not transaction.is_managed(using=self.using):
-#                 transaction.enter_transaction_management(using=self.using)
-#                 self.forced_managed = True
-#             else:
-#                 self.forced_managed = False
-#
-#         def __exit__(self, *args, **kwargs):
-#             try:
-#                 if self.forced_managed:
-#                     transaction.commit(using=self.using)
-#                 else:
-#                     transaction.commit_unless_managed(using=self.using)
-#             finally:
-#                 if self.forced_managed:
-#                     transaction.leave_transaction_management(using=self.using)
 
 
 def execute_sql_from_file(fn, using=None):
@@ -104,23 +83,18 @@ class ApproxCountQuerySet(QuerySet):
     def count(self):
         # Code from django/db/models/query.py
 
-        #if self._result_cache is not None and not self._iter:# ._iter removed in Django 1.6?
         if self._result_cache is not None:
             return len(self._result_cache)
 
         db_backend_name = connections[self.db].client.executable_name.lower()
-        #        print('db_backend_name:',db_backend_name
         is_postgres = 'psql' in db_backend_name \
             or 'postgres' in db_backend_name \
             or 'postgis' in db_backend_name
         is_mysql = 'mysql' in db_backend_name
-        #        print('is_postgres:',is_postgres
 
         query = self.query
-        if (is_postgres or is_mysql) and (
-            not query.where and query.high_mark is None and query.low_mark == 0 and not query.select and not query.group_by and not query.having
-            and not query.distinct
-        ):
+        if (is_postgres or is_mysql
+            ) and (not query.where and query.high_mark is None and query.low_mark == 0 and not query.select and not query.group_by and not query.distinct):
             if is_postgres:
                 # Read table count approximation from PostgreSQL's pg_class.
                 cursor = connections[self.db].cursor()
