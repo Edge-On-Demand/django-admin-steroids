@@ -34,7 +34,7 @@ class Command(BaseCommand):
         parser.add_argument('old_id')
         parser.add_argument('new_id')
         parser.add_argument('--dryrun', action='store_true', default=False)
-        parser.add_argument.add_argument('--only-show-classes', action='store_true', default=False)
+        parser.add_argument('--only-show-classes', action='store_true', default=False)
         parser.add_argument(
             '--do-update',
             action='store_true',
