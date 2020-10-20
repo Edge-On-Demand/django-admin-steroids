@@ -304,9 +304,9 @@ class CurrencyFormField(forms.fields.DecimalField):
             return
         try:
             value = Currency(value, parse_string=True)
-        except NumberFormatError as e:
-            raise ValidationError(e.message)
-        return Currency(super(CurrencyFormField, self).clean(value))
+        except NumberFormatError as exc:
+            raise ValidationError(exc.message) from exc
+        return Currency(super().clean(value))
 
 
 class CurrencyField(models.fields.DecimalField):
@@ -326,15 +326,15 @@ class CurrencyField(models.fields.DecimalField):
             'form_class': CurrencyFormField,
         }
         defaults.update(kwargs)
-        return super(CurrencyField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
     def to_python(self, value):
         if value is None:
             return value
         try:
             return Currency(value)
-        except InvalidOperation as e:
-            raise InvalidOperation(_("This value must be a decimal number."))
+        except InvalidOperation as exc:
+            raise InvalidOperation(_("This value must be a decimal number.")) from exc
 
     def value_to_string(self, obj):
         val = self._get_val_from_obj(obj)

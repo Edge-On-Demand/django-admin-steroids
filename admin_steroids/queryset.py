@@ -128,10 +128,10 @@ class CachedCountQuerySet(ApproxCountQuerySet):
             cache_key = hashlib.sha512(sql).hexdigest()
             count = cache.get(cache_key)
             if count is None:
-                count = super(CachedCountQuerySet, self).count()
+                count = super().count()
                 cache.set(cache_key, count, self.cache_seconds)
         except EmptyResultSet:
-            count = super(CachedCountQuerySet, self).count()
+            count = super().count()
         return count
 
 

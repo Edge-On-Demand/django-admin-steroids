@@ -135,12 +135,12 @@ class Tests(TestCase):
             writer.writerow(data)
 
     def test_widgets(self):
-        import django
+        import django # pylint: disable=import-outside-toplevel
         print('django.version:', django.VERSION)
-        from admin_steroids import widgets # pylint: disable=unused-import
+        from admin_steroids import widgets # pylint: disable=unused-import,import-outside-toplevel
 
     def test_currency(self):
-        from admin_steroids.fields import Currency
+        from admin_steroids.fields import Currency # pylint: disable=import-outside-toplevel
         value = Currency('$500,000.00')
         self.assertEqual(value, 500000)
         self.assertEqual(value, 500000.0)

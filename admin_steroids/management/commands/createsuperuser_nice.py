@@ -70,8 +70,8 @@ class Command(BaseCommand):
                         user_data[field_name] = field.clean(options[field_name], None)
                     else:
                         raise CommandError("You must use --%s with --noinput." % field_name)
-            except exceptions.ValidationError as e:
-                raise CommandError('; '.join(e.messages))
+            except exceptions.ValidationError as exc:
+                raise CommandError('; '.join(exc.messages)) from exc
 
         else:
             # Prompt for username/password, and any other required fields.

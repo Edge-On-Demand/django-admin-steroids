@@ -20,23 +20,17 @@ from . import filters
 
 class BaseModelAdmin(admin.ModelAdmin):
 
-    #    # Cleanup the breadcrumbs on the change page.
-    #    def change_view(self, request, object_id, form_url='', extra_context=None):
-    #        extra_context = extra_context or {}
-    #        extra_context['app_label'] = self.model._meta.app_label.title()
-    #        return super(BaseModelAdmin, self).change_view(request, object_id, form_url, extra_context)
-
     # Cleanup the breadcrumbs on the changelist page.
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['app_label'] = self.model._meta.app_label.title()
-        return super(BaseModelAdmin, self).changelist_view(request, extra_context)
+        return super().changelist_view(request, extra_context)
 
     # Cleanup the breadcrumbs on the delete page.
     def delete_view(self, request, object_id, extra_context=None):
         extra_context = extra_context or {}
         extra_context['app_label'] = self.model._meta.app_label.title()
-        return super(BaseModelAdmin, self).delete_view(request, object_id, extra_context)
+        return super().delete_view(request, object_id, extra_context)
 
 
 # Based on http://djangosnippets.org/snippets/2217/.
@@ -57,7 +51,7 @@ class BetterRawIdFieldsModelAdmin(BaseModelAdmin):
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
-        return super(BetterRawIdFieldsModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 
 ImproveRawIdFieldsForm = BetterRawIdFieldsModelAdmin
@@ -80,7 +74,7 @@ class BetterRawIdFieldsTabularInline(admin.TabularInline):
             elif typ == "ManyToManyRel":
                 kwargs['widget'] = w.VerboseManyToManyRawIdWidget(db_field.remote_field, site, raw_id_fields_new_tab=self.raw_id_fields_new_tab)
             return db_field.formfield(**kwargs)
-        return super(BetterRawIdFieldsTabularInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 
 ImproveRawIdFieldsFormTabularInline = BetterRawIdFieldsTabularInline
@@ -173,7 +167,7 @@ class ReadonlyModelAdmin(BaseModelAdmin):
         return False
 
     def get_actions(self, request):
-        actions = super(ReadonlyModelAdmin, self).get_actions(request)
+        actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions
@@ -253,7 +247,7 @@ class CSVModelAdminMixin(object):
         if hasattr(self, 'actions') and isinstance(self.actions, list):
             self.actions.append('csv_export')
         if isinstance(self, type) or (isclass(self) and issubclass(self, type)):
-            return super(CSVModelAdmin, self).get_actions(request)
+            return super().get_actions(request)
 
     def get_extra_csv_fields(self, request):
         return self.extra_csv_fields
@@ -411,7 +405,7 @@ class CSVModelAdmin(BaseModelAdmin, CSVModelAdminMixin):
     def get_actions(self, request):
         #TODO:is there a better way to do this? super() ignores the mixin's get_actions()...
         CSVModelAdminMixin.get_actions(self, request)
-        return super(CSVModelAdmin, self).get_actions(request)
+        return super().get_actions(request)
 
 
 #https://djangosnippets.org/snippets/2484/

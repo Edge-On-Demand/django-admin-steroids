@@ -5,12 +5,8 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterator
 
-from optparse import make_option
-
-from django import get_version, VERSION
 from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
-# from django.db.utils import ProgrammingError
 
 try:
     from django.test import override_settings
@@ -18,24 +14,6 @@ except ImportError:
     from override_settings import override_settings
 
 from admin_steroids.queryset import atomic
-
-
-def get_options(parser=None):
-    make_opt = make_option
-    if parser:
-        make_opt = parser.add_argument
-    return [
-        make_opt('--dryrun', action='store_true', default=False),
-        make_opt('--only-show-classes', action='store_true', default=False),
-        make_opt(
-            '--do-update',
-            action='store_true',
-            default=False,
-            help='If given, does a SQL update instead of calling the model\'s save() method. '
-            'This is only recommended for use when there are circular FK references coupled '
-            'with validation logic preventing incremental saves.'
-        ),
-    ]
 
 
 def get_all_related_objects(obj):
@@ -50,26 +28,21 @@ def get_all_related_objects(obj):
 
 class Command(BaseCommand):
     help = 'Replaces one record with another, making sure to update all foreign key references.'
-    args = 'app.model old_id new_id'
-    option_list = getattr(BaseCommand, 'option_list', ()) + tuple(get_options())
 
-    def create_parser(self, prog_name, subcommand):
-        """
-        For ``Django>=1.10``
-        Create and return the ``ArgumentParser`` which extends ``BaseCommand`` parser with
-        chroniker extra args and will be used to parse the arguments to this command.
-        """
-        from distutils.version import StrictVersion # pylint: disable=E0611,import-error
-        parser = super(Command, self).create_parser(prog_name, subcommand)
-        version_threshold = StrictVersion('1.10')
-        current_version = StrictVersion(get_version(VERSION))
-        if current_version >= version_threshold:
-            parser.add_argument('name')
-            parser.add_argument('old_id')
-            parser.add_argument('new_id')
-            get_options(parser)
-            self.add_arguments(parser)
-        return parser
+    def add_arguments(self, parser):
+        parser.add_argument('name')
+        parser.add_argument('old_id')
+        parser.add_argument('new_id')
+        parser.add_argument('--dryrun', action='store_true', default=False)
+        parser.add_argument.add_argument('--only-show-classes', action='store_true', default=False)
+        parser.add_argument(
+            '--do-update',
+            action='store_true',
+            default=False,
+            help='If given, does a SQL update instead of calling the model\'s save() method. '
+            'This is only recommended for use when there are circular FK references coupled '
+            'with validation logic preventing incremental saves.'
+        )
 
     @atomic
     @override_settings(DEBUG=False)
@@ -92,13 +65,11 @@ class Command(BaseCommand):
                     if 'the current database router prevents this relation' in str(exc):
                         print('Warning, skipping value: %s' % exc)
                         continue
-                    else:
-                        raise
+                    raise
                 except TypeError as exc:
                     if "'list' object is not an iterator" in str(exc) or "list object is not an iterator" in str(exc):
                         break
-                    else:
-                        raise
+                    raise
                 except StopIteration:
                     break
 

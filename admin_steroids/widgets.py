@@ -32,8 +32,8 @@ from admin_steroids import utils
 
 class LinkedSelect(Select):
 
-    def render(self, name, value, attrs=None, *args, **kwargs):
-        output = super(LinkedSelect, self).render(name, value, attrs=attrs, *args, **kwargs)
+    def render(self, name, value, attrs=None, *args, **kwargs): # pylint: disable=signature-differs
+        output = super().render(name, value, attrs=attrs, *args, **kwargs)
         model = self.choices.field.queryset.model
         to_field_name = self.choices.field.to_field_name or 'id'
         try:
@@ -53,7 +53,7 @@ class ForeignKeyTextInput(TextInput):
     """
 
     def __init__(self, model_class, value, *args, **kwargs):
-        super(ForeignKeyTextInput, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._model_class = model_class
         try:
             value = int(value)
@@ -112,7 +112,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
         if 'raw_id_fields_new_tab' in kwargs:
             raw_id_fields_new_tab = kwargs['raw_id_fields_new_tab']
             del kwargs['raw_id_fields_new_tab']
-        super(VerboseForeignKeyRawIdWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.raw_id_fields_new_tab = raw_id_fields_new_tab
 
     @property
@@ -140,7 +140,7 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         if 'raw_id_fields_new_tab' in kwargs:
             raw_id_fields_new_tab = kwargs['raw_id_fields_new_tab']
             del kwargs['raw_id_fields_new_tab']
-        super(VerboseManyToManyRawIdWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.raw_id_fields_new_tab = raw_id_fields_new_tab
 
     @property

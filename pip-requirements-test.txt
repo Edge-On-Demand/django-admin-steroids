@@ -1,5 +1,5 @@
 tox>=2.0.0
-pylint>=2.2.2
+pylint>=2.6.0
 django-override-settings>=1.2
 twine>=1.13.0
 yapf==0.28.0

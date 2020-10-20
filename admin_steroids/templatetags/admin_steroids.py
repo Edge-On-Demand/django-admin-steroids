@@ -29,8 +29,8 @@ def setvar(parser, token):
     try:
         # Splitting by None == splitting by spaces.
         tag_name, arg = token.contents.split(None, 1)
-    except ValueError:
-        raise template.TemplateSyntaxError("%r tag requires arguments" % token.contents.split()[0])
+    except ValueError as exc:
+        raise template.TemplateSyntaxError("%r tag requires arguments" % token.contents.split()[0]) from exc
     m = re.search(r'(.*?) as (\w+)', arg)
     if not m:
         raise template.TemplateSyntaxError("%r tag had invalid arguments" % tag_name)

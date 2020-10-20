@@ -18,7 +18,7 @@ def retry_exceptionless(tries=3, delay=3, backoff=1, exception_cb=None, commit=T
     Based on https://wiki.python.org/moin/PythonDecoratorLibrary#Retry
     '''
     if commit:
-        from django.db import transaction
+        from django.db import transaction # pylint: disable=import-outside-toplevel
 
     if backoff < 1:
         raise ValueError("backoff is %s but must be greater than 1" % (backoff,))

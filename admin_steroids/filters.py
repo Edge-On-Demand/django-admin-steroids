@@ -18,7 +18,7 @@ def get_empty_value_display(cl):
     if hasattr(cl.model_admin, 'get_empty_value_display'):
         return cl.model_admin.get_empty_value_display()
     # Django < 1.9
-    from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module
+    from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module,import-outside-toplevel
     return EMPTY_CHANGELIST_VALUE
 
 
@@ -36,7 +36,7 @@ class NullListFilter(FieldListFilter):
                     self.lookup_val = False
         except Exception as e:
             pass
-        super(NullListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
     def expected_parameters(self):
         return [
@@ -75,7 +75,7 @@ class NullBlankListFilter(FieldListFilter):
         except Exception as e:
             pass
 
-        super(NullBlankListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
     def expected_parameters(self):
         return [self.lookup_kwarg]
@@ -91,8 +91,8 @@ class NullBlankListFilter(FieldListFilter):
                     Q(**{self.field_path+'__isnull': True})|\
                     Q(**{self.field_path: ''}))
             return queryset
-        except ValidationError as e:
-            raise IncorrectLookupParameters(e)
+        except ValidationError as exc:
+            raise IncorrectLookupParameters(exc) from exc
 
     def choices(self, cl):
         for lookup, title in ((None, _('All')), (False, _('Has value')), (True, _('Omitted'))):
@@ -124,7 +124,7 @@ class NotInListFilter(FieldListFilter):
             pass
 
         self.lookup_choices = field.get_choices(include_blank=False)
-        super(NotInListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
         self.title = getattr(field, 'verbose_name', field_path) + ' is not'
 
@@ -137,8 +137,8 @@ class NotInListFilter(FieldListFilter):
             if self.lookup_kwarg in self.used_parameters and self.lookup_vals:
                 queryset = queryset.exclude(**{self.field_path + '__in': self.lookup_vals})
             return queryset
-        except ValidationError as e:
-            raise IncorrectLookupParameters(e)
+        except ValidationError as exc:
+            raise IncorrectLookupParameters(exc) from exc
 
     def choices(self, cl):
         yield {
@@ -171,7 +171,7 @@ class CachedFieldFilter(FieldListFilter):
         self.lookup_val = request.GET.get(self.lookup_kwarg, None)
         self.lookup_val2 = request.GET.get(self.lookup_kwarg2, None)
 
-        super(CachedFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
         self.model = model
 
@@ -237,7 +237,7 @@ class AjaxFieldFilter(FieldListFilter):
         self.lookup_kwarg = '%s__in' % field_path
         self.lookup_val = [_ for _ in request.GET.get(self.lookup_kwarg, '').split(',') if _.strip()]
 
-        super(AjaxFieldFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
         self.model = model
 
@@ -341,7 +341,7 @@ class SingleTextInputFilter(ListFilter):
     style = ''
 
     def __init__(self, request, params, model, model_admin):
-        super(SingleTextInputFilter, self).__init__(request, params, model, model_admin)
+        super().__init__(request, params, model, model_admin)
         if self.parameter_name is None:
             raise ImproperlyConfigured("The list filter '%s' does not specify " "a 'parameter_name'." % self.__class__.__name__)
 

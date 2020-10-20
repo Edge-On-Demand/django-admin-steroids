@@ -13,7 +13,7 @@ import six
 from unidecode import unidecode
 
 from django.conf import settings
-from django.db import models
+from django.db import models, connections
 from django.contrib.contenttypes.models import ContentType
 try:
     # deprecated in 1.9, moved to django.urls in 1.10, removed at 2.0
@@ -316,7 +316,6 @@ class DictCursor(object):
     """
 
     def __init__(self, database_name='default'):
-        from django.db import connections
         self.cursor = connections[database_name].cursor()
         self._results = None
 
@@ -364,7 +363,7 @@ def count_related_objects(obj):
 
 
 def remove_html(s):
-    from html.parser import HTMLParser
+    from html.parser import HTMLParser # pylint: disable=import-outside-toplevel
 
     s = six.text_type(s)
 
@@ -378,7 +377,7 @@ def remove_html(s):
     try:
         # Try using BeautifulSoup to strip out HTML, since its parser is more robust
         # than a simple Regex.
-        from bs4 import BeautifulSoup
+        from bs4 import BeautifulSoup # pylint: disable=import-outside-toplevel
         soup = BeautifulSoup(s)
         s = ''.join(soup.findAll(text=True))
     except ImportError:

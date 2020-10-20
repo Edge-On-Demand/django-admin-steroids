@@ -77,4 +77,4 @@ class BCCEmailBackend(EmailBackend):
         if bcc_recipients:
             email_message.bcc.extend(bcc_recipients)
 
-        super(BCCEmailBackend, self)._send(email_message)
+        super()._send(email_message)
