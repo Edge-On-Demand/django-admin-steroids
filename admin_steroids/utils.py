@@ -363,7 +363,7 @@ def count_related_objects(obj):
 
 
 def remove_html(s):
-    from html.parser import HTMLParser # pylint: disable=import-outside-toplevel
+    import html # pylint: disable=import-outside-toplevel
 
     s = six.text_type(s)
 
@@ -372,7 +372,7 @@ def remove_html(s):
     s = s.replace('&nbsp;', ' ')
 
     # Strip out all other HTML entities.
-    s = HTMLParser().unescape(s)
+    s = html.unescape(s)
 
     try:
         # Try using BeautifulSoup to strip out HTML, since its parser is more robust
