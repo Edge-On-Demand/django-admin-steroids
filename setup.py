@@ -58,6 +58,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.9',
     ],
     zip_safe=False,
     install_requires=get_reqs('pip-requirements-min-django.txt', 'pip-requirements.txt'),
