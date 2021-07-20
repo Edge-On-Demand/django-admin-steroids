@@ -4,8 +4,6 @@ Quick test:
     export TESTNAME=.test_delete_duplicate_record; tox -e py37-django225
 
 """
-from __future__ import print_function
-
 import time
 import socket
 import warnings
@@ -16,10 +14,7 @@ from django.test import TestCase
 from django.test import Client
 from django.core.management import call_command
 from django.contrib.auth.models import User
-try:
-    from django.test import override_settings
-except ImportError:
-    from override_settings import override_settings
+from django.test import override_settings
 
 # pylint: disable=C0412
 from admin_steroids import utils
@@ -37,9 +32,6 @@ SMTPD_LOG = '/tmp/smtpd.log'
 
 
 class Tests(TestCase):
-
-    #     fixtures = []
-
     def setUp(self):
         pass
 

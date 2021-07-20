@@ -1,6 +1,6 @@
 {% extends "admin/base.html" %}
-{% load i18n admin_static staticfiles %}
-{#{% load compressed %}#}
+
+{% load i18n static %}
 
 {% block title %}{{ title }} | {% if settings.ADMIN_TITLE %}{{ settings.ADMIN_TITLE }}{% else %}Administration{% endif %}{% endblock %}
 

@@ -1,33 +1,14 @@
-from __future__ import print_function
-
 from django import forms
 from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
 from django.urls import reverse, NoReverseMatch
 from django.forms.widgets import Select, TextInput
-try:
-    from django.forms.widgets import flatatt
-except ImportError:
-    # Changed in Django>=1.11.
-    from django.forms.utils import flatatt
+from django.forms.utils import flatatt
 from django.template import Context, Template
-from django.template.context import Context
-from django.utils.encoding import force_text, smart_text
+from django.utils.encoding import force_str, smart_text
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-try:
-    from django.utils.encoding import StrAndUnicode # pylint: disable=unused-import
-except ImportError:
-    from django.utils.encoding import python_2_unicode_compatible
-
-    @python_2_unicode_compatible
-    class StrAndUnicode:
-
-        def __str__(self):
-            return self.code
-
-
-from admin_steroids import utils
+from . import utils
 
 
 class LinkedSelect(Select):
@@ -73,7 +54,7 @@ class ForeignKeyTextInput(TextInput):
         final_attrs = self.build_attrs(attrs)
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
-            final_attrs['value'] = force_text(self._format_value(value))
+            final_attrs['value'] = force_str(self._format_value(value))
         final_attrs['size'] = 10
         final_attrs['type'] = 'text'
         final_attrs['name'] = name

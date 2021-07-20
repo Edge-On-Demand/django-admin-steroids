@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 #Currency field borrowed from:
 #https://djangosnippets.org/snippets/1527/
 
@@ -15,12 +13,8 @@ import django
 from django import forms
 from django.conf import settings
 from django.db import models
-try:
-    from django.forms.util import ValidationError
-except ImportError:
-    # Renamed in Django 1.9.
-    from django.forms.utils import ValidationError
-from django.utils.encoding import force_text
+from django.forms.utils import ValidationError
+from django.utils.encoding import force_str
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext as _
@@ -103,7 +97,7 @@ class CurrencyInput(forms.widgets.TextInput):
                 value = Currency(value).format_pretty()
             except (ValueError, TypeError):
                 pass
-            final_attrs['value'] = force_text(value)
+            final_attrs['value'] = force_str(value)
 
         return mark_safe(u'<input%s />' % flatatt(final_attrs))
 
@@ -343,11 +337,3 @@ class CurrencyField(models.fields.DecimalField):
         else:
             data = str(val)
         return data
-
-
-if django.VERSION < (1, 7):
-    try:
-        from south.modelsinspector import add_introspection_rules
-        add_introspection_rules([], [r"^admin_steroids\.fields\.CurrencyField"])
-    except ImportError:
-        pass

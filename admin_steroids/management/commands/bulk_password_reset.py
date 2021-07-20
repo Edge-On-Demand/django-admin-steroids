@@ -1,6 +1,3 @@
-from __future__ import unicode_literals, print_function
-
-#from urlparse import urlparse
 from uuid import uuid4
 
 from six.moves.urllib.parse import urlparse # pylint: disable=import-error

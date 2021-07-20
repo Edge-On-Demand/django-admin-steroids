@@ -1,17 +1,9 @@
-from __future__ import print_function
-
 from django.core.management.base import BaseCommand
-try:
-    from django.core.cache import caches as _get_cache
-except ImportError:
-    from django.core.cache import get_cache as _get_cache
+from django.core.cache import caches as _get_cache
 
 
 def get_cache(name):
-    # print('_get_cache:', _get_cache)
-    # if isinstance(_get_cache, dict):
     return _get_cache[name]
-    # return _get_cache(name)
 
 
 class Command(BaseCommand):

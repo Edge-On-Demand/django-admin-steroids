@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import uuid
 
 from django.contrib.admin import FieldListFilter, SimpleListFilter, ListFilter
@@ -17,9 +15,6 @@ from django.contrib.auth.models import User
 def get_empty_value_display(cl):
     if hasattr(cl.model_admin, 'get_empty_value_display'):
         return cl.model_admin.get_empty_value_display()
-    # Django < 1.9
-    from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE # pylint: disable=no-name-in-module,import-outside-toplevel
-    return EMPTY_CHANGELIST_VALUE
 
 
 class NullListFilter(FieldListFilter):
@@ -34,7 +29,7 @@ class NullListFilter(FieldListFilter):
                     self.lookup_val = True
                 else:
                     self.lookup_val = False
-        except Exception as e:
+        except Exception:
             pass
         super().__init__(field, request, params, model, model_admin, field_path)
 

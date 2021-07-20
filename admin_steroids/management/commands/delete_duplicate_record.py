@@ -1,17 +1,10 @@
-from __future__ import print_function
-
 import sys
-#import traceback
 from collections import defaultdict
 from collections.abc import Iterator
 
 from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
-
-try:
-    from django.test import override_settings
-except ImportError:
-    from override_settings import override_settings
+from django.test import override_settings
 
 from admin_steroids.queryset import atomic
 

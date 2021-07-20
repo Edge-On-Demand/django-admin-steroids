@@ -1,30 +1,16 @@
-from __future__ import print_function
-
 import re
 import sys
 import hashlib
 import decimal
-#from urlparse import urlparse
 
 from six.moves.urllib.parse import urlparse # pylint: disable=import-error
 from six.moves import cPickle as pickle
 import six
 
-from unidecode import unidecode
-
 from django.conf import settings
 from django.db import models, connections
 from django.contrib.contenttypes.models import ContentType
-try:
-    # deprecated in 1.9, moved to django.urls in 1.10, removed at 2.0
-    from django.core.urlresolvers import reverse, NoReverseMatch
-except ImportError:
-    from django.urls import reverse, NoReverseMatch
-
-try:
-    unicode
-except NameError:
-    unicode = str # pylint: disable=redefined-builtin
+from django.urls import reverse, NoReverseMatch
 
 
 def obj_to_hash(o):
@@ -104,11 +90,11 @@ class StringWithTitle(str):
         return self._title
 
     def __eq__(self, other):
-        return unicode(self) == unicode(other)
+        return str(self) == str(other)
 
-    __copy__ = lambda self: StringWithTitle(unicode(self), self.title) # pylint: disable=undefined-variable
+    __copy__ = lambda self: StringWithTitle(str(self), self.title) # pylint: disable=undefined-variable
 
-    __deepcopy__ = lambda self, memodict: StringWithTitle(unicode(self), self.title)
+    __deepcopy__ = lambda self, memodict: StringWithTitle(str(self), self.title)
 
 
 re_digits_nondigits = re.compile(r'\d+|\D+')
@@ -243,11 +229,7 @@ def view_link(url, obj=None, target='_blank', prefix='', template='', view_str='
 
     if template:
         view_str = template.format(count=count)
-    # Convert all non-unicode characters into ascii alternative
-    try:
-        view_str = unidecode(unicode(view_str, encoding="utf-8"))
-    except TypeError:
-        view_str = unidecode(view_str)
+
     view_str = view_str.replace(' ', '&nbsp;').encode('ascii', 'ignore')
     url = url.encode('ascii', 'ignore')
     return u'<a href=\"{url}\" target=\"{tgt}\" class="{class_str}">{view}</a>'\

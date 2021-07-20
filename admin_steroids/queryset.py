@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import hashlib
 import re
 import sys
@@ -10,12 +8,7 @@ from django.db import connections, transaction
 from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
 from django.db.models.query import RawQuerySet
-
-try:
-    from django.db.transaction import atomic
-except ImportError:
-    # Allow Django<1.6 to use atomic().
-    from django.db.transaction import commit_on_success as atomic
+from django.db.transaction import atomic
 
 
 def execute_sql_from_file(fn, using=None):

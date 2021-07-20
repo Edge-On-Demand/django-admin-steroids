@@ -61,6 +61,6 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     zip_safe=False,
-    install_requires=get_reqs('pip-requirements-min-django.txt', 'pip-requirements.txt'),
+    install_requires=get_reqs('pip-requirements.txt'),
     tests_require=get_reqs('pip-requirements-test.txt'),
 )

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from django.db import models, connections
 
 from . import queryset
