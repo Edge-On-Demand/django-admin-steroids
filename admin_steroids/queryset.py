@@ -4,9 +4,9 @@ import sys
 import traceback
 
 from django.core.cache import cache
+from django.core.exceptions import EmptyResultSet
 from django.db import connections, transaction
 from django.db.models.query import QuerySet
-from django.db.models.sql import EmptyResultSet
 from django.db.models.query import RawQuerySet
 from django.db.transaction import atomic
 
