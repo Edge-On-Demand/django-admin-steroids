@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import DEFAULT_DB_ALIAS
 from django.conf import settings
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
         for email in emails:
             print('email:', email)
-            user = User.objects.get(email=email)
+            user = get_user_model().objects.get(email=email)
 
             # Ensure the user has some sort of password.
             # Otherwise, the password reset form will ignore it.

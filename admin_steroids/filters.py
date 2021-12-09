@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext as _
 from django.utils.encoding import smart_text
 from django.contrib.admin.options import IncorrectLookupParameters
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 def get_empty_value_display(cl):
@@ -314,7 +314,7 @@ class LogEntryAdminUserFilter(SimpleListFilter):
     parameter_name = 'user'
 
     def lookups(self, request, model_admin):
-        qs = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True))
+        qs = get_user_model().objects.filter(Q(is_staff=True) | Q(is_superuser=True))
         qs = qs.order_by('username')
         return [(user.pk, _(str(user))) for user in qs]
 

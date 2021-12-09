@@ -1,8 +1,8 @@
 import sys
 
-from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
 from django.contrib.sessions.models import Session
-from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 
 
 # Based on http://stackoverflow.com/a/954318/247542
@@ -34,9 +34,9 @@ class Command(BaseCommand):
 
                 print('Looking up user %s...' % user)
                 if user.isdigit():
-                    user = User.objects.get(id=int(user))
+                    user = get_user_model().objects.get(id=int(user))
                 else:
-                    user = User.objects.get(email=user)
+                    user = get_user_model().objects.get(email=user)
 
                 qs = Session.objects.all()
                 total = qs.count()

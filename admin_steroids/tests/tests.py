@@ -13,7 +13,7 @@ from django.core import mail
 from django.test import TestCase
 from django.test import Client
 from django.core.management import call_command
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import override_settings
 
 # pylint: disable=C0412
@@ -187,7 +187,7 @@ class Tests(TestCase):
         self.assertEqual(mail.outbox[0].to, ['abc@example.com'])
 
     def test_VerboseManyToManyRawIdWidget(self):
-        user = User.objects.create(username='admin')
+        user = get_user_model().objects.create(username='admin')
         user.set_password('password')
         user.is_staff = True
         user.is_superuser = True
