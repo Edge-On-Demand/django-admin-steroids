@@ -142,7 +142,7 @@ class Tests(TestCase):
         call_command('bulk_password_reset')
 
     def test_command_createsuperuser_nice(self):
-        call_command('createsuperuser_nice', noinput=True, username='admin@example.com', password='password', email='admin@example.com')
+        call_command('createsuperuser_nice', noinput=True, password='password', email='admin@example.com')
 
     def test_command_delete_duplicate_record(self):
 
@@ -187,7 +187,7 @@ class Tests(TestCase):
         self.assertEqual(mail.outbox[0].to, ['abc@example.com'])
 
     def test_VerboseManyToManyRawIdWidget(self):
-        user = get_user_model().objects.create(username='admin')
+        user = get_user_model().objects.create(email='admin')
         user.set_password('password')
         user.is_staff = True
         user.is_superuser = True

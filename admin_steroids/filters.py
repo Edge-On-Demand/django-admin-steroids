@@ -315,7 +315,7 @@ class LogEntryAdminUserFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         qs = get_user_model().objects.filter(Q(is_staff=True) | Q(is_superuser=True))
-        qs = qs.order_by('username')
+        qs = qs.order_by('email')
         return [(user.pk, _(str(user))) for user in qs]
 
     def queryset(self, request, queryset):
