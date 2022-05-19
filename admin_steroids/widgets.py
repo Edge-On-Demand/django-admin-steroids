@@ -4,7 +4,7 @@ from django.urls import reverse, NoReverseMatch
 from django.forms.widgets import Select, TextInput
 from django.forms.utils import flatatt
 from django.template import Context, Template
-from django.utils.encoding import force_str, smart_text
+from django.utils.encoding import force_str, smart_str
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -147,7 +147,7 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         pk_name = self.rel.model._meta.pk.name
         for v in values:
             obj = self.rel.model._default_manager.using(self.db).get(**{pk_name: v})
-            label_lst.append(escape(smart_text(obj)))
+            label_lst.append(escape(smart_str(obj)))
             id_lst.append(obj.pk)
         label = ', '.join(label_lst)
         url = ''
@@ -162,7 +162,7 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
         key = self.remote_field.get_related_field().name
         for v in values:
             obj = self.remote_field.model._default_manager.using(self.db).get(**{key: v})
-            x = smart_text(obj)
+            x = smart_str(obj)
             try:
                 change_url = reverse("admin:%s_%s_change" % (obj._meta.app_label, obj._meta.object_name.lower()), args=(obj.pk,))
                 str_values += ['<strong><a href="%s" target="%s">%s</a></strong>' % (change_url, self.target, escape(x))]

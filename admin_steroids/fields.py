@@ -9,7 +9,6 @@ from babel.numbers import (
     format_decimal, format_currency, parse_decimal, parse_number, get_decimal_symbol, get_group_symbol, get_currency_symbol, NumberFormatError
 )
 
-import django
 from django import forms
 from django.conf import settings
 from django.db import models
@@ -17,7 +16,7 @@ from django.forms.utils import ValidationError
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _, ugettext as _
+from django.utils.translation import gettext as _
 
 # The six lib is not included in Django 1.3
 # If you have 1.3 (as i have) you can search here in a future version of Django:
@@ -25,8 +24,8 @@ from django.utils.translation import ugettext_lazy as _, ugettext as _
 import six
 
 default_error_messages = {
-    'decimal_symbol': _(u'Ensure that there is only one decimal symbol (%s).'),
-    'invalid_format': _(u'Invalid currency format. Please use the format 9%s999%s00')
+    'decimal_symbol': _('Ensure that there is only one decimal symbol (%s).'),
+    'invalid_format': _('Invalid currency format. Please use the format 9%s999%s00')
 }
 
 TWOPLACES = Decimal(10)**-2

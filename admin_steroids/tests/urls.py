@@ -1,15 +1,9 @@
-from django.conf.urls import url, include
 from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
+from django.urls import re_path, include
 
 
 admin.autodiscover()
 
-try:
-    urlpatterns = [
-        url(r'^admin/', include(admin.site.urls)),
-    ]
-except ImproperlyConfigured:
-    urlpatterns = [
-        url(r'^admin/', admin.site.urls),
-    ]
+urlpatterns = [
+    re_path(r'^admin/', include(admin.site.urls)),
+]

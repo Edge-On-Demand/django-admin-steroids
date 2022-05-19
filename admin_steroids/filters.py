@@ -6,8 +6,8 @@ from django.urls import reverse
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
-from django.utils.translation import ugettext as _
-from django.utils.encoding import smart_text
+from django.utils.translation import gettext as _
+from django.utils.encoding import smart_str
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.auth import get_user_model
 
@@ -143,7 +143,7 @@ class NotInListFilter(FieldListFilter):
         }
         for pk_val, val in self.lookup_choices:
             yield {
-                'selected': (smart_text(pk_val) in self.lookup_vals) if self.lookup_vals else False,
+                'selected': (smart_str(pk_val) in self.lookup_vals) if self.lookup_vals else False,
                 'query_string': cl.get_query_string({
                     self.lookup_kwarg: pk_val,
                 }, []),
