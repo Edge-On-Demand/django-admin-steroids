@@ -104,7 +104,7 @@ class Command(BaseCommand):
             try:
                 referring_objects = getattr(old_obj, link.get_accessor_name()).all()
                 total = referring_objects.count()
-                referring_objects_iters = referring_objects.iterator()
+                referring_objects_iters = referring_objects.iterator(chunk_size=2000)
             except AttributeError:
                 total = 0
                 referring_objects_iters = []
