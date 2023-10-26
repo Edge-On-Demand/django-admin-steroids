@@ -57,7 +57,7 @@ class DevelopmentEmailBackend(EmailBackend):
             if getattr(settings, 'DEV_EMAIL_APPEND_HOSTNAME', False):
                 message += '\n(Sent from %s)' % settings.BASE_URL
 
-            self.connection.sendmail(from_addr=email_message.from_email, to_addrs=recipients, msg=message)
+            self.connection.sendmail(from_addr=email_message.from_email, to_addrs=recipients, msg=message.encode('utf8', 'ignore'))
         except Exception as e:
             if not self.fail_silently:
                 raise
